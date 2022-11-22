@@ -1,0 +1,30 @@
+html {
+  font-size: 62.5%;
+}
+
+body {
+  background-color: rgb(33, 36, 29);
+}
+
+img {
+  max-width: 100%;
+}
+
+ul,
+li,
+ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+p{
+  margin: 0;
+  padding: 0;
+}
+
+@media screen and (max-width: 760px) {
+  html {
+    font-size: 50%;
+  }
+}

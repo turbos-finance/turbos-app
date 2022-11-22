@@ -1,0 +1,62 @@
+.content {
+  display: flex;
+}
+
+.left {
+  width: 230px;
+  height: 100vh;
+  background-color: rgb(21, 21, 21);
+  overflow: hidden;
+}
+
+.right {
+  flex: 1;
+  padding: 0 8rem;
+}
+
+.header {
+  height: 5.6rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  padding: 0 2rem;
+}
+
+.logo img {
+  height: 3.2rem;
+}
+
+.nav {
+  margin-left: 4rem;
+}
+
+.nav a {
+  display: flex;
+  font-size: 1.6rem;
+  color: rgb(46, 216, 167);
+  margin-right: 4rem;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.nav a:hover {
+  color: #fff;
+}
+
+.menus {}
+
+.connectwallet {
+  line-height: 3.2rem;
+  border: 1px solid rgb(46, 216, 167);
+  background-color: rgb(46, 216, 167);
+  border-radius: 3.6rem;
+  color: #fff;
+  font-size: 1.5rem;
+  padding: 0 2rem;
+  box-sizing: border-box;
+  cursor: pointer;
+}
+
+.connectwallet:hover {
+  background-color: transparent;
+}
