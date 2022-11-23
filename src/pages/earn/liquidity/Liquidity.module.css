@@ -1,0 +1,94 @@
+.table {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    margin-bottom: 16px;
+}
+
+.table thead th {
+    font-size: 16px;
+    font-family: "Montserrat Light";
+    font-weight: 300;
+    color: #FFFFFF;
+    opacity: .5;
+    height: 6rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 0 2rem;
+}
+
+.table tbody td {
+    font-size: 16px;
+    font-family: "Montserrat Light";
+    font-weight: 300;
+    color: #FFFFFF;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 2.4rem 2rem;
+}
+
+.table tbody tr:last-child td {
+    border-bottom: 0 none;
+}
+
+.liquidity {
+    display: flex;
+    align-items: center;
+}
+
+.liquidity-img {
+    margin-right: 16px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.liquidity-img img {
+    height: 40px;
+}
+
+.liquidity-name {
+    display: flex;
+    align-items: center;
+}
+
+.liquidity-name span {
+    font-size: 16px;
+    font-family: "Montserrat Regular";
+    color: #FFFFFF;
+    margin-right: 10px;
+}
+
+.liquidity-name img {
+    height: 24px;
+    opacity: .5;
+    cursor: pointer;
+}
+
+.liquidity-token {
+    font-size: 14px;
+    font-family: "Montserrat Light";
+    color: #FFFFFF;
+    line-height: 18px;
+    opacity: .5;
+}
+
+.liquidity-btn a {
+    display: block;
+    width: 14rem;
+    height: 4rem;
+    background: #63CCA9;
+    border-radius: .5rem;
+    text-align: center;
+    line-height: 4rem;
+    font-size: 14px;
+    font-family: "Montserrat Regular";
+    font-weight: 400;
+    text-decoration: none;
+    color: #FFFFFF;
+}
+
+.liquidity-btn a:hover {
+    background-color: #47AF8D;
+}
+
+.liquidity-btn a:active {
+    background-color: rgb(47, 96, 83, 1);
+}

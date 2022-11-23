@@ -1,0 +1,37 @@
+.header {
+    display: flex;
+    justify-content: space-between;
+    height: 8rem;
+    align-items: center;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+
+}
+
+.menus {
+    width: 4rem;
+    display: flex;
+    align-items: center;
+    display: none;
+}
+
+.menus img {
+    width: 2.4rem;
+}
+
+.logo {
+    display: none;
+}
+
+.logo img {
+    margin-left: 2.rem;
+    height: 3.2rem;
+}

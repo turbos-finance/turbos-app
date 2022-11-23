@@ -1,0 +1,33 @@
+.wallet {
+    width: 164px;
+    height: 40px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 5px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.wallet:hover {
+    background: rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.wallet:hover img {
+    opacity: 1;
+}
+
+.wallet img {
+    width: 24px;
+    margin-left: 10px;
+    opacity: 0.5;
+}
+
+.wallet span {
+    flex: 1;
+    color: #fff;
+    font-family: "Montserrat Regular";
+    font-size: 14px;
+    text-align: center;
+}

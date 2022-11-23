@@ -1,0 +1,20 @@
+.trades {
+    padding: 2rem;
+    background-color: rgb(14, 17, 23);
+    margin-bottom: 1rem;
+    border-radius: 1rem;
+}
+
+.trades-time {
+    color: #999;
+    line-height: 1.2;
+    margin-bottom: 1rem;
+    font-size: 1.4rem;
+}
+
+.trades-info {
+    color: #fff;
+    font-weight: 600;
+    line-height: 1.2;
+    font-size: 1.6rem;
+}

@@ -1,4 +1,5 @@
 import './App.css';
+import './assets/css/common.css';
 import { UseRefreshProvider } from './contexts/refresh';
 import { UseSuiWalletProvider } from './contexts/useSuiWallet';
 

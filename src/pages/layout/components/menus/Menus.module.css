@@ -1,63 +1,97 @@
-.content{
-  display: flex;
+.leftcon {
+    display: flex;
+    justify-content: space-between;
+    flex-direction: column;
+    height: 100%;
 }
 
-.left{
-  width: 230px;
-  height: 100vh;
-  background-color: rgb(21, 21, 21);
-}
-
-.right{
-  flex: 1;
-  padding: 0 8rem;
-}
-
-.header {
-  height: 5.6rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-  display: flex;
-  align-items: center;
-  padding: 0 2rem;
+.logo {
+    padding: 2.4rem;
 }
 
 .logo img {
-  height: 3.2rem;
+    height: 3.2rem;
 }
 
-.nav {
-  margin-left: 4rem;
-}
+.nav {}
 
 .nav a {
-  display: flex;
-  font-size: 1.6rem;
-  color: rgb(46, 216, 167);
-  margin-right: 4rem;
-  text-decoration: none;
-  font-weight: 600;
+    display: block;
+    height: 4.8rem;
+    padding-left: 2.4rem;
+    box-sizing: border-box;
+    font-family: "Montserrat Regular";
+    font-size: 1.6rem;
+    opacity: 0.5;
+    color: #fff;
+    margin-top: 1.6rem;
+    display: flex;
+    align-items: center;
+    text-decoration: none;
 }
 
-.nav a:hover {
-  color: #fff;
+.nav img {
+    width: 2.4rem;
 }
 
-.menus{
-  
+.nav span {
+    padding-left: 1.6rem;
 }
 
-.connectwallet {
-  line-height: 3.2rem;
-  border: 1px solid rgb(46, 216, 167);
-  background-color: rgb(46, 216, 167);
-  border-radius: 3.6rem;
-  color: #fff;
-  font-size: 1.5rem;
-  padding: 0 2rem;
-  box-sizing: border-box;
-  cursor: pointer;
+.nav a:hover,
+.nav a.active {
+    background: linear-gradient(270deg, rgba(255, 255, 255, 0.02) 0%, rgba(255, 255, 255, 0.1) 100%);
+    opacity: 1;
 }
 
-.connectwallet:hover {
-  background-color: transparent;
+.link {}
+
+.link a {
+    padding: 1rem 2.4rem;
+    font-family: "Montserrat Light";
+    font-size: 1.4rem;
+    color: #fff;
+    opacity: 0.5;
+    height: 4rem;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+}
+
+.link img {
+    width: 2.4rem;
+}
+
+.link span {
+    padding-left: 1.6rem;
+}
+
+.link a:hover {
+    opacity: 1;
+}
+
+.copyright {
+    font-family: "Montserrat Light";
+    font-size: 1.4rem;
+    color: #fff;
+    opacity: 0.5;
+    padding: 1rem 2.4rem;
+    line-height: 1;
+}
+
+.mobilemenus {
+    padding-left: 2.4rem;
+    margin-bottom: 2.4rem;
+    margin-top: 1.4rem;
+    cursor: pointer;
+}
+
+.mobilemenus img {
+    opacity: 0.5;
+    width: 2.4rem;
+}
+
+.mobilemenus:hover img {
+    opacity: 1;
 }

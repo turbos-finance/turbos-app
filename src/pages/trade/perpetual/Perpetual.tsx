@@ -1,22 +1,26 @@
 import styles from './Perpetual.module.css';
-import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import SwapVertIcon from '@mui/icons-material/SwapVert';
-interface CountryType {
-  code: string;
-  label: string;
-  phone: string;
-  suggested?: boolean;
-}
 
-const countries: readonly CountryType[] = [
-  { code: 'AD', label: 'Andorra', phone: '376' },
-  {
-    code: 'AE',
-    label: 'United Arab Emirates',
-    phone: '971',
-  },
-];
+import Slider from "rc-slider";
+
+import Trades from './components/trades/Trades';
+import longIcon from '../../../assets/images/long.png';
+import shortIcon from '../../../assets/images/short.png';
+import downIcon from '../../../assets/images/down.png';
+import upIcon from '../../../assets/images/up.png';
+import ethereumIcon from '../../../assets/images/ethereum.png';
+import swapvertIcon from '../../../assets/images/swapvert.png';
+import addIcon from '../../../assets/images/add.png';
+import shareIcon from '../../../assets/images/share.png';
+
+const leverageMarks = {
+  2: "2x",
+  5: "5x",
+  10: "10x",
+  15: "15x",
+  20: "20x",
+  25: "25x",
+  30: "30x",
+};
 
 function Perpetual() {
   return (
@@ -26,8 +30,14 @@ function Perpetual() {
         <div className={styles.leftcontainer}>
 
           <div className={styles.tabs}>
-            <div className={styles.active}>做多</div>
-            <div>做空</div>
+            <div className={styles.active}>
+              <img src={longIcon} alt="" />
+              <span>Long</span>
+            </div>
+            <div>
+              <img src={shortIcon} alt="" />
+              <span>Short</span>
+            </div>
           </div>
 
           <div className={styles.type}>
@@ -36,42 +46,58 @@ function Perpetual() {
             <div>Trigger</div>
           </div>
 
-          <div>
+          <div className={styles['section-con']}>
             <div className={styles.section}>
               <div className={styles.sectiontop}>
-                <div>Pay: 4.99 USD</div>
-                <div>Balance: 0.005</div>
+                <span>Pay</span>
+                <div>
+                  <span className={styles.balance}>Balance: 0.005</span>
+                  <span> | </span><span>MAX</span>
+                </div>
+              </div>
+              <div className={styles['section-percent']}>
+                <span>25%</span>
+                <span>50%</span>
+                <span>75%</span>
+                <span>100%</span>
               </div>
               <div className={styles.sectionbottom}>
                 <div className={styles.sectioninputcon} >
                   <input type="text" className={styles.sectioninput} placeholder="0.0" />
                 </div>
-                <div className={styles.sectionmax}>MAX</div>
                 <div className={styles.sectiontokens}>
+                  <img src={ethereumIcon} alt="" />
                   <span>USDC</span>
-                  <KeyboardArrowDownIcon sx={{ color: '#ffffff', fontSize: 30 }} />
+                  <img src={downIcon} className={styles.sectiontokensicon} alt="" />
                 </div>
               </div>
             </div>
+
             <div className={styles.swapvert}>
-              <SwapVertIcon sx={{ color: '#ffffff', fontSize: 30 }} />
+              {/* <SwapVertIcon sx={{ color: '#ffffff', fontSize: 30 }} /> */}
+              <div className={styles.swapvertcon}><img src={swapvertIcon} alt="" /></div>
             </div>
+
             <div className={styles.section}>
               <div className={styles.sectiontop}>
-                <div>Receive: 4.99 USD</div>
-                <div>Balance: 0.005</div>
+                <span>Long</span>
+                <div>
+                  {/* <span className={styles.balance}>Balance: 0.005</span>
+                  <span> | </span><span>MAX</span> */}
+                </div>
               </div>
               <div className={styles.sectionbottom}>
                 <div className={styles.sectioninputcon} >
                   <input type="text" className={styles.sectioninput} placeholder="0.0" />
                 </div>
                 <div className={styles.sectiontokens}>
+                  <img src={ethereumIcon} alt="" />
                   <span>USDC</span>
-                  <KeyboardArrowDownIcon sx={{ color: '#ffffff', fontSize: 30, }} />
+                  <img src={downIcon} className={styles.sectiontokensicon} alt="" />
                 </div>
               </div>
             </div>
-          
+
           </div>
 
           <div className={styles.line}>
@@ -79,8 +105,22 @@ function Perpetual() {
             <p className={styles.lright}></p>
           </div>
 
-          <div>
-
+          <div
+          // className={cx("Exchange-leverage-slider", "App-slider", {
+          //   positive: isLong,
+          //   negative: isShort,
+          // })}
+          >
+            <Slider
+              min={1.1}
+              max={30.5}
+              step={0.1}
+              marks={leverageMarks}
+            // handle={leverageSliderHandle}
+            // onChange={(value) => setLeverageOption(value)}
+            // value={leverageOption}
+            // defaultValue={leverageOption}
+            />
           </div>
 
           <div className={styles.line}>
@@ -88,67 +128,71 @@ function Perpetual() {
             <p className={styles.lright}>USD</p>
           </div>
           <div className={styles.line}>
-            <p className={styles.lleft}>杠杆</p>
+            <p className={styles.lleft}>Leverage</p>
             <p className={styles.lright}>$5.45</p>
           </div>
           <div className={styles.line}>
-            <p className={styles.lleft}>入场价格</p>
+            <p className={styles.lleft}>Entry Price</p>
             <p className={styles.lright}>-</p>
           </div>
           <div className={styles.line}>
-            <p className={styles.lleft}>可用的流动资金</p>
+            <p className={styles.lleft}>Liq. Price</p>
             <p className={styles.lright}>$15.45</p>
           </div>
           <div className={styles.line}>
-            <p className={styles.lleft}>费用</p>
+            <p className={styles.lleft}>Fees</p>
             <p className={styles.lright}>-</p>
           </div>
           <div className={styles.btn}>
-            Buy
+            Connect Wallet
           </div>
         </div>
 
-        <div className={styles.leftcontainer}>
-          <div className={styles.title}>做多AVAX</div>
-          <div className={styles.line}>
-            <p className={styles.lleft}>入场价格</p>
-            <p className={styles.lright}>$5.45</p>
-          </div>
-          <div className={styles.line}>
-            <p className={styles.lleft}>退出价格</p>
-            <p className={styles.lright}>$5.45</p>
-          </div>
-          <div className={styles.line}>
-            <p className={styles.lleft}>借款费用</p>
-            <p className={styles.lright}>$5.45</p>
-          </div>
-          <div className={styles.line}>
-            <p className={styles.lleft}>可用的流动资金</p>
-            <p className={styles.lright}>$5.45</p>
+        <div className={styles.container}>
+          <div className={styles.title}>Long ETH</div>
+          <div className={styles.content}>
+            <div className={styles.line}>
+              <p className={styles.lleft}>Entry Price</p>
+              <p className={styles.lright}>$5.45</p>
+            </div>
+            <div className={styles.line}>
+              <p className={styles.lleft}>Exit Price</p>
+              <p className={styles.lright}>$1,146.22</p>
+            </div>
+            <div className={styles.line}>
+              <p className={styles.lleft}>Borrow Fee</p>
+              <p className={styles.lright}>0.0001% / 1h</p>
+            </div>
+            <div className={styles.line}>
+              <p className={styles.lleft}>Available Liquidity</p>
+              <p className={styles.lright}>$107,695.16</p>
+            </div>
           </div>
         </div>
       </div>
 
 
       <div className={styles.right}>
-
-        <div className={styles.leftcontainer + ' ' + styles.rightcontainer}>
-          <div className={styles.tokenu}>ETH / USD</div>
-          <div>
-            <div>1,250.91</div>
-            <div>$1,250.91</div>
+        <div className={styles.rightcontainer}>
+          <div className={styles.tokenselect}>
+            <span>ETH / USD</span>
+            <img src={downIcon} className={styles.sectiontokensicon} alt="" />
           </div>
-          <div>
-            <div>1,250.91</div>
-            <div>+6.9%</div>
+          <div className={styles.pricelist}>
+            <div className={styles.value1}>1,250.91</div>
+            <div className={styles.value2}>$1,250.91</div>
           </div>
-          <div>
-            <div>1,250.91</div>
-            <div>$1,250.91</div>
+          <div className={styles.pricelist}>
+            <div className={styles.value2}>24h Change</div>
+            <div className={styles.value1} style={{ color: '#0ecc83' }}>+6.9%</div>
           </div>
-          <div>
-            <div>1,250.91</div>
-            <div>$1,250.91</div>
+          <div className={styles.pricelist}>
+            <div className={styles.value2}>24h High</div>
+            <div className={styles.value1}>$1,250.91</div>
+          </div>
+          <div className={styles.pricelist}>
+            <div className={styles.value2}>24h Low</div>
+            <div className={styles.value1}>$1,250.91</div>
           </div>
         </div>
 
@@ -156,20 +200,193 @@ function Perpetual() {
 
         </div>
 
+
         <div>
-          <div>
-            <div>Position</div>
-            <div>Orders</div>
-            <div>Trades</div>
-          </div>
-          <div>
-            Chart position
+          <div className={styles.ordertab}>
+            <span className={styles.active}>Position(2)</span>
+            <span>Orders</span>
+            <span>Trades</span>
           </div>
         </div>
 
-        <div className={styles.leftcontainer}>
 
-        </div>
+        <table width="100%" className={styles.table}>
+          <thead>
+            <tr>
+              <th align='left'>Position</th>
+              <th align='left'>Total</th>
+              <th align='left'>Margin</th>
+              <th align='left'>Entry Price</th>
+              <th align='left'>Mark Price</th>
+              <th align='left'>Liq. Price</th>
+              <th align='left'>PnL/PnL (%)</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td align='left'>
+                <div className={styles['table-position']}>
+                  <img src={ethereumIcon} alt="" height="24" />
+                  <span>BTC</span>
+                </div>
+                <div className={styles['table-position']}>
+                  10.0x&nbsp;&nbsp;<span className={styles.red}>Short</span>
+                </div>
+              </td>
+              <td align='left'>
+                $200.00
+              </td>
+              <td align='left'>
+                <div className={styles['table-position']}>
+                  <span>$20.00</span>
+                  <img src={addIcon} alt="" height="24" className={styles.icon} />
+                </div>
+              </td>
+              <td align='left'>
+                $200.00
+              </td>
+              <td align='left'>
+                $200.00
+              </td>
+              <td align='left'>
+                $200.00
+              </td>
+              <td align='left'>
+                <span className={styles.red}>
+                  +10.0
+                </span>
+                <div className={styles['table-position']}>
+                  <span className={styles.red}>-1.16%</span>
+                  <img src={shareIcon} alt="" height="24" className={styles.icon} />
+                </div>
+              </td>
+              <td>
+                <button className={styles['table-btn']}>TP/SL</button>
+                <button className={styles['table-btn-green']}>Close</button>
+              </td>
+            </tr>
+            <tr>
+              <td align='left'>
+                <div className={styles['table-position']}>
+                  <img src={ethereumIcon} alt="" height="24" />
+                  <span>BTC</span>
+                </div>
+                <div className={styles['table-position']}>
+                  10.0x&nbsp;&nbsp;<span className={styles.red}>Short</span>
+                </div>
+              </td>
+              <td align='left'>
+                $200.00
+              </td>
+              <td align='left'>
+                <div className={styles['table-position']}>
+                  <span>$20.00</span>
+                  <img src={addIcon} alt="" height="24" className={styles.icon} />
+                </div>
+              </td>
+              <td align='left'>
+                $200.00
+              </td>
+              <td align='left'>
+                $200.00
+              </td>
+              <td align='left'>
+                $200.00
+              </td>
+              <td align='left'>
+                <span className={styles.red}>
+                  +10.0
+                </span>
+                <div className={styles['table-position']}>
+                  <span className={styles.red}>-1.16%</span>
+                  <img src={shareIcon} alt="" height="24" className={styles.icon} />
+                </div>
+              </td>
+              <td>
+                <button className={styles['table-btn']}>TP/SL</button>
+                <button className={styles['table-btn-green']}>Close</button>
+              </td>
+            </tr>
+            <tr>
+              <td align='left'>
+                <div className={styles['table-position']}>
+                  <img src={ethereumIcon} alt="" height="24" />
+                  <span>BTC</span>
+                </div>
+                <div className={styles['table-position']}>
+                  10.0x&nbsp;&nbsp;<span className={styles.red}>Short</span>
+                </div>
+              </td>
+              <td align='left'>
+                $200.00
+              </td>
+              <td align='left'>
+                <div className={styles['table-position']}>
+                  <span>$20.00</span>
+                  <img src={addIcon} alt="" height="24" className={styles.icon} />
+                </div>
+              </td>
+              <td align='left'>
+                $200.00
+              </td>
+              <td align='left'>
+                $200.00
+              </td>
+              <td align='left'>
+                $200.00
+              </td>
+              <td align='left'>
+                <span className={styles.red}>
+                  +10.0
+                </span>
+                <div className={styles['table-position']}>
+                  <span className={styles.red}>-1.16%</span>
+                  <img src={shareIcon} alt="" height="24" className={styles.icon} />
+                </div>
+              </td>
+              <td>
+                <button className={styles['table-btn']}>TP/SL</button>
+                <button className={styles['table-btn-red']}>Close</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <table width="100%" className={styles.table}>
+          <thead>
+            <tr>
+              <th align='left'>Type</th>
+              <th align='left'>Order</th>
+              <th align='left'>Trigger Price</th>
+              <th align='left'>Mark Pirce</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td align='left'>
+                Limit
+              </td>
+              <td align='left'>
+                Increase BTC Long by $197.14
+              </td>
+              <td align='left'>
+                {`< 16,633.00`}
+              </td>
+              <td align='left'>
+                16,633.00
+              </td>
+              <td>
+                <button className={styles['table-btn']}>TP/SL</button>
+                <button className={styles['table-btn-red']}>Close</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+
+        <Trades />
 
       </div>
 
