@@ -48,7 +48,7 @@ function BuySell() {
       <div className={styles.left}>
         <div className={styles.leftcontainer}>
 
-          <div className={selectToken ? styles.operate : ''}>
+          <div className={selectToken ? 'section-operate' : ''}>
 
             <div className="tabs">
               <div className={!!active ? '' : "active"} onClick={() => { toggleActive(0) }}>

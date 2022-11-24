@@ -85,10 +85,10 @@ function Perpetual() {
   );
 
   return (
-    <div className={styles.perpetual}>
-      <div className={styles.left}>
-        <div className={styles.leftcontainer}>
-          <div className={selectToken ? styles.operate : ''}>
+    <div className="main">
+      <div className="main-left">
+        <div className='main-left-container'>
+          <div className={selectToken ? 'section-operate' : ''}>
 
             <div className='tabs'>
               <div className={!!trade ? '' : 'active'} onClick={() => handleTrade(0)}>
@@ -111,7 +111,7 @@ function Perpetual() {
 
             {
               type !== 2 ?
-                <div className={styles['section-con']}>
+                <div className='section-con'>
                   <div className="section">
                     <div className="sectiontop">
                       <span>Pay</span>
@@ -139,9 +139,8 @@ function Perpetual() {
                     </div>
                   </div>
 
-                  <div className={styles.swapvert}>
-                    {/* <SwapVertIcon sx={{ color: '#ffffff', fontSize: 30 }} /> */}
-                    <div className={styles.swapvertcon}><img src={swapvertIcon} alt="" /></div>
+                  <div className="swapvert">
+                    <div className={trade === 1 ? "swapvertcon swapvertcon-red" : 'swapvertcon'}><img src={swapvertIcon} alt="" /></div>
                   </div>
 
                   <div className="section">
@@ -232,7 +231,7 @@ function Perpetual() {
               <p className="ll">Fees</p>
               <p className="lr">-</p>
             </div>
-            <div className={styles.btn}>
+            <div className="btn">
               Connect Wallet
             </div>
           </div>
@@ -263,9 +262,8 @@ function Perpetual() {
         </div>
       </div>
 
-
-      <div className={styles.right}>
-        <div className={styles.rightcontainer}>
+      <div className="main-right">
+        <div className="main-right-container">
 
           <Dropdown overlay={menu} trigger={['click']} overlayClassName={'overlay-dropdown menus-dropdown'} >
             <div className={styles.tokenselect}>

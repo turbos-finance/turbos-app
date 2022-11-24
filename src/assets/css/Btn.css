@@ -1,0 +1,44 @@
+/* btn css */
+.btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 48px;
+    font-size: 16px;
+    background-color: #63CCA9;
+    color: #fff;
+    font-family: "Montserrat Regular";
+    margin-top: 2.4rem;
+    box-sizing: border-box;
+    cursor: pointer;
+}
+
+.btn:hover {
+    background-color: #47AF8D;
+}
+
+.btn:active {
+    background-color: rgb(47, 96, 83, 1);
+}
+
+.btn[disabled] {
+    background: #63CCA9;
+    opacity: .5;
+}
+
+.btn-red {
+    background: #F04438;
+}
+
+.btn-red:hover {
+    background: rgb(202, 29, 29, 1);
+}
+
+.btn-red:active {
+    background: rgb(108, 32, 34, 1);
+}
+
+.btn-red[disabled] {
+    background: #F04438;
+    opacity: .5;
+}

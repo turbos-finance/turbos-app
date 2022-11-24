@@ -71,13 +71,6 @@
     background-color: rgb(47, 96, 83, 1);
 }
 
-.max {
-    cursor: pointer;
-}
-
-.max:hover {
-    opacity: 1;
-}
 
 .swapvert {
     height: 10px;
