@@ -14,6 +14,12 @@
   padding: 16px;
   box-sizing: border-box;
   margin-bottom: 16px;
+  position: relative;
+  /* visibility: hidden; */
+}
+
+.operate {
+  visibility: hidden
 }
 
 .container {
@@ -118,8 +124,8 @@
 }
 
 .tabs div:hover {
-  background-color: #63CCA9;
-  opacity: 1;
+  background-color: rgb(99, 204, 169, .2);
+  opacity: .8;
 }
 
 .tabs div.active {
@@ -426,6 +432,7 @@
 .table-btn:active {
   background: rgba(24, 28, 35, 1);
 }
+
 .table-btn-green {
   width: 80px;
   height: 32px;
@@ -446,7 +453,7 @@
 }
 
 .table-btn-green:active {
-  background: rgb(71, 175, 141,.5);
+  background: rgb(71, 175, 141, .5);
 }
 
 .table-btn-red {
@@ -479,6 +486,102 @@
 
 .green {
   color: #63CCA9;
+}
+
+
+.token-con {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  top: 0;
+  left: 0;
+  box-sizing: border-box;
+}
+
+.token-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  margin-top: 20px;
+  padding: 0 24px;
+}
+
+.token-top-title {
+  font-size: 2.4rem;
+  color: #FFFFFF;
+  line-height: 1;
+  font-family: "Montserrat Regular";
+}
+
+.token-top-close {
+  opacity: .5;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+
+.token-top-close:hover {
+  opacity: 1;
+}
+
+.token-search {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  height: 48px;
+  padding: 0 16px;
+  margin: 0 24px 10px;
+}
+
+.token-input {
+  flex: 1;
+  border: 0 none;
+  background-color: transparent;
+  font-size: 16px;
+  font-family: "Montserrat Regular";
+  color: #FFFFFF;
+  line-height: 36px;
+  outline: none;
+}
+
+.token-list {
+  height: calc(100% - 58px - 68px);
+  overflow: auto;
+}
+
+.token-list li {
+  display: flex;
+  align-items: center;
+  padding: 16px 20px;
+  cursor: pointer;
+}
+
+.token-list li:hover {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.token-name {
+  flex: 1;
+  padding: 0 16px;
+}
+
+.token-value1 {
+  font-size: 16px;
+  font-family: "Montserrat Regular";
+  color: #FFFFFF;
+  line-height: 22px;
+}
+
+.token-value2 {
+  font-size: 14px;
+  font-family: "Montserrat Light";
+  color: #FFFFFF;
+  opacity: .5;
+  line-height: 20px;
 }
 
 @media screen and (max-width: 760px) {

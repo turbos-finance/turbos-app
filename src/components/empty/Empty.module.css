@@ -1,0 +1,14 @@
+.empty {
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-self: center;
+    flex-direction: column;
+}
+
+.empty span {
+    font-size: 14px;
+    font-family: 'Montserrat Light';
+    color: #FFFFFF;
+    opacity: .5;
+}

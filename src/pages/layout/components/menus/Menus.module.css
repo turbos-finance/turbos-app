@@ -1,3 +1,15 @@
+.left {
+    width: 180px;
+    height: 100vh;
+    background: linear-gradient(180deg, rgba(19, 26, 36, 0.2) 0%, rgba(0, 0, 0, 0.9) 100%);
+    overflow: hidden;
+    position: fixed;
+    z-index: 9;
+    left: 0;
+    top: 0;
+}
+
+
 .leftcon {
     display: flex;
     justify-content: space-between;
@@ -13,7 +25,6 @@
     height: 3.2rem;
 }
 
-.nav {}
 
 .nav a {
     display: block;
@@ -44,7 +55,6 @@
     opacity: 1;
 }
 
-.link {}
 
 .link a {
     padding: 1rem 2.4rem;
@@ -94,4 +104,20 @@
 
 .mobilemenus:hover img {
     opacity: 1;
+}
+
+.lefthide {
+    width: 72px;
+}
+
+.lefthide span {
+    display: none;
+}
+
+.lefthide .copyright {
+    display: none;
+}
+
+.lefthide .logo {
+    text-align: center;
 }

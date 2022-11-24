@@ -13,20 +13,20 @@ function Router() {
     <BrowserRouter>
       <Routes>
 
-        <Route path="/" element={<Layout />}>
-          <Route path="" element={<Navigate to="/trade/perpetual" />} />
+        <Route path="/" element={<Layout />} >
+          <Route path="" element={<Navigate to="/trade/perpetual" />} id="home" />
 
-          <Route path="trade" element={<Trade />} >
-            <Route path="" element={<Navigate to="/trade/perpetual" />} />
-            <Route path="perpetual" element={<Perpetual />} />
-            <Route path="swap" element={<Swap />} />
+          <Route path="trade" element={<Trade />} id="trade">
+            <Route path="" element={<Navigate to="/trade/perpetual" />} id="trade" />
+            <Route path="perpetual" element={<Perpetual />} id="perpetual" />
+            <Route path="swap" element={<Swap />} id="swap" />
           </Route>
 
 
           <Route path="earn" element={<Earn />}>
-            <Route path="" element={<Navigate to="/earn/buy-sell" />} />
-            <Route path="buy-sell" element={<BuySell />}></Route>
-            <Route path="liquidity" element={<Liquidity />}></Route>
+            <Route path="" element={<Navigate to="/earn/buy-sell" />} id="earn" />
+            <Route path="buy-sell" element={<BuySell />} id="buy-sell"></Route>
+            <Route path="liquidity" element={<Liquidity />} id="liquidity"></Route>
           </Route>
 
         </Route>

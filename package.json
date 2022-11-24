@@ -15,6 +15,8 @@
     "@types/react": "^18.0.24",
     "@types/react-dom": "^18.0.8",
     "pixi.js": "^7.0.2",
+    "rc-dropdown": "^4.0.1",
+    "rc-menu": "^9.8.0",
     "rc-slider": "^10.1.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

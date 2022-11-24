@@ -1,60 +1,92 @@
-import {
-  Button,
-  Dialog,
-  DialogContent,
-  DialogTitle
-} from '@mui/material';
-import { style } from '@mui/system';
 import { useState } from 'react';
-import { useCopyToClipboard, createBreakpoint } from "react-use";
-import { useSuiWallet } from "../../contexts/useSuiWallet";
+import { useCopyToClipboard } from "react-use";
+import { useSuiWallet, WalletType } from "../../contexts/useSuiWallet";
 import walletIcon from '../../assets/images/wallet.png'
-
+import suietIcon from '../../assets/images/suiet.webp'
+import suiIcon from '../../assets/images/ic_sui_40.svg'
 import styles from './WalletButton.module.css';
+import TurbosDialog from '../UI/Dialog/Dialog';
+import downIcon from '../../assets/images/down.png';
+import upIcon from '../../assets/images/up.png';
+import copyIcon from '../../assets/images/copy.png';
+import explorerIcon from '../../assets/images/explorer.png'
+import disconnectIcon from '../../assets/images/disconnect.png'
+import walleticonIcon from '../../assets/images/walleticon.png';
+
+import Dropdown from 'rc-dropdown';
+import Menu, { Item as MenuItem } from 'rc-menu';
+import 'rc-dropdown/assets/index.css';
 
 function SuiWalletButton() {
   const { account, connected, connecting, connect, disconnect } = useSuiWallet();
-
+  const [, copyToClipboard] = useCopyToClipboard();
   const [open, setOpen] = useState(false);
+  const [visible, setVisible] = useState(false);
 
   const handleOpen = () => {
     setOpen(!open);
   }
 
-  const handleConnect = async () => {
-    connect('suiWallet');
+  const handleConnect = async (value: WalletType) => {
+    connect(value);
     handleOpen();
   }
+
+  const visibleChange = (visible: boolean) => {
+    setVisible(visible)
+  }
+
+  const menu = (
+    <Menu className={styles['overlay-drapdown-ul']}>
+      <MenuItem >
+        <div className={styles['overlay-drapdown-li']} onClick={() => { account && copyToClipboard(account); }}>
+          <img src={copyIcon} alt="" height={24} />
+          <span>Copy Address</span>
+        </div>
+      </MenuItem>
+      <MenuItem>
+        <a href={`https://explorer.sui.io/addresses/${account}`} rel="noreferrer" target='_blank' className={styles['overlay-drapdown-li']}>
+          <img src={explorerIcon} alt="" height={24} />
+          <span>View in Explorer</span>
+        </a>
+      </MenuItem>
+      <MenuItem>
+        <div className={styles['overlay-drapdown-li']} onClick={disconnect}>
+          <img src={disconnectIcon} alt="" height={24} />
+          <span className={styles.red}>Disconnect</span>
+        </div>
+      </MenuItem>
+    </Menu>
+  );
 
   return (
     <>
       {
-        !connected && !connecting ?
+        !connected && !connecting && !account ?
           <div onClick={handleOpen} className={styles.wallet}>
             <img src={walletIcon} alt="" />
             <span>Connect Wallet</span>
           </div> :
-          <div onClick={disconnect} className={styles.wallet}>
-            disconnect Wallet
-          </div>
+          <Dropdown overlay={menu} trigger={['click']} overlayClassName={styles['overlay-drapdown']} onVisibleChange={visibleChange}>
+            <div className={styles.wallet}>
+              <img src={walleticonIcon} alt="" style={{ opacity: 1 }} />
+              <span>{`${account?.slice(0, 5)}...${account?.slice(account.length - 4, account.length)}`}</span>
+              <img src={visible ? upIcon : downIcon} alt="" style={{ marginLeft: '5px' }} />
+            </div>
+          </Dropdown>
       }
 
-      <Dialog onClose={handleOpen} open={open}>
-        <DialogTitle>Connect a Wallet</DialogTitle>
-        <DialogContent>
-          <div style={{ border: "1px solid #cccccc", height: '48px', lineHeight: '48px', borderRadius: '24px', textAlign: "center", cursor: "pointer" }}
-            onClick={handleConnect}
-          >
-            Sui Wallet
-          </div>
-          <div style={{ border: "1px solid #cccccc", height: '48px', lineHeight: '48px', borderRadius: '24px', textAlign: "center", cursor: "pointer" }}
-            onClick={handleConnect}
-          >
-            Sui Wallet
-          </div>
-        </DialogContent>
+      <TurbosDialog onClose={handleOpen} open={open} title="Connect a Wallet">
+        <div onClick={() => { handleConnect('suiWallet') }} className={styles.walletlist}>
+          <span>Sui Wallet</span>
+          <img src={suiIcon} alt="" />
+        </div>
+        <div onClick={() => { handleConnect('suietWallet') }} className={styles.walletlist}>
+          <span>Suiet</span>
+          <img src={suietIcon} alt="" />
+        </div>
+      </TurbosDialog>
 
-      </Dialog>
     </>
   )
 }

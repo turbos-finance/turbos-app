@@ -1,0 +1,28 @@
+.dialog-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+}
+
+.dialog-top-title {
+    font-size: 24px;
+    line-height: 1;
+    font-family: "Montserrat Regular";
+    color: #FFFFFF;
+}
+
+.dialog-top-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.dialog-top-close img {
+    opacity: .5;
+}
+
+.dialog-top-close:hover img {
+    opacity: 1;
+}

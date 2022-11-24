@@ -3,15 +3,9 @@
   padding-left: 180px;
 }
 
-.left {
-  width: 180px;
-  height: 100vh;
-  background: linear-gradient(180deg, rgba(19, 26, 36, 0.2) 0%, rgba(0, 0, 0, 0.9) 100%);
-  overflow: hidden;
-  position: fixed;
-  z-index: 9;
-  left: 0;
-  top: 0;
+.contenthide {
+  display: flex;
+  padding-left: 72px;
 }
 
 .right {
@@ -20,6 +14,7 @@
   /* height: 100vh; */
   /* overflow: auto; */
 }
+
 
 @media screen and (max-width: 1100px) {
   .left {
