@@ -1,5 +1,4 @@
 import { Link, Outlet, useLocation } from "react-router-dom";
-import styles from './Trade.module.css';
 
 type routerType = {
   url: string,
@@ -19,12 +18,13 @@ const routes: routerType[] = [
 
 function Trade() {
   const location = useLocation();
+
   return (
     <>
-      <div className={styles.menus}>
+      <div className="menus-tabs">
         {
           routes.map((item: routerType) => (
-            <Link to={item.url} key={item.url} className={location.pathname.indexOf(item.url) > -1 ? styles.active : ''}>{item.name}</Link>
+            <Link to={item.url} key={item.url} className={location.pathname.indexOf(item.url) > -1 ? "active" : ''}>{item.name}</Link>
           ))
         }
       </div>

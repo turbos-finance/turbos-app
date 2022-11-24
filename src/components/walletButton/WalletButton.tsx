@@ -37,21 +37,21 @@ function SuiWalletButton() {
   }
 
   const menu = (
-    <Menu className={styles['overlay-drapdown-ul']}>
+    <Menu className="overlay-dropdown-ul">
       <MenuItem >
-        <div className={styles['overlay-drapdown-li']} onClick={() => { account && copyToClipboard(account); }}>
+        <div className="overlay-dropdown-li" onClick={() => { account && copyToClipboard(account); }}>
           <img src={copyIcon} alt="" height={24} />
           <span>Copy Address</span>
         </div>
       </MenuItem>
       <MenuItem>
-        <a href={`https://explorer.sui.io/addresses/${account}`} rel="noreferrer" target='_blank' className={styles['overlay-drapdown-li']}>
+        <a href={`https://explorer.sui.io/addresses/${account}`} rel="noreferrer" target='_blank' className="overlay-dropdown-li">
           <img src={explorerIcon} alt="" height={24} />
           <span>View in Explorer</span>
         </a>
       </MenuItem>
       <MenuItem>
-        <div className={styles['overlay-drapdown-li']} onClick={disconnect}>
+        <div className="overlay-dropdown-li" onClick={disconnect}>
           <img src={disconnectIcon} alt="" height={24} />
           <span className={styles.red}>Disconnect</span>
         </div>
@@ -67,7 +67,7 @@ function SuiWalletButton() {
             <img src={walletIcon} alt="" />
             <span>Connect Wallet</span>
           </div> :
-          <Dropdown overlay={menu} trigger={['click']} overlayClassName={styles['overlay-drapdown']} onVisibleChange={visibleChange}>
+          <Dropdown overlay={menu} trigger={['click']} overlayClassName={'overlay-dropdown'} onVisibleChange={visibleChange}>
             <div className={styles.wallet}>
               <img src={walleticonIcon} alt="" style={{ opacity: 1 }} />
               <span>{`${account?.slice(0, 5)}...${account?.slice(account.length - 4, account.length)}`}</span>

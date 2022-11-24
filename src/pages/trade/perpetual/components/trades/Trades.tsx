@@ -3,39 +3,25 @@
 import Empty from '../../../../../components/empty/Empty';
 import styles from './Trades.module.css';
 
-function Trades() {
+type TradesProps = {
+  options: any[]
+}
+function Trades(props: TradesProps) {
+  const { options } = props;
+
   return (
     <>
-      <Empty></Empty>
-      <div className={styles.trades}>
-        <div className={styles['trades-time']}>18 Nov 2022, 1:12 AM</div>
-        <div className={styles['trades-info']}>Deposit 9.99 USD into AVAX Long</div>
-      </div>
-      <div className={styles.trades}>
-        <div className={styles['trades-time']}>18 Nov 2022, 1:12 AM</div>
-        <div className={styles['trades-info']}>Deposit 9.99 USD into AVAX Long</div>
-      </div>
-      <div className={styles.trades}>
-        <div className={styles['trades-time']}>18 Nov 2022, 1:12 AM</div>
-        <div className={styles['trades-info']}>Deposit 9.99 USD into AVAX Long</div>
-      </div>
-      <div className={styles.trades}>
-        <div className={styles['trades-time']}>18 Nov 2022, 1:12 AM</div>
-        <div className={styles['trades-info']}>Deposit 9.99 USD into AVAX Long</div>
-      </div>
-      <div className={styles.trades}>
-        <div className={styles['trades-time']}>18 Nov 2022, 1:12 AM</div>
-        <div className={styles['trades-info']}>Deposit 9.99 USD into AVAX Long</div>
-      </div>
-      <div className={styles.trades}>
-        <div className={styles['trades-time']}>18 Nov 2022, 1:12 AM</div>
-        <div className={styles['trades-info']}>Deposit 9.99 USD into AVAX Long</div>
-      </div>
-      <div className={styles.trades}>
-        <div className={styles['trades-time']}>18 Nov 2022, 1:12 AM</div>
-        <div className={styles['trades-info']}>Deposit 9.99 USD into AVAX Long</div>
-      </div>
+      {
+        options.length <= 0 ? <
+          Empty></Empty> :
+          options.map((item: any) => (
+            <div className={styles.trades}>
+              <div className={styles['trades-time']}>18 Nov 2022, 1:12 AM</div>
+              <div className={styles['trades-info']}>Deposit 9.99 USD into AVAX Long</div>
+            </div>
+          ))
 
+      }
     </>
   )
 }

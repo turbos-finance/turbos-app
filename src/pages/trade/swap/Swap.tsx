@@ -29,8 +29,8 @@ function Swap() {
       <div className={styles.left}>
         <div className={styles.leftcontainer}>
 
-          <div className={styles.type}>
-            <div className={styles.active}>Market</div>
+          <div className="type">
+            <div className="active">Market</div>
             <div>Limit</div>
           </div>
 
@@ -88,9 +88,9 @@ function Swap() {
 
           </div>
 
-          <div className={styles.line}>
-            <p className={styles.lleft}>Fees</p>
-            <p className={styles.lright}>-</p>
+          <div className="line">
+            <p className="ll">Fees</p>
+            <p className="lr">-</p>
           </div>
           <div className={styles.btn}>
             Connect Wallet
@@ -99,18 +99,18 @@ function Swap() {
 
         <div className={styles.container}>
           <div className={styles.title}>Swap</div>
-          <div className={styles.content}>
-            <div className={styles.line}>
-              <p className={styles.lleft}>Entry Price</p>
-              <p className={styles.lright}>$5.45</p>
+          <div className="line-con1">
+            <div className="line">
+              <p className="ll">Entry Price</p>
+              <p className="lr">$5.45</p>
             </div>
-            <div className={styles.line}>
-              <p className={styles.lleft}>Exit Price</p>
-              <p className={styles.lright}>$1,146.22</p>
+            <div className="line">
+              <p className="ll">Exit Price</p>
+              <p className="lr">$1,146.22</p>
             </div>
-            <div className={styles.line}>
-              <p className={styles.lleft}>Available Liquidity</p>
-              <p className={styles.lright}>$107,695.16</p>
+            <div className="line">
+              <p className="ll">Available Liquidity</p>
+              <p className="lr">$107,695.16</p>
             </div>
           </div>
         </div>
@@ -331,7 +331,7 @@ function Swap() {
         </table>
 
 
-        <Trades />
+        <Trades options={[]} />
 
       </div>
 

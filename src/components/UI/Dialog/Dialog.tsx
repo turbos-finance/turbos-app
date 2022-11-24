@@ -27,7 +27,7 @@ type TurbosDialogProps = {
   onClose: Function,
   open: boolean,
   children: React.ReactNode,
-  title: string
+  title: string,
 }
 
 
