@@ -33,7 +33,7 @@ const supplyTokens = [
 ];
 
 
-const supplyPerpetualTokens = [
+const supplyTradeTokens = [
     {
         icon: btcIcon,
         name: 'Bitcoin',
@@ -52,5 +52,5 @@ const supplyPerpetualTokens = [
 export {
     tokens,
     supplyTokens,
-    supplyPerpetualTokens
+    supplyTradeTokens
 };

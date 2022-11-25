@@ -8,9 +8,16 @@ import tlpIcon from '../../../assets/images/tlp.png';
 import { useState } from "react";
 import { supplyTokens } from '../../../config/tokens';
 import SelectToken, { SelectTokenOption } from "../../../components/selectToken/SelectToken";
+import { useSuiWallet } from "../../../contexts/useSuiWallet";
 
 function BuySell() {
   const balance = 100;
+
+  const {
+    connecting,
+    connected,
+    account
+  } = useSuiWallet()
 
   const [active, setActive] = useState(0); // 0:buy; 1:sell;
   const [selectToken, setSelectToken] = useState(false);
@@ -41,6 +48,13 @@ function BuySell() {
       balance: e.target.value
     });
   }
+
+  const btnText = (() => {
+    if (!connecting && !connected && !account) {
+      return 'Connect Wallet';
+    }
+    return 'Enter a amount'
+  })();
 
   return (
     <div className={styles.perpetual}>
@@ -104,7 +118,7 @@ function BuySell() {
             </div>
 
             <div className={styles.btn}>
-              Connect Wallet
+              {btnText}
             </div>
           </div>
 

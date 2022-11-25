@@ -1,7 +1,7 @@
-import { createChart, IChartApi, ISeriesApi } from "krasulya-lightweight-charts";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { createChart, IChartApi, ISeriesApi, TimeRange } from "krasulya-lightweight-charts";
+import { useCallback, useEffect, useState } from "react";
 import { format as formatDateFn } from "date-fns";
-import { getChainlinkChartPricesFromGraph } from "../../../../../utils/subgraph";
+import { CHART_PERIODS, getChainlinkChartPricesFromGraph } from "../../../../../utils/subgraph";
 
 const times = [
   { label: '5m', id: '5' },
@@ -97,7 +97,7 @@ function Chart() {
 
 
   const [pricedata, setPricedata] = useState<any[]>([]);
-  const [chartTime, setChartTime] = useState('1d');
+  const [chartTime, setChartTime] = useState('5m');
   const [chartToken, setChartToken] = useState('BTC');
   const [currentChart, setCurrentChart] = useState<undefined | IChartApi>();
   const [currentSeries, setCurrentSeries] = useState<undefined | ISeriesApi<"Candlestick">>();
@@ -125,15 +125,43 @@ function Chart() {
     [setHoveredCandlestick]
   );
 
+  const scaleChart = useCallback(() => {
+    if (currentChart) {
+      const from = Date.now() / 1000 - (7 * 24 * CHART_PERIODS[chartTime]) / 2 + timezoneOffset;
+      const to = Date.now() / 1000 + timezoneOffset;
+      currentChart.timeScale().setVisibleRange({ from, to } as TimeRange);
+    }
+  }, [currentChart, chartTime]);
 
+
+  useEffect(() => {
+    if (!currentChart || !chartNode) {
+      return;
+    }
+    const resizeChart = () => {
+      currentChart.resize(chartNode.offsetWidth, chartNode.offsetHeight);
+    };
+    window.addEventListener("resize", resizeChart);
+    return () => window.removeEventListener("resize", resizeChart);
+  }, [currentChart]);
+
+  useEffect(() => {
+    if (currentSeries && pricedata && pricedata.length) {
+      currentSeries.setData(pricedata);
+      scaleChart();
+    }
+  }, [pricedata, currentSeries]);
+
+  // loading data
   useEffect(() => {
     (async () => {
       setPricedata(await getChainlinkChartPricesFromGraph(chartToken, chartTime) || []);
     })();
   }, [chartToken, chartTime])
 
+  // create cart
   useEffect(() => {
-    if (!node || !chartNode || !pricedata || pricedata.length <= 0) {
+    if (!node || !chartNode || !pricedata || pricedata.length <= 0 || currentChart) {
       return;
     }
     const chart = createChart(
@@ -144,11 +172,8 @@ function Chart() {
 
     const series = chart.addCandlestickSeries(getSeriesOptions());
 
-    series.setData(pricedata);
-
     setCurrentChart(chart);
     setCurrentSeries(series);
-
 
     setHoveredCandlestick(pricedata[pricedata.length - 1]);
   }, [node, chartNode, pricedata]);
@@ -157,7 +182,12 @@ function Chart() {
     <div className="chart" ref={chartRef}>
       <div className='chart-con'>
         <div className='chart-tabs'>
-          {times.map((item: any) => <span key={item.label} className={chartTime === item.label ? 'active' : ''}>{item.label}</span>)}
+          {times.map((item: any) => <span
+            key={item.label}
+            className={chartTime === item.label ? 'active' : ''}
+            onClick={() => { setChartTime(item.label) }}>
+            {item.label}
+          </span>)}
         </div>
         {
           hoveredCandlestick ?

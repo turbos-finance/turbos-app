@@ -13,8 +13,8 @@ import addIcon from '../../../assets/images/add.png';
 import shareIcon from '../../../assets/images/share.png';
 import { useRef, useState } from 'react';
 import Empty from '../../../components/empty/Empty';
-import SelectToken from '../../../components/selectToken/SelectToken';
-import { supplyTokens, supplyPerpetualTokens } from '../../../config/tokens';
+import SelectToken, { SelectTokenOption } from '../../../components/selectToken/SelectToken';
+import { supplyTokens, supplyTradeTokens } from '../../../config/tokens';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import Dropdown from "rc-dropdown";
@@ -22,9 +22,12 @@ import Menu, { Item as MenuItem } from 'rc-menu';
 import TurbosDialog from '../../../components/UI/Dialog/Dialog';
 import TurbosTooltip from '../../../components/UI/Tooltip/Tooltip';
 import Chart from './components/chart/Chart';
+import { useSuiWallet } from '../../../contexts/useSuiWallet';
+import { Source } from 'graphql';
 
 const sliderGreen = ['rgb(99, 204, 169, .3)', 'rgb(99, 204, 169, 1)'];
 const sliderRed = ['rgba(240, 68, 56, .3)', 'rgba(240, 68, 56, 1)'];
+
 const leverageMarks = {
   2: "2x",
   5: "5x",
@@ -38,30 +41,44 @@ const leverageMarks = {
 };
 const percents = [0.25, 0.5, 0.75, 1];
 
-
-type ParamsType = {
-  pay: string
+type FromToTokenType = {
+  balance: string,
+  icon: string,
+  symbol: string
 }
 
 function Perpetual() {
-
   const balance = 100;
+
+  const {
+    connecting,
+    connected,
+    account
+  } = useSuiWallet();
+
   const [trade, setTrade] = useState(0); // 0: long; 1: short
   const [type, setType] = useState(0); // 0: market; 1: limit; 2: Trigger
   const [record, setRecord] = useState(0); // 0: posotion ; 1: orders ; 2: trades
   const [selectToken, setSelectToken] = useState(false);
+  const [selectTokenSource, setSelectTokenSource] = useState(0); // 0: from token; 1: to token
   const [percent, setPercent] = useState(0);
   const [leverage, setLeverage] = useState(1.5);
   const [showLeverage, setShowLeverage] = useState(true);
-  const [fromToken, setFromToken] = useState({});
-  const [toToken, setToToken] = useState({});
+  const [fromToken, setFromToken] = useState<FromToTokenType>({ balance: '', icon: suiIcon, symbol: 'SUI' });
+  const [toToken, setToToken] = useState<FromToTokenType>({ balance: '', icon: ethereumIcon, symbol: 'ETH' });
 
-  const [params, setParams] = useState<ParamsType>({
-    pay: ''
-  });
+  const swapvert = () => {
+    setFromToken({
+      ...toToken,
+    });
+    setToToken({
+      ...fromToken,
+    });
+  }
 
-  const toggleSelectToken = () => {
+  const toggleSelectToken = (source: number) => {
     setSelectToken(!selectToken);
+    setSelectTokenSource(source);
   }
 
   const handleType = (type: number) => {
@@ -72,15 +89,31 @@ function Perpetual() {
     setTrade(type);
   }
 
-  const changeParams = (k: keyof ParamsType, value: string) => {
-    const newParams = { ...params };
+  const changefromToken = (k: keyof FromToTokenType, value: string) => {
+    const newParams = { ...fromToken };
     newParams[k] = value;
-    setParams(newParams)
+    setFromToken(newParams)
   }
 
   const handlePercent = (percent: number) => {
-    changeParams('pay', (balance * percent).toString());
+    changefromToken('balance', (balance * percent).toString());
     setPercent(percent);
+  }
+
+  const changeSelectToken = (result: SelectTokenOption) => {
+    if (selectTokenSource) {
+      setToToken({
+        ...toToken,
+        icon: result.icon,
+        symbol: result.symbol
+      });
+    } else {
+      setFromToken({
+        ...fromToken,
+        icon: result.icon,
+        symbol: result.symbol
+      })
+    }
   }
 
   const recordTitle = ['Positions', 'Orders', 'Trades'];
@@ -99,6 +132,14 @@ function Perpetual() {
       </MenuItem>
     </Menu>
   );
+
+  const btnText = (() => {
+    if (!connecting && !connected && !account) {
+      return 'Connect Wallet';
+    }
+    return 'Enter a amount'
+  })();
+
 
   return (
     <div className="main">
@@ -120,144 +161,147 @@ function Perpetual() {
             <div className="type">
               {
                 typeList.map((item: string, index: number) =>
-                  <div className={index === type ? "active" : ''} onClick={() => handleType(index)}>{item}</div>
+                  <div key={index} className={index === type ? "active" : ''} onClick={() => handleType(index)}>{item}</div>
                 )
               }
             </div>
 
             {
               type !== 2 ?
-                <div className='section-con'>
-                  <div className="section">
-                    <div className="sectiontop">
-                      <span>Pay</span>
-                      <div>
-                        <span className="section-balance">Balance: {balance}</span>
-                        <span> | </span><span className='section-max' onClick={() => { handlePercent(1) }}>MAX</span>
+                <>
+                  <div className='section-con'>
+                    <div className="section">
+                      <div className="sectiontop">
+                        <span>Pay</span>
+                        <div>
+                          <span className="section-balance">Balance: {balance}</span>
+                          <span> | </span><span className='section-max' onClick={() => { handlePercent(1) }}>MAX</span>
+                        </div>
+                      </div>
+                      <div className="section-percent">
+                        {
+                          percents.map((item: number) =>
+                            <span key={item} className={percent === item ? 'active' : ''} onClick={() => { handlePercent(item) }}>{item * 100}%</span>
+                          )
+                        }
+                      </div>
+                      <div className="sectionbottom">
+                        <div className="sectioninputcon" >
+                          <input type="text" value={fromToken.balance} onChange={(e: any) => changefromToken('balance', e.target.value)} className="sectioninput" placeholder="0.0" />
+                        </div>
+                        <div className="sectiontokens" onClick={() => { toggleSelectToken(0) }}>
+                          <img src={fromToken.icon} alt="" />
+                          <span>{fromToken.symbol}</span>
+                          <img src={downIcon} className="sectiontokensicon" alt="" />
+                        </div>
                       </div>
                     </div>
-                    <div className="section-percent">
+
+                    <div className="swapvert" onClick={swapvert}>
+                      <div className={trade === 1 ? "swapvertcon swapvertcon-red" : 'swapvertcon'}><img src={swapvertIcon} alt="" /></div>
+                    </div>
+
+                    <div className="section">
+                      <div className="sectiontop">
+                        <span>{trade === 1 ? 'Short' : 'Long'}</span>
+                        <div>
+                          {/* <span className="balance">Balance: 0.005</span>
+                <span> | </span><span>MAX</span> */}
+                        </div>
+                      </div>
+                      <div className="sectionbottom">
+                        <div className="sectioninputcon" >
+                          <input type="text" value={toToken.balance} className="sectioninput" placeholder="0.0" />
+                        </div>
+                        <div className="sectiontokens" onClick={() => { toggleSelectToken(1) }}>
+                          <img src={toToken.icon} alt="" />
+                          <span>{toToken.symbol}</span>
+                          <img src={downIcon} className="sectiontokensicon" alt="" />
+                        </div>
+                      </div>
+                    </div>
+
+                    {
+                      type === 1 ?
+                        <div className="section section-martop" >
+                          <div className="sectiontop">
+                            <span>Price</span>
+                            <div>
+                              {/* <span className="balance">Balance: 0.005</span>
+                <span> | </span><span>MAX</span> */}
+                            </div>
+                          </div>
+                          <div className="sectionbottom">
+                            <div className="sectioninputcon" >
+                              <input type="text" className="sectioninput" placeholder="0.0" />
+                            </div>
+                            <div className="sectiontokens">
+                              <span>USDC</span>
+                            </div>
+                          </div>
+                        </div>
+                        : null
+                    }
+
+                  </div>
+                  <div className="line" style={{ marginBottom: '.5rem' }}>
+                    <p className="ll">leverage</p>
+                    <p className="lr pointer" onClick={() => setShowLeverage(!showLeverage)}>
                       {
-                        percents.map((item: number) =>
-                          <span key={item} className={percent === item ? 'active' : ''} onClick={() => { handlePercent(item) }}>{item * 100}%</span>
-                        )
+                        !showLeverage ?
+                          <CheckBoxOutlineBlankIcon sx={{ color: '#63CCA9', fontSize: 18 }} />
+                          : <CheckBoxIcon sx={{ color: '#63CCA9', fontSize: 18 }} />
                       }
-                    </div>
-                    <div className="sectionbottom">
-                      <div className="sectioninputcon" >
-                        <input type="text" value={params.pay} className="sectioninput" placeholder="0.0" />
-                      </div>
-                      <div className="sectiontokens" onClick={toggleSelectToken}>
-                        <img src={ethereumIcon} alt="" />
-                        <span>SUI</span>
-                        <img src={downIcon} className="sectiontokensicon" alt="" />
-                      </div>
-                    </div>
+                    </p>
                   </div>
 
-                  <div className="swapvert">
-                    <div className={trade === 1 ? "swapvertcon swapvertcon-red" : 'swapvertcon'}><img src={swapvertIcon} alt="" /></div>
+                  <div style={{ display: showLeverage ? 'block' : 'none' }} className={styles.silder}>
+                    <Slider
+                      min={1.1}
+                      max={50}
+                      step={0.1}
+                      marks={leverageMarks}
+                      onChange={(value) => { setLeverage(value as number) }}
+                      value={leverage}
+                      defaultValue={leverage}
+                      dotStyle={{ backgroundColor: trade === 0 ? sliderGreen[0] : sliderRed[0], border: '0 none', borderRadius: '2px', width: '2px' }}
+                      handleStyle={{ backgroundColor: trade === 0 ? sliderGreen[1] : sliderRed[1], opacity: 1, border: '2px solid rgba(0,0,0,.7)', boxShadow: 'none' }}
+                      trackStyle={{ background: trade === 0 ? sliderGreen[1] : sliderRed[1] }}
+                      railStyle={{ backgroundColor: '#2B3649' }}
+                      activeDotStyle={{ backgroundColor: trade === 0 ? sliderGreen[1] : sliderRed[1] }}
+                    />
                   </div>
 
-                  <div className="section">
-                    <div className="sectiontop">
-                      <span>{trade === 1 ? 'Short' : 'Long'}</span>
-                      <div>
-                        {/* <span className="balance">Balance: 0.005</span>
-                <span> | </span><span>MAX</span> */}
-                      </div>
-                    </div>
-                    <div className="sectionbottom">
-                      <div className="sectioninputcon" >
-                        <input type="text" className="sectioninput" placeholder="0.0" />
-                      </div>
-                      <div className="sectiontokens">
-                        <img src={ethereumIcon} alt="" />
-                        <span>ETH</span>
-                        <img src={downIcon} className="sectiontokensicon" alt="" />
-                      </div>
-                    </div>
+                  <div className="line">
+                    <p className="ll">Collaterlal In</p>
+                    <p className="lr">USD</p>
                   </div>
-
-                  {
-                    type === 1 ?
-                      <div className="section section-martop" >
-                        <div className="sectiontop">
-                          <span>Price</span>
-                          <div>
-                            {/* <span className="balance">Balance: 0.005</span>
-                <span> | </span><span>MAX</span> */}
-                          </div>
-                        </div>
-                        <div className="sectionbottom">
-                          <div className="sectioninputcon" >
-                            <input type="text" className="sectioninput" placeholder="0.0" />
-                          </div>
-                          <div className="sectiontokens">
-                            <span>USDC</span>
-                          </div>
-                        </div>
-                      </div>
-                      : null
-                  }
-
-                </div>
+                  <div className="line">
+                    <p className="ll">Leverage</p>
+                    <p className="lr">{leverage}</p>
+                  </div>
+                  <div className="line">
+                    <p className="ll">Entry Price</p>
+                    <p className="lr">-</p>
+                  </div>
+                  <div className="line">
+                    <p className="ll">Liq. Price</p>
+                    <p className="lr">$15.45</p>
+                  </div>
+                  <div className="line">
+                    <p className="ll">Fees</p>
+                    <p className="lr">-</p>
+                  </div>
+                </>
                 : null
             }
-            <div className="line" style={{ marginBottom: '.5rem' }}>
-              <p className="ll">leverage</p>
-              <p className="lr pointer" onClick={() => setShowLeverage(!showLeverage)}>
-                {
-                  !showLeverage ?
-                    <CheckBoxOutlineBlankIcon sx={{ color: '#63CCA9', fontSize: 18 }} />
-                    : <CheckBoxIcon sx={{ color: '#63CCA9', fontSize: 18 }} />
-                }
-              </p>
-            </div>
 
-            <div style={{ display: showLeverage ? 'block' : 'none' }} className={styles.silder}>
-              <Slider
-                min={1.1}
-                max={50}
-                step={0.1}
-                marks={leverageMarks}
-                onChange={(value) => { setLeverage(value as number) }}
-                value={leverage}
-                defaultValue={leverage}
-                dotStyle={{ backgroundColor: trade === 0 ? sliderGreen[0] : sliderRed[0], border: '0 none', borderRadius: '2px', width: '2px' }}
-                handleStyle={{ backgroundColor: trade === 0 ? sliderGreen[1] : sliderRed[1], opacity: 1, border: '2px solid rgba(0,0,0,.7)', boxShadow: 'none' }}
-                trackStyle={{ background: trade === 0 ? sliderGreen[1] : sliderRed[1] }}
-                railStyle={{ backgroundColor: '#2B3649' }}
-                activeDotStyle={{ backgroundColor: trade === 0 ? sliderGreen[1] : sliderRed[1] }}
-              />
-            </div>
-
-            <div className="line">
-              <p className="ll">Collaterlal In</p>
-              <p className="lr">USD</p>
-            </div>
-            <div className="line">
-              <p className="ll">Leverage</p>
-              <p className="lr">{leverage}</p>
-            </div>
-            <div className="line">
-              <p className="ll">Entry Price</p>
-              <p className="lr">-</p>
-            </div>
-            <div className="line">
-              <p className="ll">Liq. Price</p>
-              <p className="lr">$15.45</p>
-            </div>
-            <div className="line">
-              <p className="ll">Fees</p>
-              <p className="lr">-</p>
-            </div>
             <div className={trade === 1 ? 'btn btn-red' : 'btn'}>
-              Connect Wallet
+              {btnText}
             </div>
           </div>
 
-          <SelectToken visible={selectToken} options={supplyTokens} onClose={toggleSelectToken} />
+          <SelectToken visible={selectToken} options={selectTokenSource ? supplyTradeTokens : supplyTokens} onClose={toggleSelectToken} onSelect={changeSelectToken} />
         </div>
 
         <div className="container">
@@ -351,12 +395,12 @@ function Perpetual() {
               <span>Pay</span>
               <div>
                 <span className="section-balance">Balance: {balance}</span>
-                <span> | </span><span className='section-max' onClick={() => { handlePercent(1) }}>MAX</span>
+                <span> | </span><span className='section-max'>MAX</span>
               </div>
             </div>
             <div className="sectionbottom">
               <div className="sectioninputcon" >
-                <input type="text" value={params.pay} className="sectioninput" placeholder="0.0" />
+                <input type="text" className="sectioninput" placeholder="0.0" />
               </div>
               <div className="sectiontokens">
                 <img src={ethereumIcon} alt="" />
@@ -373,7 +417,7 @@ function Perpetual() {
             </div>
             <div className="sectionbottom">
               <div className="sectioninputcon" >
-                <input type="text" value={params.pay} className="sectioninput" placeholder="0.0" />
+                <input type="text" className="sectioninput" placeholder="0.0" />
               </div>
               <div className="sectiontokens">
                 <img src={ethereumIcon} alt="" />
@@ -470,8 +514,8 @@ function Positions(props: PositionsProps) {
               <td colSpan={8}><Empty /></td>
             </tr>
             :
-            options.map((item: any) =>
-              <tr>
+            options.map((item: any, index: number) =>
+              <tr key={index}>
                 <td align='left'>
                   <div className={styles['table-position']}>
                     <img src={ethereumIcon} alt="" height="24" />
@@ -542,8 +586,8 @@ function Orders(props: OrdersProps) {
         <tbody>
           {
             options.length > 0 ?
-              options.map((item: any) =>
-                <tr>
+              options.map((item: any, index: number) =>
+                <tr key={index}>
                   <td align='left'>
                     Limit
                   </td>
