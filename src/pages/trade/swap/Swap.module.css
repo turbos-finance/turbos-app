@@ -1,215 +1,12 @@
-.perpetual {
-  display: flex;
-}
-
-.left {
-  width: 40rem;
-  box-sizing: border-box;
-}
-
-
-.leftcontainer {
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 5px;
-  padding: 16px;
-  box-sizing: border-box;
-  margin-bottom: 16px;
-}
-
-.container {
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 5px;
-  margin-bottom: 16px;
-}
-
-.content {
-  padding: 10px 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.title {
-  font-weight: bold;
-  font-size: 1.4rem;
-  line-height: 4.8rem;
-  line-height: 4.8rem;
-  color: #fff;
-  padding-left: 20px;
-}
-
-
-.right {
-  flex: 1;
-  box-sizing: border-box;
-  margin-left: 16px;
-}
-
-.btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 48px;
-  font-size: 16px;
-  background-color: #63CCA9;
-  color: #fff;
-  font-family: "Montserrat Regular";
-  margin-top: 2.4rem;
-  box-sizing: border-box;
-  cursor: pointer;
-}
-
-.btn:hover {
-  background-color: #47AF8D;
-}
-
-.btn:active {
-  background-color: rgb(47, 96, 83, 1);
-}
-
-
-.section-con {
-  position: relative;
-  margin-bottom: 20px;
-}
-
-.section {
-  background-color: rgba(255, 255, 255, 0.1);
-  padding: 16px;
-  position: relative;
-  z-index: 1;
-}
-
-.sectiontop {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 10px;
-  font-size: 14px;
-  color: #fff;
-  font-family: "Montserrat Light";
-}
-
-.sectiontop span {
-  font-size: 14px;
-  color: #fff;
-  opacity: .5;
-  font-family: "Montserrat Light";
-}
-
-.sectiontop span.balance {
-  opacity: 1;
-}
-
-.section-percent {
-  display: flex;
-  align-items: center;
-  line-height: 1;
-  margin-bottom: 10px;
-}
-
-.section-percent span {
-  margin-right: 16px;
-  font-family: "Montserrat Light";
-  color: #fff;
-  opacity: .5;
-  font-size: 14px;
-  cursor: pointer;
-}
-
-
-.sectionbottom {
-  display: flex;
-  align-items: center;
-  padding-top: 6px;
-}
-
-.sectioninputcon {
-  flex: 1;
-  margin-right: 1rem;
-}
-
-.sectioninput {
-  width: 100%;
-  box-sizing: border-box;
-  height: 24px;
-  border: 0 none;
-  background-color: transparent;
-  font-size: 24px;
-  line-height: 1;
-  font-family: "Montserrat Light";
-  color: #fff;
-  padding: 0;
-  margin: 0;
-  outline: none;
-}
-
-.sectiontokens {
-  font-size: 2.4rem;
-  color: #fff;
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-}
-
-.sectiontokens:hover .sectiontokensicon {
-  opacity: 1;
-}
-
-.sectiontokens img {
-  height: 24px;
-}
-
-.sectiontokens span {
-  padding: 0 10px;
-}
-
-.sectiontokensicon {
-  height: 24px;
-  opacity: .5;
-}
-
-.swapvert {
-  height: 10px;
-  position: relative;
-  z-index: 3;
-  /* border: 8px solid rgba(18, 21, 23, 1); */
-}
-
-.swapvertcon {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  height: 36px;
-  width: 36px;
-  border-radius: 50%;
-  background: #63CCA9;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  border: 8px solid rgba(18, 21, 23, 1);
-}
-
-.swapvertcon:hover {
-  background: rgb(47, 96, 83, 1);
-}
-
-.swapvertcon img {
-  height: 24px;
-}
-
-.rightcontainer {
-  display: flex;
-  align-items: center;
-  height: 68px;
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 5px;
+.silder{
+  padding: 0 0 3.6rem;
 }
 
 .tokenselect {
   display: flex;
   align-items: center;
   margin-right: 6rem;
+  cursor: pointer;
 }
 
 .tokenselect span {
@@ -241,12 +38,6 @@
   opacity: .5;
   line-height: 1;
   font-family: "Montserrat Light";
-}
-
-.sectionchart {
-  background: rgba(0, 0, 0, 0.2);
-  height: 45rem;
-  margin-top: 2rem;
 }
 
 .ordertab {
@@ -346,6 +137,7 @@
 .table-btn:active {
   background: rgba(24, 28, 35, 1);
 }
+
 .table-btn-green {
   width: 80px;
   height: 32px;
@@ -366,7 +158,7 @@
 }
 
 .table-btn-green:active {
-  background: rgb(71, 175, 141,.5);
+  background: rgb(71, 175, 141, .5);
 }
 
 .table-btn-red {
@@ -399,18 +191,4 @@
 
 .green {
   color: #63CCA9;
-}
-
-@media screen and (max-width: 760px) {
-  .perpetual {
-    flex-direction: column;
-  }
-
-  .left {
-    width: 100%;
-  }
-
-  .right {
-    margin: 0;
-  }
 }
