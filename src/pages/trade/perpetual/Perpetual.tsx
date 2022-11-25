@@ -6,6 +6,8 @@ import longIcon from '../../../assets/images/long.png';
 import shortIcon from '../../../assets/images/short.png';
 import downIcon from '../../../assets/images/down.png';
 import ethereumIcon from '../../../assets/images/ethereum.png';
+import suiIcon from '../../../assets/images/ic_sui_40.svg';
+import toIcon from '../../../assets/images/to.png';
 import swapvertIcon from '../../../assets/images/swapvert.png';
 import addIcon from '../../../assets/images/add.png';
 import shareIcon from '../../../assets/images/share.png';
@@ -18,6 +20,7 @@ import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import Dropdown from "rc-dropdown";
 import Menu, { Item as MenuItem } from 'rc-menu';
 import TurbosDialog from '../../../components/UI/Dialog/Dialog';
+import TurbosTooltip from '../../../components/UI/Tooltip/Tooltip';
 
 const sliderGreen = ['rgb(99, 204, 169, .3)', 'rgb(99, 204, 169, 1)'];
 const sliderRed = ['rgba(240, 68, 56, .3)', 'rgba(240, 68, 56, 1)'];
@@ -57,7 +60,8 @@ function Perpetual() {
   const [leverage, setLeverage] = useState(1.5);
   const [showLeverage, setShowLeverage] = useState(true);
   const [chartTime, setChartTime] = useState('5m');
-
+  const [fromToken, setFromToken] = useState({});
+  const [toToken, setToToken] = useState({});
 
   const [params, setParams] = useState<ParamsType>({
     pay: ''
@@ -184,7 +188,7 @@ function Perpetual() {
 
                   {
                     type === 1 ?
-                      <div className="section" style={{ marginTop: '10px' }}>
+                      <div className="section section-martop" >
                         <div className="sectiontop">
                           <span>Price</span>
                           <div>
@@ -343,9 +347,117 @@ function Perpetual() {
       </div>
 
 
-      {/* <TurbosDialog open={true} title="Check order" >
+      <TurbosDialog open={false} title="Check order" >
+        <>
+          {/* <div className='check-con'>
+            <div className='check-list'>
+              <img src={suiIcon} alt="" height="24" />
+              <div className='check-info'>
+                <p>Pay USDC</p>
+                <p>0.19234</p>
+              </div>
+            </div>
+            <div className='check-to'><img src={toIcon} alt="" height="24" /></div>
+            <div className='check-list'>
+              <img src={ethereumIcon} alt="" height="24" />
+              <div className='check-info'>
+                <p>Long ETH</p>
+                <p>1.2323</p>
+              </div>
+            </div>
+          </div> */}
+          <div className="section section-marbottom">
+            <div className="sectiontop">
+              <span>Pay</span>
+              <div>
+                <span className="section-balance">Balance: {balance}</span>
+                <span> | </span><span className='section-max' onClick={() => { handlePercent(1) }}>MAX</span>
+              </div>
+            </div>
+            <div className="sectionbottom">
+              <div className="sectioninputcon" >
+                <input type="text" value={params.pay} className="sectioninput" placeholder="0.0" />
+              </div>
+              <div className="sectiontokens">
+                <img src={ethereumIcon} alt="" />
+                <span>SUI</span>
+              </div>
+            </div>
+          </div>
+          <div className="section section-marbottom">
+            <div className="sectiontop">
+              <span>Pay</span>
+              <div>
+                <span className="section-balance">Balance: {balance}</span>
+              </div>
+            </div>
+            <div className="sectionbottom">
+              <div className="sectioninputcon" >
+                <input type="text" value={params.pay} className="sectioninput" placeholder="0.0" />
+              </div>
+              <div className="sectiontokens">
+                <img src={ethereumIcon} alt="" />
+                <span>SUI</span>
+              </div>
+            </div>
+          </div>
 
-      </TurbosDialog> */}
+          <div className="line">
+            <p className="ll">Collaterlal In</p>
+            <p className="lr">ETH</p>
+          </div>
+          <div className="line">
+            <p className="ll">Leverage</p>
+            <p className="lr">USD</p>
+          </div>
+          <div className="line">
+            <p className="ll">Liq. Price</p>
+            <p className="lr">USD</p>
+          </div>
+          <div className="line">
+            <p className="ll">Fees</p>
+            <p className="lr">USD</p>
+          </div>
+          <div className="line">
+            <p className="ll">Collaterlal</p>
+            <p className="lr">USD</p>
+          </div>
+          <div className="line-hr"></div>
+          <div className="line">
+            <p className="ll">Spread</p>
+            <p className="lr">ETH</p>
+          </div>
+          <div className="line">
+            <p className="ll">Entry Price</p>
+            <p className="lr">USD</p>
+          </div>
+          <div className="line">
+            <p className="ll">Borrow Fee</p>
+            <p className="lr">USD</p>
+          </div>
+          <div className="line">
+            <p className="ll">Execution Fee</p>
+            <p className="lr">
+              <TurbosTooltip title={'Max BTC long'}>
+                <span className='underline'>0.03%</span>
+              </TurbosTooltip>
+            </p>
+          </div>
+          <div className="line">
+            <p className="ll">Allowed Slippage</p>
+            <p className="lr">USD</p>
+          </div>
+          <div className="line">
+            <p className="ll">Allow up to 1% slippage</p>
+            <p className="lr"></p>
+          </div>
+
+          <div className='btn'>
+            Long
+          </div>
+        </>
+      </TurbosDialog>
+
     </div>
   )
 }
