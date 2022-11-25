@@ -21,6 +21,7 @@ import Dropdown from "rc-dropdown";
 import Menu, { Item as MenuItem } from 'rc-menu';
 import TurbosDialog from '../../../components/UI/Dialog/Dialog';
 import TurbosTooltip from '../../../components/UI/Tooltip/Tooltip';
+import Chart from './components/chart/Chart';
 
 const sliderGreen = ['rgb(99, 204, 169, .3)', 'rgb(99, 204, 169, 1)'];
 const sliderRed = ['rgba(240, 68, 56, .3)', 'rgba(240, 68, 56, 1)'];
@@ -36,20 +37,13 @@ const leverageMarks = {
   49: "49x",
 };
 const percents = [0.25, 0.5, 0.75, 1];
-const times = [
-  { label: '5m', id: '5' },
-  { label: '15m', id: '' },
-  { label: '1h', id: '' },
-  { label: '4h', id: '' },
-  { label: '1d', id: '' }
-];
+
 
 type ParamsType = {
   pay: string
 }
 
 function Perpetual() {
-  const chartRef = useRef(null);
 
   const balance = 100;
   const [trade, setTrade] = useState(0); // 0: long; 1: short
@@ -59,7 +53,6 @@ function Perpetual() {
   const [percent, setPercent] = useState(0);
   const [leverage, setLeverage] = useState(1.5);
   const [showLeverage, setShowLeverage] = useState(true);
-  const [chartTime, setChartTime] = useState('5m');
   const [fromToken, setFromToken] = useState({});
   const [toToken, setToToken] = useState({});
 
@@ -168,7 +161,7 @@ function Perpetual() {
 
                   <div className="section">
                     <div className="sectiontop">
-                      <span>Long</span>
+                      <span>{trade === 1 ? 'Short' : 'Long'}</span>
                       <div>
                         {/* <span className="balance">Balance: 0.005</span>
                 <span> | </span><span>MAX</span> */}
@@ -245,7 +238,7 @@ function Perpetual() {
             </div>
             <div className="line">
               <p className="ll">Leverage</p>
-              <p className="lr">$5.45</p>
+              <p className="lr">{leverage}</p>
             </div>
             <div className="line">
               <p className="ll">Entry Price</p>
@@ -318,20 +311,7 @@ function Perpetual() {
           </div>
         </div>
 
-        <div className="chart">
-          <div className='chart-con'>
-            <div className='chart-tabs'>
-              {times.map((item: any) => <span key={item.label} className={chartTime === item.label ? 'active' : ''}>{item.label}</span>)}
-            </div>
-            <div className='chart-value'>
-              <div>O <span>1218.62</span></div>
-              <div>H <span>1218.62</span></div>
-              <div>L <span>1218.62</span></div>
-              <div>C <span>1218.62</span></div>
-            </div>
-          </div>
-          {/* <div className="ExchangeChart-bottom-content" ref={chartRef}></div> */}
-        </div>
+        <Chart />
 
         <div>
           <div className={styles.ordertab}>

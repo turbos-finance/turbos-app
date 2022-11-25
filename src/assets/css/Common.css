@@ -425,6 +425,7 @@
   position: absolute;
   left: 16px;
   top: 16px;
+  z-index: 3;
 }
 
 .chart-con {
@@ -474,6 +475,10 @@
 .chart-value span {
   color: rgba(250, 61, 88, 1);
   margin-left: 2px;
+}
+.chart-result{
+  position: relative;
+  z-index: 2;
 }
 
 /* check order*/

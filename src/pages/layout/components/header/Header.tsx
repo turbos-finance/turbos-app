@@ -4,12 +4,14 @@ import styles from './Header.module.css';
 import logo from '../../../../assets/images/logo.png';
 
 import mobilemenusleftIcon from '../../../../assets/images/mobilemenusleft.png';
+import MenuIcon from '@mui/icons-material/Menu';
+
 function Header() {
     return (
         <div className={styles['header']}>
             <div className={styles['header-left']}>
                 <div className={styles.menus}>
-                    <img src={mobilemenusleftIcon} alt=""/>
+                    <MenuIcon className={styles['mobile-logo-img']} />
                 </div>
                 <div className={styles.logo}>
                     <Link to='/' >

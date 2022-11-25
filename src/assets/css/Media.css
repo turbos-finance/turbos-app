@@ -1,0 +1,27 @@
+@media screen and (max-width: 960px) {
+    .main {
+        flex-direction: column;
+    }
+
+    .main-left {
+        width: 100%;
+    }
+
+    .main-right {
+        margin: 0;
+    }
+}
+
+@media screen and (max-width: 760px) {
+    .main {
+        flex-direction: column;
+    }
+
+    .main-left {
+        width: 100%;
+    }
+
+    .main-right {
+        margin: 0;
+    }
+}
