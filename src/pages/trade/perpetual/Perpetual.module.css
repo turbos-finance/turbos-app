@@ -1,12 +1,3 @@
-.title {
-  font-weight: bold;
-  font-size: 1.4rem;
-  line-height: 4.8rem;
-  line-height: 4.8rem;
-  color: #fff;
-  padding-left: 20px;
-}
-
 .silder{
   padding: 0 0 3.6rem;
 }
@@ -47,12 +38,6 @@
   opacity: .5;
   line-height: 1;
   font-family: "Montserrat Light";
-}
-
-.sectionchart {
-  background: rgba(0, 0, 0, 0.2);
-  height: 45rem;
-  margin-top: 2rem;
 }
 
 .ordertab {

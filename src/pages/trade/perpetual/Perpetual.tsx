@@ -18,6 +18,8 @@ import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import Dropdown from "rc-dropdown";
 import Menu, { Item as MenuItem } from 'rc-menu';
 
+const sliderGreen = ['rgb(99, 204, 169, .3)', 'rgb(99, 204, 169, 1)'];
+const sliderRed = ['rgba(240, 68, 56, .3)', 'rgba(240, 68, 56, 1)'];
 const leverageMarks = {
   2: "2x",
   5: "5x",
@@ -29,8 +31,14 @@ const leverageMarks = {
   40: "40x",
   49: "49x",
 };
-
 const percents = [0.25, 0.5, 0.75, 1];
+const times = [
+  { label: '5m', id: '5' },
+  { label: '15m', id: '' },
+  { label: '1h', id: '' },
+  { label: '4h', id: '' },
+  { label: '1d', id: '' }
+];
 
 type ParamsType = {
   pay: string
@@ -38,8 +46,8 @@ type ParamsType = {
 
 function Perpetual() {
   const chartRef = useRef(null);
-  const balance = 100;
 
+  const balance = 100;
   const [trade, setTrade] = useState(0); // 0: long; 1: short
   const [type, setType] = useState(0); // 0: market; 1: limit; 2: Trigger
   const [record, setRecord] = useState(0); // 0: posotion ; 1: orders ; 2: trades
@@ -47,6 +55,8 @@ function Perpetual() {
   const [percent, setPercent] = useState(0);
   const [leverage, setLeverage] = useState(1.5);
   const [showLeverage, setShowLeverage] = useState(true);
+  const [chartTime, setChartTime] = useState('5m');
+
 
   const [params, setParams] = useState<ParamsType>({
     pay: ''
@@ -231,11 +241,11 @@ function Perpetual() {
                 onChange={(value) => { setLeverage(value as number) }}
                 value={leverage}
                 defaultValue={leverage}
-                dotStyle={{ backgroundColor: 'rgb(99, 204, 169, .3)', border: '0 none', borderRadius: '2px', width: '2px' }}
-                handleStyle={{ backgroundColor: 'rgb(99, 204, 169)', opacity: 1, border: '2px solid rgba(0,0,0,.7)', boxShadow: 'none' }}
-                trackStyle={{ background: '#63CCA9' }}
+                dotStyle={{ backgroundColor: trade === 0 ? sliderGreen[0] : sliderRed[0], border: '0 none', borderRadius: '2px', width: '2px' }}
+                handleStyle={{ backgroundColor: trade === 0 ? sliderGreen[1] : sliderRed[1], opacity: 1, border: '2px solid rgba(0,0,0,.7)', boxShadow: 'none' }}
+                trackStyle={{ background: trade === 0 ? sliderGreen[1] : sliderRed[1] }}
                 railStyle={{ backgroundColor: '#2B3649' }}
-                activeDotStyle={{ backgroundColor: '#63CCA9' }}
+                activeDotStyle={{ backgroundColor: trade === 0 ? sliderGreen[1] : sliderRed[1] }}
               />
             </div>
 
@@ -268,7 +278,7 @@ function Perpetual() {
         </div>
 
         <div className="container">
-          <div className={styles.title}>Long ETH</div>
+          <div className="container-title">Long ETH</div>
           <div className="line-con1">
             <div className="line">
               <p className="ll">Entry Price</p>
@@ -318,7 +328,18 @@ function Perpetual() {
           </div>
         </div>
 
-        <div className={styles.sectionchart}>
+        <div className="chart">
+          <div className='chart-con'>
+            <div className='chart-tabs'>
+              {times.map((item: any) => <span key={item.label} className={chartTime === item.label ? 'active' : ''}>{item.label}</span>)}
+            </div>
+            <div className='chart-value'>
+              <div>O <span>1218.62</span></div>
+              <div>H <span>1218.62</span></div>
+              <div>L <span>1218.62</span></div>
+              <div>C <span>1218.62</span></div>
+            </div>
+          </div>
           {/* <div className="ExchangeChart-bottom-content" ref={chartRef}></div> */}
         </div>
 

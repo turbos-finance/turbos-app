@@ -135,6 +135,15 @@
   margin-bottom: 16px;
 }
 
+.container-title {
+  font-weight: bold;
+  font-size: 1.4rem;
+  line-height: 4.8rem;
+  line-height: 4.8rem;
+  color: #fff;
+  padding-left: 20px;
+}
+
 .line-con {
   padding: 24px 20px;
   border-top: 1px solid rgba(255, 255, 255, 0.05);
@@ -390,17 +399,65 @@
   font-family: "Montserrat Regular";
 }
 
+/* chart */
+.chart {
+  background: rgba(0, 0, 0, 0.2);
+  height: 45rem;
+  margin-top: 2rem;
+  position: relative;
+}
 
-@media screen and (max-width: 760px) {
-  .main {
-    flex-direction: column;
-  }
+.chart-con {
+  position: absolute;
+  left: 16px;
+  top: 16px;
+}
 
-  .main-left {
-    width: 100%;
-  }
+.chart-con {
+  display: flex;
+  align-items: center;
+}
 
-  .main-right {
-    margin: 0;
-  }
+.chart-tabs {
+  display: flex;
+  align-items: center;
+  margin-right: 40px;
+}
+
+.chart-tabs span {
+  height: 32px;
+  width: 48px;
+  background: rgba(255, 255, 255, 0.1);
+  display: inline-block;
+  text-align: center;
+  line-height: 32px;
+  color: #fff;
+  font-size: 14px;
+  font-family: "Montserrat Light";
+  cursor: pointer;
+}
+
+.chart-tabs span:hover {
+  background: rgba(99, 204, 169, .3);
+}
+
+.chart-tabs span.active {
+  background: rgba(99, 204, 169, 1);
+}
+
+.chart-value {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  font-family: "Montserrat Light";
+  color: #FFFFFF;
+}
+
+.chart-value div {
+  margin-right: 20px;
+}
+
+.chart-value span {
+  color: rgba(250, 61, 88, 1);
+  margin-left: 2px;
 }
