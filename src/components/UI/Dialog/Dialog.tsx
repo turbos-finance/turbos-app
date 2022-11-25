@@ -24,9 +24,9 @@ const CustomizedDialogTitle = styled(DialogTitle)`
 `;
 
 type TurbosDialogProps = {
-  onClose: Function,
+  onClose?: Function,
   open: boolean,
-  children: React.ReactNode,
+  children?: React.ReactNode,
   title: string,
 }
 
@@ -36,11 +36,11 @@ function TurbosDialog(props: TurbosDialogProps) {
   const { onClose, open, children, title } = props;
 
   return (
-    <CustomizedDialog open={open} onClose={() => { onClose() }}>
+    <CustomizedDialog open={open} onClose={() => { onClose && onClose() }}>
       <CustomizedDialogTitle >
         <div className={styles['dialog-top']}>
           <div className={styles['dialog-top-title']}>{title}</div>
-          <div className={styles['dialog-top-close']} onClick={() => { onClose() }}>
+          <div className={styles['dialog-top-close']} onClick={() => { onClose && onClose() }}>
             <img src={closeIcon} alt="" height='24' />
           </div>
         </div>

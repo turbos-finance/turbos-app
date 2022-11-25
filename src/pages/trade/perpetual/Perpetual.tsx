@@ -17,6 +17,7 @@ import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import Dropdown from "rc-dropdown";
 import Menu, { Item as MenuItem } from 'rc-menu';
+import TurbosDialog from '../../../components/UI/Dialog/Dialog';
 
 const sliderGreen = ['rgb(99, 204, 169, .3)', 'rgb(99, 204, 169, 1)'];
 const sliderRed = ['rgba(240, 68, 56, .3)', 'rgba(240, 68, 56, 1)'];
@@ -86,8 +87,9 @@ function Perpetual() {
   }
 
   const recordTitle = ['Positions', 'Orders', 'Trades'];
-  const recordContent = [<Positions options={[]} />, <Orders options={[]} />, <Trades options={[]} />];
+  const recordContent = [<Positions options={[{}, {}]} />, <Orders options={[]} />, <Trades options={[]} />];
   const typeList = ['Market', 'Limit', 'Trigger'];
+
   const menu = (
     <Menu className="overlay-dropdown-ul">
       <MenuItem>
@@ -100,22 +102,6 @@ function Perpetual() {
       </MenuItem>
     </Menu>
   );
-
-  // const leverageSliderHandle = (props) => {
-  //   const { value, dragging, index, ...restProps } = props;
-  //   return (
-  //     <SliderTooltip
-  //       prefixCls="rc-slider-tooltip"
-  //       overlay={`${parseFloat(value).toFixed(2)}x`}
-  //       visible={dragging}
-  //       placement="top"
-  //       key={index}
-  //     >
-  //       <Slider.Handle value={value} {...restProps} />
-  //     </SliderTooltip>
-  //   );
-  // };
-
 
   return (
     <div className="main">
@@ -355,6 +341,11 @@ function Perpetual() {
 
         {recordContent[record]}
       </div>
+
+
+      {/* <TurbosDialog open={true} title="Check order" >
+
+      </TurbosDialog> */}
     </div>
   )
 }
