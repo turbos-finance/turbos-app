@@ -5,6 +5,7 @@ import logosmall from '../../../../assets/images/logosmall.png';
 import logo from '../../../../assets/images/logo.png';
 import menusIcon from '../../../../assets/images/menus.png';
 import menus1Icon from '../../../../assets/images/menus1.png';
+import faucetIcon from '../../../../assets/images/faucet.png';
 import twitterIcon from '../../../../assets/images/twitter.png';
 import telegramIcon from '../../../../assets/images/telegram.png';
 import mediumIcon from '../../../../assets/images/medium.png';
@@ -31,6 +32,11 @@ const routers: routerType[] = [
     url: '/earn',
     name: 'Earn',
     icon: menus1Icon
+  },
+  {
+    url: '/faucet',
+    name: 'Faucet',
+    icon: faucetIcon
   },
 ];
 

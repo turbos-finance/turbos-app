@@ -1,8 +1,8 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import BuySell from '../pages/earn/buySell/BuySell';
 import Earn from '../pages/earn/Earn';
-// import Earn from '../pages/earn/Earn';
 import Liquidity from '../pages/earn/liquidity/Liquidity';
+import Faucet from '../pages/faucet/Faucet';
 import Layout from '../pages/layout/Layout';
 import Perpetual from '../pages/trade/perpetual/Perpetual';
 import Swap from '../pages/trade/swap/Swap';
@@ -27,6 +27,10 @@ function Router() {
             <Route path="" element={<Navigate to="/earn/buy-sell" />} id="earn" />
             <Route path="buy-sell" element={<BuySell />} id="buy-sell"></Route>
             <Route path="liquidity" element={<Liquidity />} id="liquidity"></Route>
+          </Route>
+
+          <Route path="faucet" element={<Faucet />}>
+
           </Route>
 
         </Route>

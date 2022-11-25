@@ -1,0 +1,42 @@
+.faucet {
+  padding: 10rem;
+}
+
+.faucet-item {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-gap: 16px;
+}
+
+.faucet-item li {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 5px;
+  padding: 20px;
+
+}
+
+.faucet-li-top {
+  display: flex;
+  align-items: center;
+}
+
+.faucet-token {
+  padding-left: 16px;
+}
+
+.faucet-token p {
+  font-size: 24px;
+  font-family: "Montserrat Regular";
+  color: #FFFFFF;
+  margin-bottom: 4px;
+  line-height: 24px;
+}
+
+.faucet-token p:last-child {
+  font-size: 16px;
+  font-family: "Montserrat Light";
+  opacity: .5;
+  margin-bottom: 0px;
+  margin-top: 4px;
+  line-height: 16px;
+}
