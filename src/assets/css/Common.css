@@ -157,6 +157,8 @@
   line-height: 24px;
   opacity: .5;
   font-family: "Montserrat Light";
+  display: flex;
+  align-items: center;
 }
 
 .lr {
@@ -164,7 +166,8 @@
   font-size: 14px;
   line-height: 24px;
   font-family: "Montserrat Light";
-
+  display: flex;
+  align-items: center;
 }
 
 /* section */

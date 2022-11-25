@@ -43,6 +43,10 @@ p {
   line-height: 2.4rem;
 }
 
+.pointer{
+  cursor: pointer;
+}
+
 @media screen and (max-width: 760px) {
   html {
     font-size: 50%;

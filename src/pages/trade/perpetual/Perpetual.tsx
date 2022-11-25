@@ -1,5 +1,6 @@
 import styles from './Perpetual.module.css';
 import Slider from "rc-slider";
+import "rc-slider/assets/index.css";
 import Trades from './components/trades/Trades';
 import longIcon from '../../../assets/images/long.png';
 import shortIcon from '../../../assets/images/short.png';
@@ -12,6 +13,8 @@ import { useRef, useState } from 'react';
 import Empty from '../../../components/empty/Empty';
 import SelectToken from '../../../components/selectToken/SelectToken';
 import { supplyTokens, supplyPerpetualTokens } from '../../../config/tokens';
+import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
+import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import Dropdown from "rc-dropdown";
 import Menu, { Item as MenuItem } from 'rc-menu';
 
@@ -23,6 +26,8 @@ const leverageMarks = {
   20: "20x",
   25: "25x",
   30: "30x",
+  40: "40x",
+  49: "49x",
 };
 
 const percents = [0.25, 0.5, 0.75, 1];
@@ -40,6 +45,8 @@ function Perpetual() {
   const [record, setRecord] = useState(0); // 0: posotion ; 1: orders ; 2: trades
   const [selectToken, setSelectToken] = useState(false);
   const [percent, setPercent] = useState(0);
+  const [leverage, setLeverage] = useState(1.5);
+  const [showLeverage, setShowLeverage] = useState(true);
 
   const [params, setParams] = useState<ParamsType>({
     pay: ''
@@ -83,6 +90,22 @@ function Perpetual() {
       </MenuItem>
     </Menu>
   );
+
+  // const leverageSliderHandle = (props) => {
+  //   const { value, dragging, index, ...restProps } = props;
+  //   return (
+  //     <SliderTooltip
+  //       prefixCls="rc-slider-tooltip"
+  //       overlay={`${parseFloat(value).toFixed(2)}x`}
+  //       visible={dragging}
+  //       placement="top"
+  //       key={index}
+  //     >
+  //       <Slider.Handle value={value} {...restProps} />
+  //     </SliderTooltip>
+  //   );
+  // };
+
 
   return (
     <div className="main">
@@ -188,26 +211,31 @@ function Perpetual() {
                 </div>
                 : null
             }
-            <div className="line">
+            <div className="line" style={{ marginBottom: '.5rem' }}>
               <p className="ll">leverage</p>
-              <p className="lr"></p>
+              <p className="lr pointer" onClick={() => setShowLeverage(!showLeverage)}>
+                {
+                  !showLeverage ?
+                    <CheckBoxOutlineBlankIcon sx={{ color: '#63CCA9', fontSize: 18 }} />
+                    : <CheckBoxIcon sx={{ color: '#63CCA9', fontSize: 18 }} />
+                }
+              </p>
             </div>
 
-            <div
-            // className={cx("Exchange-leverage-slider", "App-slider", {
-            //   positive: isLong,
-            //   negative: isShort,
-            // })}
-            >
+            <div style={{ display: showLeverage ? 'block' : 'none' }} className={styles.silder}>
               <Slider
                 min={1.1}
-                max={30.5}
+                max={50}
                 step={0.1}
                 marks={leverageMarks}
-              // handle={leverageSliderHandle}
-              // onChange={(value) => setLeverageOption(value)}
-              // value={leverageOption}
-              // defaultValue={leverageOption}
+                onChange={(value) => { setLeverage(value as number) }}
+                value={leverage}
+                defaultValue={leverage}
+                dotStyle={{ backgroundColor: 'rgb(99, 204, 169, .3)', border: '0 none', borderRadius: '2px', width: '2px' }}
+                handleStyle={{ backgroundColor: 'rgb(99, 204, 169)', opacity: 1, border: '2px solid rgba(0,0,0,.7)', boxShadow: 'none' }}
+                trackStyle={{ background: '#63CCA9' }}
+                railStyle={{ backgroundColor: '#2B3649' }}
+                activeDotStyle={{ backgroundColor: '#63CCA9' }}
               />
             </div>
 

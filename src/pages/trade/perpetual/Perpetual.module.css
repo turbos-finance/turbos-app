@@ -7,6 +7,10 @@
   padding-left: 20px;
 }
 
+.silder{
+  padding: 0 0 3.6rem;
+}
+
 .tokenselect {
   display: flex;
   align-items: center;
