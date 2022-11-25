@@ -31,6 +31,18 @@ p {
   padding: 0;
 }
 
+
+.underline{
+  text-decoration: underline;
+}
+
+.tooltip{
+  font-size: 1.4rem;
+  font-family: "Montserrat Light";
+  color: #FFFFFF;
+  line-height: 2.4rem;
+}
+
 @media screen and (max-width: 760px) {
   html {
     font-size: 50%;

@@ -66,7 +66,9 @@ function Liquidity() {
             <th align="left">token</th>
             <th align="right">price</th>
             <th align="right">
-              <TurbosTooltip />
+              <TurbosTooltip title={<div className="tooltip">Available amount to deposit into GLP.</div>}>
+                <span className="underline">Available</span>
+              </TurbosTooltip>
             </th>
             <th align="right">wallet</th>
             <th align="right">fees</th>

@@ -1,41 +1,30 @@
-import Tooltip from "@mui/material/Tooltip";
+import Tooltip, { tooltipClasses, TooltipProps } from "@mui/material/Tooltip";
 import { styled } from '@mui/material/styles';
-import StyledEngineProvider from "@mui/material/StyledEngineProvider";
 
-import './Tooltip.module.css';
+const CustomizedTooltip = styled(({ className, ...props }: TooltipProps) => (
+    <Tooltip {...props} classes={{ popper: className }} />
+))({
+    [`& .${tooltipClasses.tooltip}`]: {
+        maxWidth: 500,
+        background: 'rgba(40,51,62,0.98)',
+        boxShadow: '0px 0px 20px 0px rgba(0,0,0,0.3)',
+        borderRadius: '5px',
+        border: '1px solid rgba(255,255,255,0.1)',
+        padding: '20px',
+        margin: '0'
+    },
+});
 
-const CustomizedTooltip = styled(Tooltip)`
-    background:#000000;
-
-    & .MuiTooltip-touch{
-        background:#000;
-    }
-    & .MuiTooltip-tooltip{
-        background:#000;
-        padding:20px;
-    }
-    .MuiTooltip-popper .MuiTooltip-tooltip{
-        padding:20px;
-    }
-    .MuiTooltip-popper{
-        background:#000
-    }
-`;
-
-
-function TurbosTooltip() {
+type TurbosTooltipProps = {
+    children: React.ReactElement<any, any>,
+    title: React.ReactNode
+}
+function TurbosTooltip(props: TurbosTooltipProps) {
+    const { children, title } = props;
     return (
-        <StyledEngineProvider injectFirst>
-
-            <Tooltip title="The position will be opened at 12.33 USD with a max slippage of 0.30%.The slippage amount can be configured under Settings, found by clicking on your address at the top right of the page after connecting your wallet.">
-                <span>available</span>
-            </Tooltip>
-
-            <CustomizedTooltip title="The position will be opened at 12.33 USD with a max slippage of 0.30%.The slippage amount can be configured under Settings, found by clicking on your address at the top right of the page after connecting your wallet.">
-                <span>nihao</span>
-            </CustomizedTooltip>
-
-        </StyledEngineProvider>
+        <CustomizedTooltip title={title} placement="bottom-end">
+            {children}
+        </CustomizedTooltip>
     )
 }
 

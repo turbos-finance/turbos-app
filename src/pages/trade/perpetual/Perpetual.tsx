@@ -231,7 +231,7 @@ function Perpetual() {
               <p className="ll">Fees</p>
               <p className="lr">-</p>
             </div>
-            <div className="btn">
+            <div className={trade === 1 ? 'btn btn-red' : 'btn'}>
               Connect Wallet
             </div>
           </div>
