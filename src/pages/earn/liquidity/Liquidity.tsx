@@ -90,6 +90,19 @@ function Liquidity() {
                 </Menu>
               );
 
+              const tooltipTitle = (
+                <>
+                  <div className="line linetop">
+                    <p className="ll">Current Pool Amount:</p>
+                    <p className="lr lr-right">$312,865,072,578,130 <br></br> (20,000,000,000 BTC)</p>
+                  </div>
+                  <div className="line">
+                    <p className="ll">Max Pool Capacity:</p>
+                    <p className="lr">$100,000,000</p>
+                  </div>
+                </>
+              )
+
               return (
                 <tr key={index}>
                   <td align="left">
@@ -107,7 +120,11 @@ function Liquidity() {
                     </div>
                   </td>
                   <td align="right">{item.price}</td>
-                  <td align="right">{item.available}</td>
+                  <td align="right">
+                    <TurbosTooltip title={tooltipTitle}>
+                      <span className="underline">{item.available}</span>
+                    </TurbosTooltip>
+                  </td>
                   <td align="right">{item.wallet}</td>
                   <td align="right">-</td>
                   <td align="right">

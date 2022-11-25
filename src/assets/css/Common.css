@@ -166,6 +166,10 @@
   justify-content: space-between;
 }
 
+.linetop {
+  align-items: flex-start;
+}
+
 .ll {
   color: #fff;
   font-size: 14px;
@@ -174,6 +178,7 @@
   font-family: "Montserrat Light";
   display: flex;
   align-items: center;
+  margin-right: 5px;
 }
 
 .lr {
@@ -183,6 +188,10 @@
   font-family: "Montserrat Light";
   display: flex;
   align-items: center;
+  margin-left: 5px;
+}
+.lr-right{
+  text-align: right;
 }
 
 /* section */
@@ -476,7 +485,8 @@
   color: rgba(250, 61, 88, 1);
   margin-left: 2px;
 }
-.chart-result{
+
+.chart-result {
   position: relative;
   z-index: 2;
 }
