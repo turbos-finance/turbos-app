@@ -1,7 +1,7 @@
 import './App.css';
 import './assets/css/Common.css';
 import './assets/css/Btn.css';
-import './assets/css/Media.css'
+import './assets/css/Media.css';
 import { UseRefreshProvider } from './contexts/refresh';
 import { UseSuiWalletProvider } from './contexts/useSuiWallet';
 

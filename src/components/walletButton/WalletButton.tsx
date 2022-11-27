@@ -16,6 +16,8 @@ import walleticonIcon from '../../assets/images/walleticon.png';
 import Dropdown from 'rc-dropdown';
 import Menu, { Item as MenuItem } from 'rc-menu';
 import 'rc-dropdown/assets/index.css';
+import { Toast } from '../../utils/toastify';
+import { toast } from 'react-toastify';
 
 function SuiWalletButton() {
   const { account, connected, connecting, connect, disconnect } = useSuiWallet();
@@ -39,7 +41,10 @@ function SuiWalletButton() {
   const menu = (
     <Menu className="overlay-dropdown-ul">
       <MenuItem >
-        <div className="overlay-dropdown-li" onClick={() => { account && copyToClipboard(account); }}>
+        <div className="overlay-dropdown-li" onClick={() => {
+          account && copyToClipboard(account);
+          Toast.success("Address copied to your clipboard");
+        }}>
           <img src={copyIcon} alt="" height={24} />
           <span>Copy Address</span>
         </div>
