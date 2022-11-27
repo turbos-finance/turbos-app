@@ -93,3 +93,13 @@
 .liquidity-btn a:active {
     background-color: rgb(47, 96, 83, 1);
 }
+
+@media screen and (max-width: 760px) {
+    .liquidity {
+        margin-bottom: 1rem;
+    }
+
+    .table {
+        display: none;
+    }
+}

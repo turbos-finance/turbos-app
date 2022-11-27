@@ -24,4 +24,12 @@
     .main-right {
         margin: 0;
     }
+
+    .mobile-container {
+        display: block;
+    }
+
+    .main-right-container {
+        flex-direction: column;
+    }
 }

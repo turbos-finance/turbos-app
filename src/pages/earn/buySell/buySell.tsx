@@ -57,10 +57,10 @@ function BuySell() {
   })();
 
   return (
-    <div className={styles.perpetual}>
+    <div className="main">
 
-      <div className={styles.left}>
-        <div className={styles.leftcontainer}>
+      <div className="main-left">
+        <div className="main-left-container">
 
           <div className={selectToken ? 'section-operate' : ''}>
 
@@ -91,8 +91,8 @@ function BuySell() {
                 </div>
               </div>
 
-              <div className={styles.swapvert} onClick={() => { toggleActive(!!active ? 0 : 1) }}>
-                <div className={styles.swapvertcon}><img src={buysellIcon} alt="" /></div>
+              <div className="swapvert" onClick={() => { toggleActive(!!active ? 0 : 1) }}>
+                <div className="swapvertcon"><img src={buysellIcon} alt="" /></div>
               </div>
 
               <div className="section">
@@ -117,7 +117,7 @@ function BuySell() {
               <p className="lr">-</p>
             </div>
 
-            <div className={styles.btn}>
+            <div className="btn">
               {btnText}
             </div>
           </div>
@@ -129,7 +129,7 @@ function BuySell() {
       </div>
 
 
-      <div className={styles.right}>
+      <div className="main-right">
         <div className="container">
           <div className={styles.title}>
             <img src={tlpIcon} />

@@ -84,8 +84,8 @@ function Perpetual() {
     }
   }
 
-  const recordTitle = ['Positions', 'Orders', 'Trades'];
-  const recordContent = [<Positions options={[{}, {}]} />, <Orders options={[]} />, <Trades options={[]} />];
+  const recordTitle = ['Trades'];
+  const recordContent = [<Trades options={[]} />];
   const typeList = ['Market', 'Limit'];
 
   const menu = (

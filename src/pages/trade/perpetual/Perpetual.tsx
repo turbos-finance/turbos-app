@@ -116,7 +116,7 @@ function Perpetual() {
   }
 
   const recordTitle = ['Positions', 'Orders', 'Trades'];
-  const recordContent = [<Positions options={[{}, {}]} />, <Orders options={[]} />, <Trades options={[]} />];
+  const recordContent = [<Positions options={[]} />, <Orders options={[]} />, <Trades options={[]} />];
   const typeList = ['Market', 'Limit', 'Trigger'];
 
   const menu = (
@@ -336,21 +336,23 @@ function Perpetual() {
             </div>
           </Dropdown>
 
-          <div className={styles.pricelist}>
-            <div className={styles.value1}>1,250.91</div>
-            <div className={styles.value2}>$1,250.91</div>
-          </div>
-          <div className={styles.pricelist}>
-            <div className={styles.value2}>24h Change</div>
-            <div className={styles.value1} style={{ color: '#0ecc83' }}>+6.9%</div>
-          </div>
-          <div className={styles.pricelist}>
-            <div className={styles.value2}>24h High</div>
-            <div className={styles.value1}>$1,250.91</div>
-          </div>
-          <div className={styles.pricelist}>
-            <div className={styles.value2}>24h Low</div>
-            <div className={styles.value1}>$1,250.91</div>
+          <div className={styles.pricelistcon}>
+            <div className={styles.pricelist}>
+              <div className={styles.value1}>1,250.91</div>
+              <div className={styles.value2}>$1,250.91</div>
+            </div>
+            <div className={styles.pricelist}>
+              <div className={styles.value2}>24h Change</div>
+              <div className={styles.value1} style={{ color: '#0ecc83' }}>+6.9%</div>
+            </div>
+            <div className={styles.pricelist}>
+              <div className={styles.value2}>24h High</div>
+              <div className={styles.value1}>$1,250.91</div>
+            </div>
+            <div className={styles.pricelist}>
+              <div className={styles.value2}>24h Low</div>
+              <div className={styles.value1}>$1,250.91</div>
+            </div>
           </div>
         </div>
 
@@ -493,73 +495,171 @@ function Positions(props: PositionsProps) {
   const { options } = props;
 
   return (
-    <table width="100%" className={styles.table}>
-      <thead>
-        <tr>
-          <th align='left'>Position</th>
-          <th align='left'>Total</th>
-          <th align='left'>Margin</th>
-          <th align='left'>Entry Price</th>
-          <th align='left'>Mark Price</th>
-          <th align='left'>Liq. Price</th>
-          <th align='left'>PnL/PnL (%)</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
+    <>
+      <table width="100%" className={styles.table}>
+        <thead>
+          <tr>
+            <th align='left'>Position</th>
+            <th align='left'>Total</th>
+            <th align='left'>Margin</th>
+            <th align='left'>Entry Price</th>
+            <th align='left'>Mark Price</th>
+            <th align='left'>Liq. Price</th>
+            <th align='left'>PnL/PnL (%)</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {
+            options.length <= 0 ?
+              <tr>
+                <td colSpan={8}><Empty /></td>
+              </tr>
+              :
+              options.map((item: any, index: number) =>
+                <tr key={index}>
+                  <td align='left'>
+                    <div className={styles['table-position']}>
+                      <img src={ethereumIcon} alt="" height="24" />
+                      <span>BTC</span>
+                    </div>
+                    <div className={styles['table-position']}>
+                      10.0x&nbsp;&nbsp;<span className={styles.red}>Short</span>
+                    </div>
+                  </td>
+                  <td align='left'>
+                    $200.00
+                  </td>
+                  <td align='left'>
+                    <div className={styles['table-position']}>
+                      <span>$20.00</span>
+                      <img src={addIcon} alt="" height="24" className={styles.icon} />
+                    </div>
+                  </td>
+                  <td align='left'>
+                    $200.00
+                  </td>
+                  <td align='left'>
+                    $200.00
+                  </td>
+                  <td align='left'>
+                    $200.00
+                  </td>
+                  <td align='left'>
+                    <span className={styles.red}>
+                      +10.0
+                    </span>
+                    <div className={styles['table-position']}>
+                      <span className={styles.red}>-1.16%</span>
+                      <img src={shareIcon} alt="" height="24" className={styles.icon} />
+                    </div>
+                  </td>
+                  <td>
+                    <button className={styles['table-btn']}>TP/SL</button>
+                    <button className={styles['table-btn-green']}>Close</button>
+                  </td>
+                </tr>
+              )
+          }
+        </tbody>
+      </table>
+
+      <div className='container mobile-container'>
         {
           options.length <= 0 ?
-            <tr>
-              <td colSpan={8}><Empty /></td>
-            </tr>
+            <Empty />
             :
-            options.map((item: any, index: number) =>
-              <tr key={index}>
-                <td align='left'>
-                  <div className={styles['table-position']}>
-                    <img src={ethereumIcon} alt="" height="24" />
-                    <span>BTC</span>
+            <div className='line-con'>
+
+              <div className='line'>
+                <div className='ll'>Position</div>
+                <div className='lr'>
+                  <div>
+                    <div className={styles['table-position']}>
+                      <img src={ethereumIcon} alt="" height="24" />
+                      <span>BTC</span>
+                    </div>
+                    <div className={styles['table-position']}>
+                      10.0x&nbsp;&nbsp;<span className={styles.red}>Short</span>
+                    </div>
                   </div>
-                  <div className={styles['table-position']}>
-                    10.0x&nbsp;&nbsp;<span className={styles.red}>Short</span>
-                  </div>
-                </td>
-                <td align='left'>
+                </div>
+              </div>
+
+              <div className='line'>
+                <div className='ll'>Total</div>
+                <div className='lr'>
                   $200.00
-                </td>
-                <td align='left'>
+                </div>
+              </div>
+
+              <div className='line'>
+                <div className='ll'>Margin</div>
+                <div className='lr'>
                   <div className={styles['table-position']}>
                     <span>$20.00</span>
                     <img src={addIcon} alt="" height="24" className={styles.icon} />
                   </div>
-                </td>
-                <td align='left'>
+                </div>
+              </div>
+
+              <div className='line'>
+                <div className='ll'>Entry Price</div>
+                <div className='lr'>
                   $200.00
-                </td>
-                <td align='left'>
+                </div>
+              </div>
+
+              <div className='line'>
+                <div className='ll'>Mark Price</div>
+                <div className='lr'>
                   $200.00
-                </td>
-                <td align='left'>
+                </div>
+              </div>
+
+              <div className='line'>
+                <div className='ll'>Liq. Price</div>
+                <div className='lr'>
                   $200.00
-                </td>
-                <td align='left'>
-                  <span className={styles.red}>
-                    +10.0
-                  </span>
-                  <div className={styles['table-position']}>
-                    <span className={styles.red}>-1.16%</span>
-                    <img src={shareIcon} alt="" height="24" className={styles.icon} />
+                </div>
+              </div>
+
+              <div className='line'>
+                <div className='ll'>PnL/PnL (%)</div>
+                <div className='lr'>
+                  <div>
+                    <span className={styles.red}>
+                      +10.0
+                    </span>
+                    <div className={styles['table-position']}>
+                      <span className={styles.red}>-1.16%</span>
+                      <img src={shareIcon} alt="" height="24" className={styles.icon} />
+                    </div>
                   </div>
-                </td>
-                <td>
+                </div>
+              </div>
+
+              <div className='line'>
+                <div className='ll'>Liq. Price</div>
+                <div className='lr'>
+                  $200.00
+                </div>
+              </div>
+
+              <div className='line'>
+                <div className='ll'></div>
+                <div className='lr'>
                   <button className={styles['table-btn']}>TP/SL</button>
                   <button className={styles['table-btn-green']}>Close</button>
-                </td>
-              </tr>
-            )
+                </div>
+              </div>
+
+            </div>
         }
-      </tbody>
-    </table>
+
+      </div>
+
+    </>
   )
 }
 
@@ -612,6 +712,54 @@ function Orders(props: OrdersProps) {
           }
         </tbody>
       </table>
+
+      <div className='container mobile-container'>
+        {
+          options.length <= 0 ?
+            <Empty />
+            :
+            <div className='line-con'>
+
+              <div className='line'>
+                <div className='ll'>Type</div>
+                <div className='lr'>
+                  Limit
+                </div>
+              </div>
+
+              <div className='line'>
+                <div className='ll'>Order</div>
+                <div className='lr'>
+                  Increase BTC Long by $197.14
+                </div>
+              </div>
+
+              <div className='line'>
+                <div className='ll'>Trigger Price</div>
+                <div className='lr'>
+                  {`< 16,633.00`}
+                </div>
+              </div>
+              <div className='line'>
+                <div className='ll'>Mark Pirce</div>
+                <div className='lr'>
+                  16,633.00
+                </div>
+              </div>
+
+              <div className='line'>
+                <div className='ll'></div>
+                <div className='lr'>
+                  <button className={styles['table-btn']}>TP/SL</button>
+                  <button className={styles['table-btn-green']}>Close</button>
+                </div>
+              </div>
+
+            </div>
+        }
+
+      </div>
+
     </>
   )
 }
