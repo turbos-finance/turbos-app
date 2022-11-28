@@ -17,6 +17,7 @@ import TurbosDialog from '../../../components/UI/Dialog/Dialog';
 import TurbosTooltip from '../../../components/UI/Tooltip/Tooltip';
 import Chart from '../perpetual/components/chart/Chart';
 import { useSuiWallet } from '../../../contexts/useSuiWallet';
+import SuiWalletButton from '../../../components/walletButton/WalletButton';
 
 type FromToTokenType = {
   balance: string,
@@ -202,9 +203,14 @@ function Perpetual() {
                 : null
             }
 
-            <div className='btn'>
-              {btnText}
-            </div>
+            {
+              !connecting && !connected && !account ?
+                <SuiWalletButton isButton={true} /> :
+                <div className='btn'>
+                  {btnText}
+                </div>
+            }
+
           </div>
 
           <SelectToken visible={selectToken} options={selectTokenSource ? supplyTradeTokens : supplyTokens} onClose={toggleSelectToken} onSelect={changeSelectToken} />

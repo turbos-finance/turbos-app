@@ -9,6 +9,7 @@ import { useState } from "react";
 import { supplyTokens } from '../../../config/tokens';
 import SelectToken, { SelectTokenOption } from "../../../components/selectToken/SelectToken";
 import { useSuiWallet } from "../../../contexts/useSuiWallet";
+import SuiWalletButton from "../../../components/walletButton/WalletButton";
 
 function BuySell() {
   const balance = 100;
@@ -116,10 +117,14 @@ function BuySell() {
               <p className="ll">Fees</p>
               <p className="lr">-</p>
             </div>
-
-            <div className="btn">
-              {btnText}
-            </div>
+            
+            {
+              !connecting && !connected && !account ?
+                <SuiWalletButton isButton={true} /> :
+                <div className='btn'>
+                  {btnText}
+                </div>
+            }
           </div>
 
           <SelectToken visible={selectToken} options={supplyTokens} onClose={toggleSelectToken} onSelect={changeToken} />

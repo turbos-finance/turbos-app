@@ -17,9 +17,12 @@ import Dropdown from 'rc-dropdown';
 import Menu, { Item as MenuItem } from 'rc-menu';
 import 'rc-dropdown/assets/index.css';
 import { Toast } from '../../utils/toastify';
-import { toast } from 'react-toastify';
 
-function SuiWalletButton() {
+type SuiWalletButtonProps = {
+  isButton?: boolean
+}
+
+function SuiWalletButton(props: SuiWalletButtonProps) {
   const { account, connected, connecting, connect, disconnect } = useSuiWallet();
   const [, copyToClipboard] = useCopyToClipboard();
   const [open, setOpen] = useState(false);
@@ -67,18 +70,23 @@ function SuiWalletButton() {
   return (
     <>
       {
-        !connected && !connecting && !account ?
-          <div onClick={handleOpen} className={styles.wallet}>
-            <img src={walletIcon} alt="" />
-            <span>Connect Wallet</span>
-          </div> :
-          <Dropdown overlay={menu} trigger={['click']} overlayClassName={'overlay-dropdown'} onVisibleChange={visibleChange}>
-            <div className={styles.wallet}>
-              <img src={walleticonIcon} alt="" style={{ opacity: 1 }} />
-              <span>{`${account?.slice(0, 5)}...${account?.slice(account.length - 4, account.length)}`}</span>
-              <img src={visible ? upIcon : downIcon} alt="" style={{ marginLeft: '5px' }} />
-            </div>
-          </Dropdown>
+        props.isButton ?
+          <div className='btn' onClick={handleOpen}>
+            Connect Wallet
+          </div>
+          :
+          !connected && !connecting && !account ?
+            <div onClick={handleOpen} className={styles.wallet}>
+              <img src={walletIcon} alt="" />
+              <span>Connect Wallet</span>
+            </div> :
+            <Dropdown overlay={menu} trigger={['click']} overlayClassName={'overlay-dropdown'} onVisibleChange={visibleChange}>
+              <div className={styles.wallet}>
+                <img src={walleticonIcon} alt="" style={{ opacity: 1 }} />
+                <span>{`${account?.slice(0, 5)}...${account?.slice(account.length - 4, account.length)}`}</span>
+                <img src={visible ? upIcon : downIcon} alt="" style={{ marginLeft: '5px' }} />
+              </div>
+            </Dropdown>
       }
 
       <TurbosDialog onClose={handleOpen} open={open} title="Connect a Wallet">

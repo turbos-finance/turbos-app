@@ -23,6 +23,7 @@ import TurbosDialog from '../../../components/UI/Dialog/Dialog';
 import TurbosTooltip from '../../../components/UI/Tooltip/Tooltip';
 import Chart from './components/chart/Chart';
 import { useSuiWallet } from '../../../contexts/useSuiWallet';
+import SuiWalletButton from '../../../components/walletButton/WalletButton';
 
 const sliderGreen = ['rgb(99, 204, 169, .3)', 'rgb(99, 204, 169, 1)'];
 const sliderRed = ['rgba(240, 68, 56, .3)', 'rgba(240, 68, 56, 1)'];
@@ -295,9 +296,15 @@ function Perpetual() {
                 : null
             }
 
-            <div className={trade === 1 ? 'btn btn-red' : 'btn'}>
-              {btnText}
-            </div>
+            {
+              !connecting && !connected && !account ?
+                <SuiWalletButton isButton={true} /> :
+                <div className={trade === 1 ? 'btn btn-red' : 'btn'}>
+                  {btnText}
+                </div>
+            }
+
+
           </div>
 
           <SelectToken visible={selectToken} options={selectTokenSource ? supplyTradeTokens : supplyTokens} onClose={toggleSelectToken} onSelect={changeSelectToken} />
