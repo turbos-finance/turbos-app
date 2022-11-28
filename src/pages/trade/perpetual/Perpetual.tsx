@@ -11,14 +11,12 @@ import toIcon from '../../../assets/images/to.png';
 import swapvertIcon from '../../../assets/images/swapvert.png';
 import addIcon from '../../../assets/images/add.png';
 import shareIcon from '../../../assets/images/share.png';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import Empty from '../../../components/empty/Empty';
 import SelectToken, { SelectTokenOption } from '../../../components/selectToken/SelectToken';
 import { supplyTokens, supplyTradeTokens } from '../../../config/tokens';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
-import Dropdown from "rc-dropdown";
-import Menu, { Item as MenuItem } from 'rc-menu';
 import TurbosDialog from '../../../components/UI/Dialog/Dialog';
 import TurbosTooltip from '../../../components/UI/Tooltip/Tooltip';
 import Chart from './components/chart/Chart';
@@ -36,8 +34,6 @@ const leverageMarks = {
   20: "20x",
   25: "25x",
   30: "30x",
-  40: "40x",
-  49: "49x",
 };
 const percents = [0.25, 0.5, 0.75, 1];
 
@@ -67,11 +63,6 @@ function Perpetual() {
   const [fromToken, setFromToken] = useState<FromToTokenType>({ balance: '', icon: suiIcon, symbol: 'SUI' });
   const [toToken, setToToken] = useState<FromToTokenType>({ balance: '', icon: ethereumIcon, symbol: 'ETH' });
 
-  const [chartToken, setChartToken] = useState('BTC')
-
-  const changeChartToken = (value: string) => {
-    setChartToken(value);
-  }
   const swapvert = () => {
     setFromToken({
       ...toToken,
@@ -124,19 +115,6 @@ function Perpetual() {
   const recordTitle = ['Positions', 'Orders', 'Trades'];
   const recordContent = [<Positions options={[]} />, <Orders options={[]} />, <Trades options={[]} />];
   const typeList = ['Market', 'Limit', 'Trigger'];
-
-  const menu = (
-    <Menu className="overlay-dropdown-ul">
-      <MenuItem>
-        <div className="overlay-dropdown-li menus-dropdown-li" onClick={() => { changeChartToken('BTC'); }}>
-          <span>BTC / USD</span>
-        </div>
-        <div className="overlay-dropdown-li menus-dropdown-li " onClick={() => { changeChartToken('ETH'); }}>
-          <span>ETH / USD</span>
-        </div>
-      </MenuItem>
-    </Menu>
-  );
 
   const btnText = (() => {
     if (!connecting && !connected && !account) {
@@ -263,7 +241,7 @@ function Perpetual() {
                   <div style={{ display: showLeverage ? 'block' : 'none' }} className={styles.silder}>
                     <Slider
                       min={1.1}
-                      max={50}
+                      max={30}
                       step={0.1}
                       marks={leverageMarks}
                       onChange={(value) => { setLeverage(value as number) }}
@@ -339,36 +317,7 @@ function Perpetual() {
       </div>
 
       <div className="main-right">
-        <div className="main-right-container">
-
-          <Dropdown overlay={menu} trigger={['click']} overlayClassName={'overlay-dropdown menus-dropdown'}>
-            <div className={styles.tokenselect}>
-              <span>{chartToken} / USD</span>
-              <img src={downIcon} className="sectiontokensicon" alt="" />
-            </div>
-          </Dropdown>
-
-          <div className={styles.pricelistcon}>
-            <div className={styles.pricelist}>
-              <div className={styles.value1}>1,250.91</div>
-              <div className={styles.value2}>$1,250.91</div>
-            </div>
-            <div className={styles.pricelist}>
-              <div className={styles.value2}>24h Change</div>
-              <div className={styles.value1} style={{ color: '#0ecc83' }}>+6.9%</div>
-            </div>
-            <div className={styles.pricelist}>
-              <div className={styles.value2}>24h High</div>
-              <div className={styles.value1}>$1,250.91</div>
-            </div>
-            <div className={styles.pricelist}>
-              <div className={styles.value2}>24h Low</div>
-              <div className={styles.value1}>$1,250.91</div>
-            </div>
-          </div>
-        </div>
-
-        <Chart chartToken={chartToken} />
+        <Chart />
 
         <div>
           <div className={styles.ordertab}>

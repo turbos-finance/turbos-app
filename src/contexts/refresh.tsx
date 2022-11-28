@@ -15,7 +15,7 @@ const RefreshContext = React.createContext<RefreshContextValues>({
 });
 
 let interval: NodeJS.Timer | undefined;
-const time = 30000;
+const time = 10000;
 
 export const UseRefreshProvider: React.FC<RefreshProvider> = ({ children }) => {
   const [refreshTime, setRefreshTime] = useState<string | number | null>(null);

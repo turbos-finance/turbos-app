@@ -2,50 +2,6 @@
   padding: 0 0 3.6rem;
 }
 
-.tokenselect {
-  display: flex;
-  align-items: center;
-  margin-right: 6rem;
-  cursor: pointer;
-}
-
-.tokenselect span {
-  font-size: 24px;
-  color: #fff;
-  line-height: 1;
-  font-family: "Montserrat Regular";
-  color: #fff;
-  padding: 0 1rem 0 2rem;
-}
-
-.pricelistcon {
-  display: flex;
-  align-items: center;
-  flex: 1;
-}
-
-.pricelist {
-  margin-right: 2rem;
-  min-width: 12rem;
-}
-
-.value1 {
-  padding: 3px 0;
-  font-size: 16px;
-  color: #fff;
-  line-height: 1;
-  font-family: "Montserrat Regular";
-}
-
-.value2 {
-  padding: 3px 0;
-  font-size: 14px;
-  color: #fff;
-  opacity: .5;
-  line-height: 1;
-  font-family: "Montserrat Light";
-}
-
 .ordertab {
   display: flex;
   align-items: center;
@@ -203,23 +159,5 @@
 @media screen and (max-width: 1100px) {
   .table {
     display: none;
-  }
-}
-
-@media screen and (max-width: 760px) {
-  .table {
-    display: none;
-  }
-
-  .tokenselect {
-    margin: 20px 0;
-  }
-
-  .pricelistcon {
-    justify-content: space-between;
-  }
-
-  .pricelist {
-    margin: 0 .5rem;
   }
 }

@@ -86,7 +86,6 @@ export async function getChainlinkChartPricesFromGraph(tokenSymbol = 'ETH', peri
 
     try {
         const chunks = await Promise.all(requests);
-        console.log(chunks);
         let prices: any[] = [];
         const uniqTs = new Set();
         chunks.forEach((chunk) => {

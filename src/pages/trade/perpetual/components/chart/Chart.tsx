@@ -2,6 +2,13 @@ import { createChart, IChartApi, ISeriesApi, TimeRange } from "krasulya-lightwei
 import { useCallback, useEffect, useState } from "react";
 import { format as formatDateFn } from "date-fns";
 import { CHART_PERIODS, getChainlinkChartPricesFromGraph } from "../../../../../utils/subgraph";
+import Dropdown from "rc-dropdown";
+import Menu, { Item as MenuItem } from 'rc-menu';
+import styles from './Chart.module.css';
+import downIcon from '../../../../../assets/images/down.png';
+import upIcon from '../../../../../assets/images/up.png';
+import { numberWithCommas } from "../../../../../utils";
+import { useRefresh } from "../../../../../contexts/refresh";
 
 const times = [
   { label: '5m', id: '5' },
@@ -40,7 +47,7 @@ const getChartOptions = (width: any, height: any) => ({
     fontFamily: "Montserrat Light",
   },
   localization: {
-    locale : 'en-US',
+    locale: 'en-US',
     // https://github.com/tradingview/lightweight-charts/blob/master/docs/customization.md#time-format
     timeFormatter: (businessDayOrTimestamp: number) => {
       return formatDateTime(businessDayOrTimestamp - timezoneOffset);
@@ -82,12 +89,10 @@ const getChartOptions = (width: any, height: any) => ({
 });
 
 
-type CharProps = {
-  chartToken: string
-}
+function Chart() {
 
-function Chart(props: CharProps) {
-  const { chartToken } = props;
+  const { refreshTime } = useRefresh();
+
   const [node, setNode] = useState<HTMLDivElement | null>(null);
   const [chartNode, setChartNode] = useState<HTMLDivElement | null>(null);
   const divRef = useCallback((node: HTMLDivElement) => {
@@ -109,6 +114,17 @@ function Chart(props: CharProps) {
   const [currentSeries, setCurrentSeries] = useState<undefined | ISeriesApi<"Candlestick">>();
   const [hoveredCandlestick, setHoveredCandlestick] = useState<null | any>(null);
   const [chartInited, setChartInited] = useState(false);
+  const [visible, setVisible] = useState(false);
+
+  const [chartToken, setChartToken] = useState('BTC')
+
+  const changeChartToken = (value: string) => {
+    setChartToken(value);
+  }
+
+  const changeVisible = (visible: boolean) => {
+    setVisible(visible)
+  }
 
   const onCrosshairMove = useCallback(
     (evt: any) => {
@@ -166,10 +182,9 @@ function Chart(props: CharProps) {
   // loading data
   useEffect(() => {
     (async () => {
-      console.log(await getChainlinkChartPricesFromGraph(chartToken, chartTime))
       setPricedata(await getChainlinkChartPricesFromGraph(chartToken, chartTime) || []);
     })();
-  }, [chartToken, chartTime])
+  }, [chartToken, chartTime, refreshTime])
 
   // create cart
   useEffect(() => {
@@ -190,31 +205,114 @@ function Chart(props: CharProps) {
     setHoveredCandlestick(pricedata[pricedata.length - 1]);
   }, [node, chartNode, pricedata]);
 
-  return (
-    <div className="chart" ref={chartRef}>
-      <div className='chart-con'>
-        <div className='chart-tabs'>
-          {times.map((item: any) => <span
-            key={item.label}
-            className={chartTime === item.label ? 'active' : ''}
-            onClick={() => { setChartTime(item.label) }}>
-            {item.label}
-          </span>)}
-        </div>
-        {
-          hoveredCandlestick ?
-            <div className='chart-value'>
-              <div>O <span>{hoveredCandlestick.open.toFixed(2)}</span></div>
-              <div>H <span>{hoveredCandlestick.high.toFixed(2)}</span></div>
-              <div>L <span>{hoveredCandlestick.low.toFixed(2)}</span></div>
-              <div>C <span>{hoveredCandlestick.close.toFixed(2)}</span></div>
-            </div>
-            : null
-        }
 
+  const menu = (
+    <Menu className="overlay-dropdown-ul">
+      <MenuItem>
+        <div className="overlay-dropdown-li menus-dropdown-li" onClick={() => { changeChartToken('BTC'); }}>
+          <span>BTC / USD</span>
+        </div>
+        <div className="overlay-dropdown-li menus-dropdown-li " onClick={() => { changeChartToken('ETH'); }}>
+          <span>ETH / USD</span>
+        </div>
+      </MenuItem>
+    </Menu>
+  );
+
+
+  let high;
+  let low;
+  let deltaPrice;
+  let delta;
+  let deltaPercentage;
+  let deltaPercentageStr;
+
+  const now = Date.now() / 1000;
+  const timeThreshold = now - 24 * 60 * 60;
+  // console.log(pricedata);
+  console.log(pricedata[pricedata.length - 1])
+  if (pricedata) {
+    for (let i = pricedata.length - 1; i > 0; i--) {
+      const price = pricedata[i];
+      if (price.time < timeThreshold) {
+        break;
+      }
+
+      if (!low) {
+        low = price.low;
+      }
+      if (!high) {
+        high = price.high;
+      }
+
+      if (price.high > high) {
+        high = price.high;
+      }
+      if (price.low < low) {
+        low = price.low;
+      }
+
+      deltaPrice = price.open;
+    }
+  }
+
+  return (
+    <>
+      <div className="main-right-container">
+
+        <Dropdown overlay={menu} trigger={['click']} overlayClassName={'overlay-dropdown menus-dropdown'} onVisibleChange={changeVisible}>
+          <div className={styles.tokenselect}>
+            <span>{chartToken} / USD</span>
+            <img src={visible ? upIcon : downIcon} className="sectiontokensicon" alt="" />
+          </div>
+        </Dropdown>
+
+        <div className={styles.pricelistcon}>
+          <div className={styles.pricelist}>
+            <div className={styles.value1}>{deltaPrice && numberWithCommas(deltaPrice.toFixed(2)) || '-'}</div>
+            <div className={styles.value2}>${deltaPrice && numberWithCommas(deltaPrice.toFixed(2)) || '-'}</div>
+          </div>
+          <div className={styles.pricelist}>
+            <div className={styles.value2}>24h Change</div>
+            <div className={styles.value1} style={{ color: '#0ecc83' }}>+6.9%</div>
+          </div>
+          <div className={styles.pricelist}>
+            <div className={styles.value2}>24h High</div>
+            <div className={styles.value1}>{high && numberWithCommas(high.toFixed(2)) || '-'}</div>
+          </div>
+          <div className={styles.pricelist}>
+            <div className={styles.value2}>24h Low</div>
+            <div className={styles.value1}>{low && numberWithCommas(low.toFixed(2)) || '-'}</div>
+          </div>
+        </div>
       </div>
-      <div className='chart-result' ref={divRef}></div>
-    </div>
+
+      <div className="chart" ref={chartRef}>
+        <div className='chart-con'>
+          <div className='chart-tabs'>
+            {times.map((item: any) => <span
+              key={item.label}
+              className={chartTime === item.label ? 'active' : ''}
+              onClick={() => { setChartTime(item.label) }}>
+              {item.label}
+            </span>)}
+          </div>
+          {
+            hoveredCandlestick ?
+              <div className='chart-value'>
+                <div>O <span>{hoveredCandlestick.open.toFixed(2)}</span></div>
+                <div>H <span>{hoveredCandlestick.high.toFixed(2)}</span></div>
+                <div>L <span>{hoveredCandlestick.low.toFixed(2)}</span></div>
+                <div>C <span>{hoveredCandlestick.close.toFixed(2)}</span></div>
+              </div>
+              : null
+          }
+
+        </div>
+        <div className='chart-result' ref={divRef}></div>
+      </div>
+
+    </>
 
   )
 }

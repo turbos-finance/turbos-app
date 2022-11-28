@@ -11,8 +11,6 @@ import { useState } from 'react';
 import Empty from '../../../components/empty/Empty';
 import SelectToken, { SelectTokenOption } from '../../../components/selectToken/SelectToken';
 import { supplyTokens, supplyTradeTokens } from '../../../config/tokens';
-import Dropdown from "rc-dropdown";
-import Menu, { Item as MenuItem } from 'rc-menu';
 import TurbosDialog from '../../../components/UI/Dialog/Dialog';
 import TurbosTooltip from '../../../components/UI/Tooltip/Tooltip';
 import Chart from '../perpetual/components/chart/Chart';
@@ -41,11 +39,6 @@ function Perpetual() {
   const [fromToken, setFromToken] = useState<FromToTokenType>({ balance: '', icon: suiIcon, symbol: 'SUI' });
   const [toToken, setToToken] = useState<FromToTokenType>({ balance: '', icon: ethereumIcon, symbol: 'ETH' });
 
-  const [chartToken, setChartToken] = useState('BTC')
-
-  const changeChartToken = (value: string) => {
-    setChartToken(value);
-  }
 
   const swapvert = () => {
     setFromToken({
@@ -94,19 +87,6 @@ function Perpetual() {
   const recordTitle = ['Trades'];
   const recordContent = [<Trades options={[]} />];
   const typeList = ['Market', 'Limit'];
-
-  const menu = (
-    <Menu className="overlay-dropdown-ul">
-      <MenuItem>
-        <div className="overlay-dropdown-li menus-dropdown-li " onClick={() => { changeChartToken('BTC') }}>
-          <span>BTC / USD</span>
-        </div>
-        <div className="overlay-dropdown-li menus-dropdown-li " onClick={() => { changeChartToken('ETH') }}>
-          <span>ETH / USD</span>
-        </div>
-      </MenuItem>
-    </Menu>
-  );
 
   const btnText = (() => {
     if (!connecting && !connected && !account) {
@@ -242,34 +222,7 @@ function Perpetual() {
       </div>
 
       <div className="main-right">
-        <div className="main-right-container">
-
-          <Dropdown overlay={menu} trigger={['click']} overlayClassName={'overlay-dropdown menus-dropdown'} >
-            <div className={styles.tokenselect}>
-              <span>{chartToken} / USD</span>
-              <img src={downIcon} className="sectiontokensicon" alt="" />
-            </div>
-          </Dropdown>
-
-          <div className={styles.pricelist}>
-            <div className={styles.value1}>1,250.91</div>
-            <div className={styles.value2}>$1,250.91</div>
-          </div>
-          <div className={styles.pricelist}>
-            <div className={styles.value2}>24h Change</div>
-            <div className={styles.value1} style={{ color: '#0ecc83' }}>+6.9%</div>
-          </div>
-          <div className={styles.pricelist}>
-            <div className={styles.value2}>24h High</div>
-            <div className={styles.value1}>$1,250.91</div>
-          </div>
-          <div className={styles.pricelist}>
-            <div className={styles.value2}>24h Low</div>
-            <div className={styles.value1}>$1,250.91</div>
-          </div>
-        </div>
-
-        <Chart chartToken={chartToken} />
+        <Chart />
 
         <div>
           <div className={styles.ordertab}>
