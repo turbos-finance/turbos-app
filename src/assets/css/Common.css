@@ -1,6 +1,7 @@
 /* layout */
 .main {
   display: flex;
+  flex: 40rem 1;
 }
 
 .main-left {
@@ -135,7 +136,7 @@
   margin-bottom: 16px;
 }
 
-.mobile-container{
+.mobile-container {
   display: none;
 }
 
@@ -194,7 +195,8 @@
   align-items: center;
   margin-left: 5px;
 }
-.lr-right{
+
+.lr-right {
   text-align: right;
 }
 
@@ -439,17 +441,15 @@
   left: 16px;
   top: 16px;
   z-index: 3;
-}
-
-.chart-con {
   display: flex;
-  align-items: center;
+  align-items: center
 }
 
 .chart-tabs {
   display: flex;
   align-items: center;
   margin-right: 40px;
+  margin-bottom: 16px;
 }
 
 .chart-tabs span {
@@ -479,6 +479,7 @@
   font-size: 14px;
   font-family: "Montserrat Light";
   color: #FFFFFF;
+  margin-bottom: 16px;
 }
 
 .chart-value div {
@@ -491,8 +492,12 @@
 }
 
 .chart-result {
-  position: relative;
+  position: absolute;
+  left: 0;
+  top: 0;
   z-index: 2;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 /* check order*/

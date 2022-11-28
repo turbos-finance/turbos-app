@@ -10,26 +10,19 @@
     .main-right {
         margin: 0;
     }
-}
-
-@media screen and (max-width: 760px) {
-    .main {
-        flex-direction: column;
-    }
-
-    .main-left {
-        width: 100%;
-    }
-
-    .main-right {
-        margin: 0;
-    }
 
     .mobile-container {
         display: block;
     }
+}
 
+@media screen and (max-width: 760px) {
     .main-right-container {
         flex-direction: column;
+    }
+
+    .chart-con {
+        flex-direction: column;
+        align-items: flex-start;
     }
 }

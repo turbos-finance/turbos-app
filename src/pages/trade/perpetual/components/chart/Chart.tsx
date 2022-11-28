@@ -97,12 +97,12 @@ function Chart() {
 
 
   const [pricedata, setPricedata] = useState<any[]>([]);
-  const [chartTime, setChartTime] = useState('5m');
+  const [chartTime, setChartTime] = useState('4h');
   const [chartToken, setChartToken] = useState('BTC');
   const [currentChart, setCurrentChart] = useState<undefined | IChartApi>();
   const [currentSeries, setCurrentSeries] = useState<undefined | ISeriesApi<"Candlestick">>();
   const [hoveredCandlestick, setHoveredCandlestick] = useState<null | any>(null);
-
+  const [chartInited, setChartInited] = useState(false);
 
   const onCrosshairMove = useCallback(
     (evt: any) => {
@@ -148,7 +148,11 @@ function Chart() {
   useEffect(() => {
     if (currentSeries && pricedata && pricedata.length) {
       currentSeries.setData(pricedata);
-      scaleChart();
+      if (!chartInited) {
+        scaleChart();
+        setChartInited(true);
+      }
+
     }
   }, [pricedata, currentSeries]);
 
