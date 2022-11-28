@@ -5,6 +5,8 @@ import SuiWalletButton from '../../components/walletButton/WalletButton';
 import { useSuiWallet } from '../../contexts/useSuiWallet';
 import { JsonRpcProvider, Network } from '@mysten/sui.js';
 import { Toast } from '../../utils/toastify';
+import Loading from '../../components/loading/Loading';
+import { useState } from 'react';
 
 const provider = new JsonRpcProvider(Network.DEVNET);
 
@@ -16,7 +18,14 @@ function Faucet() {
     account
   } = useSuiWallet();
 
+  const [loading, setLoading] = useState(false);
+
   const airdrop = async () => {
+    if (loading) {
+      return;
+    }
+
+    setLoading(true);
     try {
       if (account) {
         await provider.requestSuiFromFaucet(
@@ -29,6 +38,7 @@ function Faucet() {
     } catch (err: any) {
       Toast.error(err.message)
     }
+    setLoading(false);
   }
 
   return (
@@ -48,7 +58,7 @@ function Faucet() {
             !connecting && !connected && !account ?
               <SuiWalletButton isButton={true} /> :
               <div className='btn' onClick={airdrop}>
-                Airdrop
+                {loading ? <Loading /> : 'Airdrop'}
               </div>
           }
         </li>

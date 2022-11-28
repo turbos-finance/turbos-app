@@ -1,0 +1,33 @@
+.loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.loading img {
+    animation: loading linear 1s infinite;
+}
+
+
+
+@keyframes loading {
+    0% {
+        transform: rotate(0);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+
+@-webkit-keyframes loading {
+    0% {
+        -webkit-transform: rotate(0);
+    }
+
+    100% {
+        opacity: 1;
+        -webkit-transform: rotate(360deg);
+    }
+}
