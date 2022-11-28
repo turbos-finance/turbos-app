@@ -50,3 +50,14 @@
 .Toastify__close-button--light {
     color: #FFFFFF;
 }
+
+.view {
+    color: #fff;
+    opacity: .7;
+    text-decoration: underline;
+    margin-left: .5rem;
+}
+
+.view:hover {
+    opacity: 1;
+}

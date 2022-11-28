@@ -61,7 +61,6 @@ export const UseSuiWalletProvider: React.FC<SuiWalletProvider> = ({ children }) 
         const newLocal = ["viewAccount"];
         let perms = await wallet.hasPermissions(newLocal);
         if (given && perms) {
-          console.log(perms)
           setConnected(true);
           setConnecting(true);
           setWalletType(type);

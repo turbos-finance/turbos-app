@@ -33,11 +33,11 @@ const routers: routerType[] = [
     name: 'Earn',
     icon: menus1Icon
   },
-  // {
-  //   url: '/faucet',
-  //   name: 'Faucet',
-  //   icon: faucetIcon
-  // },
+  {
+    url: '/faucet',
+    name: 'Faucet',
+    icon: faucetIcon
+  },
 ];
 
 type MenusProps = {
