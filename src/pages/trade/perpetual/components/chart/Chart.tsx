@@ -37,9 +37,10 @@ const getChartOptions = (width: any, height: any) => ({
   layout: {
     backgroundColor: "rgba(255, 255, 255, 0)",
     textColor: "#ccc",
-    fontFamily: "Relative",
+    fontFamily: "Montserrat Light",
   },
   localization: {
+    locale : 'en-US',
     // https://github.com/tradingview/lightweight-charts/blob/master/docs/customization.md#time-format
     timeFormatter: (businessDayOrTimestamp: number) => {
       return formatDateTime(businessDayOrTimestamp - timezoneOffset);
@@ -80,7 +81,13 @@ const getChartOptions = (width: any, height: any) => ({
   },
 });
 
-function Chart() {
+
+type CharProps = {
+  chartToken: string
+}
+
+function Chart(props: CharProps) {
+  const { chartToken } = props;
   const [node, setNode] = useState<HTMLDivElement | null>(null);
   const [chartNode, setChartNode] = useState<HTMLDivElement | null>(null);
   const divRef = useCallback((node: HTMLDivElement) => {
@@ -98,7 +105,6 @@ function Chart() {
 
   const [pricedata, setPricedata] = useState<any[]>([]);
   const [chartTime, setChartTime] = useState('4h');
-  const [chartToken, setChartToken] = useState('BTC');
   const [currentChart, setCurrentChart] = useState<undefined | IChartApi>();
   const [currentSeries, setCurrentSeries] = useState<undefined | ISeriesApi<"Candlestick">>();
   const [hoveredCandlestick, setHoveredCandlestick] = useState<null | any>(null);
@@ -130,6 +136,7 @@ function Chart() {
       const from = Date.now() / 1000 - (7 * 24 * CHART_PERIODS[chartTime]) / 2 + timezoneOffset;
       const to = Date.now() / 1000 + timezoneOffset;
       currentChart.timeScale().setVisibleRange({ from, to } as TimeRange);
+      // currentChart.timeScale().fitContent();
     }
   }, [currentChart, chartTime]);
 
@@ -159,6 +166,7 @@ function Chart() {
   // loading data
   useEffect(() => {
     (async () => {
+      console.log(await getChainlinkChartPricesFromGraph(chartToken, chartTime))
       setPricedata(await getChainlinkChartPricesFromGraph(chartToken, chartTime) || []);
     })();
   }, [chartToken, chartTime])
@@ -174,7 +182,7 @@ function Chart() {
     );
     chart.subscribeCrosshairMove(onCrosshairMove);
 
-    const series = chart.addCandlestickSeries(getSeriesOptions());
+    const series = chart.addCandlestickSeries();
 
     setCurrentChart(chart);
     setCurrentSeries(series);

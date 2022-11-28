@@ -12,8 +12,8 @@ function Trades(props: TradesProps) {
   return (
     <>
       {
-        options.length <= 0 ? <
-          Empty></Empty> :
+        options.length <= 0 ?
+          <div className='container'><Empty></Empty></div> :
           options.map((item: any) => (
             <div className={styles.trades}>
               <div className={styles['trades-time']}>18 Nov 2022, 1:12 AM</div>

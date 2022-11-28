@@ -33,11 +33,11 @@ const routers: routerType[] = [
     name: 'Earn',
     icon: menus1Icon
   },
-  {
-    url: '/faucet',
-    name: 'Faucet',
-    icon: faucetIcon
-  },
+  // {
+  //   url: '/faucet',
+  //   name: 'Faucet',
+  //   icon: faucetIcon
+  // },
 ];
 
 type MenusProps = {
@@ -103,7 +103,7 @@ export function Nav(props: NavProps) {
             <img src={githubIcon} alt='' />
             <span>GitHub</span>
           </a>
-          <a href='https://github.com/turbos-finance' className={styles.github} target='_blank' rel="noreferrer">
+          <a href='https://t.co/k11LYUR3rv' className={styles.github} target='_blank' rel="noreferrer">
             <img src={discordIcon} alt='' />
             <span>Discord</span>
           </a>
@@ -113,9 +113,9 @@ export function Nav(props: NavProps) {
           ©2022 TURBOS
         </div>
 
-        <div className={styles.mobilemenus} onClick={() => { toggleShow && toggleShow() }}>
+        {/* <div className={styles.mobilemenus} onClick={() => { toggleShow && toggleShow() }}>
           <img src={show ? mobilemenusrightIcon : mobilemenusleftIcon} alt='' />
-        </div>
+        </div> */}
       </div>
     </div>
   )

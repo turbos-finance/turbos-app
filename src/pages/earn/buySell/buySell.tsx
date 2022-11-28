@@ -35,6 +35,13 @@ function BuySell() {
     })
   }
 
+  const changeMax = () => {
+    setFrom({
+      ...from,
+      balance: balance.toString()
+    });
+  }
+
   const toggleSelectToken = () => {
     setSelectToken(!selectToken);
   }
@@ -80,7 +87,7 @@ function BuySell() {
                   <span>Pay</span>
                   <div>
                     <span className="section-balance">Balance: {balance}</span>
-                    <span> | </span><span className="section-max">MAX</span>
+                    <span> | </span><span className="section-max" onClick={changeMax}>MAX</span>
                   </div>
                 </div>
 
@@ -117,7 +124,7 @@ function BuySell() {
               <p className="ll">Fees</p>
               <p className="lr">-</p>
             </div>
-            
+
             {
               !connecting && !connected && !account ?
                 <SuiWalletButton isButton={true} /> :

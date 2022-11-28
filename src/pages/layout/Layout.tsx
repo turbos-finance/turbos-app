@@ -20,11 +20,12 @@ function Layout() {
       <Menus toggleShow={toggleShow} show={show} />
 
       <div className={styles['right']}>
-        <Header />
-        <div className={styles['main']}>
-          <Outlet />
+        <div className={styles['right-content']}>
+          <Header />
+          <div className={styles['main']}>
+            <Outlet />
+          </div>
         </div>
-
       </div>
 
       <ToastContainer

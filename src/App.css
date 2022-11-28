@@ -4,10 +4,12 @@ html {
 
 body {
   background-repeat: no-repeat;
-  background-image: url(https://lanhu-dds-backend.oss-cn-beijing.aliyuncs.com/merge_image/imgs/3d190d01ad934e98b240b533bce32554_mergeImage.png);
+  background-image: url(./assets/images/bg.png);
   background-color: rgba(19, 26, 36, 1);
-  /* background-size: 100% 100%; */
-  background-attachment: fixed;
+  background-size: 100% 100%;
+  background-position: center;
+  /* background-attachment: fixed; */
+  min-height: 100vh;
 }
 
 img {
@@ -32,18 +34,18 @@ p {
 }
 
 
-.underline{
+.underline {
   text-decoration: underline;
 }
 
-.tooltip{
+.tooltip {
   font-size: 1.4rem;
   font-family: "Montserrat Light";
   color: #FFFFFF;
   line-height: 2.4rem;
 }
 
-.pointer{
+.pointer {
   cursor: pointer;
 }
 

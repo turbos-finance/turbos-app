@@ -67,6 +67,11 @@ function Perpetual() {
   const [fromToken, setFromToken] = useState<FromToTokenType>({ balance: '', icon: suiIcon, symbol: 'SUI' });
   const [toToken, setToToken] = useState<FromToTokenType>({ balance: '', icon: ethereumIcon, symbol: 'ETH' });
 
+  const [chartToken, setChartToken] = useState('BTC')
+
+  const changeChartToken = (value: string) => {
+    setChartToken(value);
+  }
   const swapvert = () => {
     setFromToken({
       ...toToken,
@@ -123,10 +128,10 @@ function Perpetual() {
   const menu = (
     <Menu className="overlay-dropdown-ul">
       <MenuItem>
-        <div className="overlay-dropdown-li menus-dropdown-li ">
+        <div className="overlay-dropdown-li menus-dropdown-li" onClick={() => { changeChartToken('BTC'); }}>
           <span>BTC / USD</span>
         </div>
-        <div className="overlay-dropdown-li menus-dropdown-li ">
+        <div className="overlay-dropdown-li menus-dropdown-li " onClick={() => { changeChartToken('ETH'); }}>
           <span>ETH / USD</span>
         </div>
       </MenuItem>
@@ -336,9 +341,9 @@ function Perpetual() {
       <div className="main-right">
         <div className="main-right-container">
 
-          <Dropdown overlay={menu} trigger={['click']} overlayClassName={'overlay-dropdown menus-dropdown'} >
+          <Dropdown overlay={menu} trigger={['click']} overlayClassName={'overlay-dropdown menus-dropdown'}>
             <div className={styles.tokenselect}>
-              <span>ETH / USD</span>
+              <span>{chartToken} / USD</span>
               <img src={downIcon} className="sectiontokensicon" alt="" />
             </div>
           </Dropdown>
@@ -363,7 +368,7 @@ function Perpetual() {
           </div>
         </div>
 
-        <Chart />
+        <Chart chartToken={chartToken} />
 
         <div>
           <div className={styles.ordertab}>
