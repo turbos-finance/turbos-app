@@ -22,6 +22,7 @@ import TurbosTooltip from '../../../components/UI/Tooltip/Tooltip';
 import Chart from './components/chart/Chart';
 import { useSuiWallet } from '../../../contexts/useSuiWallet';
 import SuiWalletButton from '../../../components/walletButton/WalletButton';
+import { useBalance } from '../../../hooks/useBalance';
 
 const sliderGreen = ['rgb(99, 204, 169, .3)', 'rgb(99, 204, 169, 1)'];
 const sliderRed = ['rgba(240, 68, 56, .3)', 'rgba(240, 68, 56, 1)'];
@@ -44,13 +45,15 @@ type FromToTokenType = {
 }
 
 function Perpetual() {
-  const balance = 100;
+  // const balance = 100;
 
   const {
     connecting,
     connected,
     account
   } = useSuiWallet();
+
+  const { balance } = useBalance(account);
 
   const [trade, setTrade] = useState(0); // 0: long; 1: short
   const [type, setType] = useState(0); // 0: market; 1: limit; 2: Trigger
@@ -92,7 +95,7 @@ function Perpetual() {
   }
 
   const handlePercent = (percent: number) => {
-    changefromToken('balance', (balance * percent).toString());
+    changefromToken('balance', (Number(balance) * percent).toString());
     setPercent(percent);
   }
 
@@ -194,7 +197,7 @@ function Perpetual() {
                       </div>
                       <div className="sectionbottom">
                         <div className="sectioninputcon" >
-                          <input type="text" value={toToken.balance} className="sectioninput" placeholder="0.0" />
+                          <input type="text" value={toToken.balance} className="sectioninput" placeholder="0.0" readOnly />
                         </div>
                         <div className="sectiontokens" onClick={() => { toggleSelectToken(1) }}>
                           <img src={toToken.icon} alt="" />

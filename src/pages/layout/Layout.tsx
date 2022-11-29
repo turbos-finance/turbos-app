@@ -29,17 +29,15 @@ function Layout() {
       </div>
 
       <ToastContainer
+        icon={false}
         limit={1}
         position="bottom-right"
         autoClose={5000}
-        hideProgressBar
+        hideProgressBar={true}
         newestOnTop={false}
         closeOnClick={false}
-        rtl={false}
-        pauseOnFocusLoss={false}
         draggable={false}
-        pauseOnHover
-        theme="light"
+        pauseOnHover={false}
       />
     </div>
   )

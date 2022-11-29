@@ -3,12 +3,11 @@ import styles from './Faucet.module.css';
 import suiIcon from '../../assets/images/ic_sui_40.svg';
 import SuiWalletButton from '../../components/walletButton/WalletButton';
 import { useSuiWallet } from '../../contexts/useSuiWallet';
-import { JsonRpcProvider, Network } from '@mysten/sui.js';
 import { Toast } from '../../utils/toastify';
 import Loading from '../../components/loading/Loading';
 import { useState } from 'react';
+import { provider } from '../../lib/provider';
 
-const provider = new JsonRpcProvider(Network.DEVNET);
 
 function Faucet() {
 
@@ -31,8 +30,8 @@ function Faucet() {
         await provider.requestSuiFromFaucet(
           account
         );
-        const value = await provider.getTransactionsForAddress(account);
-        Toast.success(<div>5 test Sui objects are heading to your wallet.<a className='view' target={'_blank'} href={`https://explorer.sui.io/transactions/${value[0]}?network=devnet`}>View In Explorer</a></div>);
+        const transactions = await provider.getTransactionsForAddress(account);
+        Toast.success(<div>5 test Sui objects are heading to your wallet.<a className='view' target={'_blank'} href={`https://explorer.sui.io/transactions/${encodeURIComponent(transactions[0])}?network=devnet`}>View In Explorer</a></div>);
       }
 
     } catch (err: any) {

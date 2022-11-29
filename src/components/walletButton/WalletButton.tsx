@@ -43,7 +43,7 @@ function SuiWalletButton(props: SuiWalletButtonProps) {
 
   const menu = (
     <Menu className="overlay-dropdown-ul">
-      <MenuItem >
+      <MenuItem key="1">
         <div className="overlay-dropdown-li" onClick={() => {
           account && copyToClipboard(account);
           Toast.success("Address copied to your clipboard");
@@ -52,13 +52,13 @@ function SuiWalletButton(props: SuiWalletButtonProps) {
           <span>Copy Address</span>
         </div>
       </MenuItem>
-      <MenuItem>
+      <MenuItem key="2">
         <a href={`https://explorer.sui.io/addresses/${account}`} rel="noreferrer" target='_blank' className="overlay-dropdown-li">
           <img src={explorerIcon} alt="" height={24} />
           <span>View in Explorer</span>
         </a>
       </MenuItem>
-      <MenuItem>
+      <MenuItem key="3">
         <div className="overlay-dropdown-li" onClick={disconnect}>
           <img src={disconnectIcon} alt="" height={24} />
           <span className={styles.red}>Disconnect</span>

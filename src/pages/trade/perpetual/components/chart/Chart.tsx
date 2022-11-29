@@ -230,7 +230,7 @@ function Chart() {
   const now = Date.now() / 1000;
   const timeThreshold = now - 24 * 60 * 60;
   // console.log(pricedata);
-  console.log(pricedata[pricedata.length - 1])
+  // console.log(pricedata[pricedata.length - 1])
   if (pricedata) {
     for (let i = pricedata.length - 1; i > 0; i--) {
       const price = pricedata[i];

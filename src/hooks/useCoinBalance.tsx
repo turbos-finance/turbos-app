@@ -3,14 +3,14 @@ import { provider } from '../lib/provider';
 import { Coin } from '@mysten/sui.js';
 import Big from 'big.js';
 
-export const useBalance = (account: string | undefined) => {
-  const [balance, setBalance] = useState('0.00');
+export const useCoinBalance = (account: string | undefined, symbol: string) => {
+  const [coinBalance, setCoinBalance] = useState('0.00');
 
   const getBalance = async () => {
     if (account) {
       const responce = await provider.getCoinBalancesOwnedByAddress(account);
       const balance = Coin.totalBalance(responce)
-      setBalance(Big(balance.toString()).div(10 ** 9).toString());
+      setCoinBalance(Big(balance.toString()).div(10 ** 9).toString());
     }
   }
 
@@ -19,6 +19,6 @@ export const useBalance = (account: string | undefined) => {
   }, [account]);
 
   return {
-    balance
+    coinBalance
   }
 }

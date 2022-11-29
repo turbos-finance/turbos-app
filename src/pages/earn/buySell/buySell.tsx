@@ -10,15 +10,17 @@ import { supplyTokens } from '../../../config/tokens';
 import SelectToken, { SelectTokenOption } from "../../../components/selectToken/SelectToken";
 import { useSuiWallet } from "../../../contexts/useSuiWallet";
 import SuiWalletButton from "../../../components/walletButton/WalletButton";
+import { useBalance } from "../../../hooks/useBalance";
 
 function BuySell() {
-  const balance = 100;
 
   const {
     connecting,
     connected,
     account
   } = useSuiWallet()
+
+  const { balance } = useBalance(account)
 
   const [active, setActive] = useState(0); // 0:buy; 1:sell;
   const [selectToken, setSelectToken] = useState(false);

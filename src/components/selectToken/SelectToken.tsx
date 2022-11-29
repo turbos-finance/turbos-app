@@ -55,8 +55,8 @@ function SelectToken(props: SelectTokenProps) {
       </div>
       <ul className={styles['token-list']}>
         {
-          data.map((item: SelectTokenOption) => (
-            <li onClick={() => { handleSelect(item) }}>
+          data.map((item: SelectTokenOption, index: number) => (
+            <li onClick={() => { handleSelect(item) }} key={index}>
               <img src={item.icon} alt="" height="24" />
               <div className={styles['token-name']}>
                 <p className={styles['token-value1']}>{item.name}</p>
