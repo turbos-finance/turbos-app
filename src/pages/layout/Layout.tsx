@@ -1,8 +1,5 @@
 import { useState } from 'react';
-import { Link, Outlet } from 'react-router-dom';
-import { cssTransition, ToastContainer } from 'react-toastify';
-import "react-toastify/dist/ReactToastify.css";
-import '../../assets/css/resettoast.css';
+import { Outlet } from 'react-router-dom';
 
 import Header from './components/header/Header';
 import Menus from './components/menus/Menus';
@@ -27,18 +24,6 @@ function Layout() {
           </div>
         </div>
       </div>
-
-      <ToastContainer
-        icon={false}
-        limit={1}
-        position="bottom-right"
-        autoClose={5000}
-        hideProgressBar={true}
-        newestOnTop={false}
-        closeOnClick={false}
-        draggable={false}
-        pauseOnHover={false}
-      />
     </div>
   )
 }

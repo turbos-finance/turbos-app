@@ -16,7 +16,9 @@ import walleticonIcon from '../../assets/images/walleticon.png';
 import Dropdown from 'rc-dropdown';
 import Menu, { Item as MenuItem } from 'rc-menu';
 import 'rc-dropdown/assets/index.css';
-import { Toast } from '../../utils/toastify';
+import { useToastify } from '../../contexts/toastify';
+// import { Toast } from '../../utils/toastify';
+
 
 type SuiWalletButtonProps = {
   isButton?: boolean
@@ -25,6 +27,9 @@ type SuiWalletButtonProps = {
 function SuiWalletButton(props: SuiWalletButtonProps) {
   const { account, connected, connecting, connect, disconnect } = useSuiWallet();
   const [, copyToClipboard] = useCopyToClipboard();
+
+  const { toastify } = useToastify();
+
   const [open, setOpen] = useState(false);
   const [visible, setVisible] = useState(false);
 
@@ -46,7 +51,8 @@ function SuiWalletButton(props: SuiWalletButtonProps) {
       <MenuItem key="1">
         <div className="overlay-dropdown-li" onClick={() => {
           account && copyToClipboard(account);
-          Toast.success("Address copied to your clipboard");
+          // Toast.success("Address copied to your clipboard");
+          toastify('Address copied to your clipboard')
         }}>
           <img src={copyIcon} alt="" height={24} />
           <span>Copy Address</span>

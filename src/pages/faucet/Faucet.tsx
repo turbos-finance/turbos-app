@@ -3,10 +3,11 @@ import styles from './Faucet.module.css';
 import suiIcon from '../../assets/images/ic_sui_40.svg';
 import SuiWalletButton from '../../components/walletButton/WalletButton';
 import { useSuiWallet } from '../../contexts/useSuiWallet';
-import { Toast } from '../../utils/toastify';
+// import { Toast } from '../../utils/toastify';
 import Loading from '../../components/loading/Loading';
 import { useState } from 'react';
 import { provider } from '../../lib/provider';
+import { useToastify } from '../../contexts/toastify';
 
 
 function Faucet() {
@@ -16,6 +17,8 @@ function Faucet() {
     connected,
     account
   } = useSuiWallet();
+
+  const { toastify } = useToastify();
 
   const [loading, setLoading] = useState(false);
 
@@ -31,11 +34,11 @@ function Faucet() {
           account
         );
         const transactions = await provider.getTransactionsForAddress(account);
-        Toast.success(<div>5 test Sui objects are heading to your wallet.<a className='view' target={'_blank'} href={`https://explorer.sui.io/transactions/${encodeURIComponent(transactions[0])}?network=devnet`}>View In Explorer</a></div>);
+        toastify(<div>5 test Sui objects are heading to your wallet.<a className='view' target={'_blank'} href={`https://explorer.sui.io/transaction/${encodeURIComponent(transactions[0])}?network=devnet`}>View In Explorer</a></div>);
       }
 
     } catch (err: any) {
-      Toast.error(err.message)
+      toastify(err.message, 'error')
     }
     setLoading(false);
   }

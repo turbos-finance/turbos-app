@@ -536,3 +536,72 @@
   display: flex;
   align-items: center;
 }
+
+/* toast*/
+.toast-close {
+  width: 24px;
+  cursor: pointer;
+  opacity: .7;
+  line-height: 0;
+}
+
+.toast-close:hover {
+  opacity: 1;
+}
+
+.view {
+  color: #fff;
+  opacity: .7;
+  text-decoration: underline;
+  margin-left: .5rem;
+}
+
+.view:hover {
+  opacity: 1;
+}
+
+.toast-success .MuiSnackbarContent-root {
+  max-width: 360px;
+  background: #3CA180;
+  border-radius: 5px;
+  padding: 20px;
+  box-sizing: border-box;
+  font-size: 14px;
+  font-family: "Montserrat Regular";
+  color: #FFFFFF;
+  line-height: 24px;
+  display: flex;
+  flex-wrap: initial;
+  align-items: flex-start;
+}
+
+.toast-success .MuiSnackbarContent-message {
+  padding: 0;
+}
+
+.toast-success .MuiSnackbarContent-action {
+  margin-right: 0
+}
+
+.toast-error .MuiSnackbarContent-root {
+  max-width: 360px;
+  background: #F04438;
+  border-radius: 5px;
+  padding: 20px;
+  box-sizing: border-box;
+  font-size: 14px;
+  font-family: "Montserrat Regular";
+  color: #FFFFFF;
+  line-height: 24px;
+  display: flex;
+  flex-wrap: initial;
+  align-items: flex-start;
+}
+
+.toast-error .MuiSnackbarContent-message {
+  padding: 0;
+}
+
+.toast-error .MuiSnackbarContent-action {
+  margin-right: 0
+}

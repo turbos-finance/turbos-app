@@ -6,7 +6,6 @@ import SuiWalletButton from "../../../../components/walletButton/WalletButton";
 import styles from './Header.module.css';
 import logo from '../../../../assets/images/logo.png';
 
-import mobilemenusleftIcon from '../../../../assets/images/mobilemenusleft.png';
 import MenuIcon from '@mui/icons-material/Menu';
 import { useState } from "react";
 import { Nav } from '../menus/Menus';
