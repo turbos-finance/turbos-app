@@ -59,3 +59,15 @@
     min-width: auto;
   }
 }
+
+
+@media screen and (max-width: 1440px){
+    .tokenselect{
+      margin-right: 1rem;
+    }
+    .pricelist{
+      min-width: 9rem;
+      margin-right: 0;
+      margin-left: 1rem;
+    }
+} 
