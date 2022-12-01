@@ -69,7 +69,7 @@ export const UseToastifyProvider: React.FC<ToastifyProvider> = ({ children }) =>
       {children}
       <Snackbar
         key={messageInfo ? messageInfo.key : undefined}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
         open={open}
         className={'toast-' + type}
         autoHideDuration={5000}

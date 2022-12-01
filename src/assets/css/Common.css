@@ -560,6 +560,10 @@
   opacity: 1;
 }
 
+.toast-success {
+  top: 66px !important;
+}
+
 .toast-success .MuiSnackbarContent-root {
   max-width: 360px;
   background: #3CA180;
