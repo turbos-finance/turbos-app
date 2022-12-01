@@ -17,13 +17,13 @@ function TlpText() {
         traders lose money, TLP value gains, when the perpetual contract trader gains, TLP value loses.</div>
 
       <div className={styles['tlp-text-title']}>Mint TLP</div>
-      <div className={styles['tlp-text-des']}>Users are able to mint TLP with any crypto assets supported by the platform. Buying TLP on the transaction page
+      <div className={styles['tlp-text-des']}>Users are able to mint TLP with any crypto assets supported by the platform. Buying TLP on trading page
         means minting TLP. </div>
       <div className={styles['tlp-text-des']}>After you successfully mint TLP, the TLP tokens will be automatically mortgaged to earn platform commission
         income and other rewards.</div>
 
       <div className={styles['tlp-text-title']}>Burn TLP</div>
-      <div className={styles['tlp-text-des']}>Burn TLP to redeem the assets you want on TLP transaction page. TLP must be held for at least 15 minutes before it is burned.</div>
+      <div className={styles['tlp-text-des']}>Burn TLP to redeem the assets you want on TLP trading page. TLP must be held for at least 15 minutes before it is burned.</div>
     </div >
   )
 }
