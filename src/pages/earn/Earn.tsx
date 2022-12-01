@@ -8,7 +8,7 @@ type routerType = {
 const routes: routerType[] = [
   {
     url: '/earn/buy-sell',
-    name: 'buy / sell'
+    name: 'Buy / Sell'
   },
   {
     url: '/earn/liquidity',
