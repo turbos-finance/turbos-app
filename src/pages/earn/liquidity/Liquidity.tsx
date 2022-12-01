@@ -24,6 +24,7 @@ const data = [
     price: '$15,384.93',
     available: '$99,968,269.72',
     wallet: '0.00 BTC ($0.00)',
+    balance: '89,000,000',
     fee: '-',
     address: ''
   },
@@ -34,6 +35,7 @@ const data = [
     price: '$1,080.02',
     available: '$149,896,890.29',
     wallet: '0.00 ETH ($0.00)',
+    balance: '205,000,000',
     fee: '-',
     address: ''
   },
@@ -44,6 +46,18 @@ const data = [
     price: '$1.02',
     available: '$19,896,890.29',
     wallet: '0.00 USDC ($0.00)',
+    balance: '505,000,000',
+    fee: '-',
+    address: ''
+  },
+  {
+    icon: suiIcon,
+    token: 'SUI',
+    name: 'Sui',
+    price: '$5.02',
+    available: '$889,896,890.29',
+    wallet: '0.00 SUI ($0.00)',
+    balance: '100,000,000',
     fee: '-',
     address: ''
   }
@@ -79,7 +93,7 @@ function Liquidity() {
             <th align="left">token</th>
             <th align="right">price</th>
             <th align="right">
-              <TurbosTooltip title={<div className="tooltip">Available amount to deposit into GLP.</div>}>
+              <TurbosTooltip title={<div className="tooltip">Available amount to deposit into TLP.</div>}>
                 <span className="underline">Available</span>
               </TurbosTooltip>
             </th>
@@ -107,11 +121,11 @@ function Liquidity() {
                 <>
                   <div className="line linetop">
                     <p className="ll">Current Pool Amount:</p>
-                    <p className="lr lr-right">$312,865,072,578,130 <br></br> (20,000,000,000 BTC)</p>
+                    <p className="lr lr-right">{item.available} <br></br> ({item.balance || 0} {item.token})</p>
                   </div>
                   <div className="line">
                     <p className="ll">Max Pool Capacity:</p>
-                    <p className="lr">$100,000,000</p>
+                    <p className="lr">${item.maxPool || 0}</p>
                   </div>
                 </>
               )
@@ -171,7 +185,7 @@ function Liquidity() {
             <>
               <div className="line linetop">
                 <p className="ll">Current Pool Amount:</p>
-                <p className="lr lr-right">$312,865,072,578,130 <br></br> (20,000,000,000 BTC)</p>
+                <p className="lr lr-right">$312,865,072,578,130 <br></br> (20,000,000,000 )</p>
               </div>
               <div className="line">
                 <p className="ll">Max Pool Capacity:</p>
@@ -200,7 +214,7 @@ function Liquidity() {
                 </div>
                 <div className="line">
                   <div className="ll">
-                    <TurbosTooltip title={<div className="tooltip">Available amount to deposit into GLP.</div>}>
+                    <TurbosTooltip title={<div className="tooltip">Available amount to deposit into TLP.</div>}>
                       <span className="underline">Available</span>
                     </TurbosTooltip>
                   </div>

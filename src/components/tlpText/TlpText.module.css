@@ -1,19 +1,20 @@
-.tlp-text{
-    background: rgba(0,0,0,0.2);
+.tlp-text {
+    background: rgba(0, 0, 0, 0.2);
     border-radius: 1rem;
     padding: 2rem 2rem 0 2rem;
+    margin-bottom: 2rem;
 }
 
-.tlp-text-title{
-   color: #fff;
-   font-family: "Montserrat Light";
-   font-size: 16px;
-   line-height: 1;
-   padding: .4rem 0 1.6rem 0;
-   font-weight: 300;
+.tlp-text-title {
+    color: #fff;
+    font-family: "Montserrat Light";
+    font-size: 16px;
+    line-height: 1;
+    padding: .4rem 0 1.6rem 0;
+    font-weight: 300;
 }
 
-.tlp-text-des{
+.tlp-text-des {
     color: #fff;
     font-family: "Montserrat Light";
     font-size: 14px;
@@ -21,4 +22,13 @@
     line-height: 24px;
     padding: 0 0 2.4rem 0;
     font-weight: 300;
+}
+
+.tlp-text-des a {
+    color: #63CCA9;
+    text-decoration: underline;
+}
+
+.tlp-text-des a:hover {
+    color: #fff;
 }
