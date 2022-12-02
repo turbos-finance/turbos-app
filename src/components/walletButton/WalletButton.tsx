@@ -96,13 +96,13 @@ function SuiWalletButton(props: SuiWalletButtonProps) {
       }
 
       <TurbosDialog onClose={handleOpen} open={open} title="Connect a Wallet">
-        <div onClick={() => { handleConnect('suiWallet') }} className={styles.walletlist}>
-          <span>Sui Wallet</span>
-          <img src={suiIcon} alt="" />
-        </div>
         <div onClick={() => { handleConnect('suietWallet') }} className={styles.walletlist}>
           <span>Suiet</span>
           <img src={suietIcon} alt="" />
+        </div>
+        <div onClick={() => { handleConnect('suiWallet') }} className={styles.walletlist}>
+          <span>Sui Wallet</span>
+          <img src={suiIcon} alt="" />
         </div>
       </TurbosDialog>
 
