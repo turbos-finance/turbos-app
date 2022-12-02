@@ -232,27 +232,34 @@ function Chart() {
   // console.log(pricedata);
   // console.log(pricedata[pricedata.length - 1])
   if (pricedata) {
-    for (let i = pricedata.length - 1; i > 0; i--) {
-      const price = pricedata[i];
-      if (price.time < timeThreshold) {
-        break;
-      }
+    if (chartTime === '1d') {
+      const price = pricedata[pricedata.length - 1];
+      high = price.high;
+      low = price.low;
+      deltaPrice = price.close;
+    } else {
+      for (let i = pricedata.length - 1; i > 0; i--) {
+        const price = pricedata[i];
+        if (price.time < timeThreshold) {
+          break;
+        }
 
-      if (!low) {
-        low = price.low;
-      }
-      if (!high) {
-        high = price.high;
-      }
+        if (!low) {
+          low = price.low;
+        }
+        if (!high) {
+          high = price.high;
+        }
 
-      if (price.high > high) {
-        high = price.high;
-      }
-      if (price.low < low) {
-        low = price.low;
-      }
+        if (price.high > high) {
+          high = price.high;
+        }
+        if (price.low < low) {
+          low = price.low;
+        }
 
-      deltaPrice = price.open;
+        deltaPrice = price.open;
+      }
     }
   }
 
