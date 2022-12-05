@@ -11,24 +11,29 @@
 .faucet-item li {
   background: rgba(0, 0, 0, 0.2);
   border-radius: 5px;
-  padding: 20px;
-
+  padding: 2.4rem 4rem;
+  background: url(../../assets//images/faucet1.png) no-repeat center;
+  background-size: cover;
 }
 
 .faucet-li-top {
   display: flex;
   align-items: center;
+  flex-direction: column;
 }
 
 .faucet-token {
-  padding-left: 16px;
+  /* padding-left: 16px; */
+  padding-top: 2rem;
+  text-align: center;
+  padding-bottom: 0.8rem;
 }
 
 .faucet-token p {
   font-size: 24px;
   font-family: "Montserrat Regular";
   color: #FFFFFF;
-  margin-bottom: 4px;
+  margin-bottom: 8px;
   line-height: 24px;
 }
 

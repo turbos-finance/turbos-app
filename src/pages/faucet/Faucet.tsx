@@ -53,13 +53,13 @@ function Faucet() {
             </div>
             <div className={styles['faucet-token']}>
               <p>SUI</p>
-              <p>Sui</p>
+              <p>0 SUI</p>
             </div>
           </div>
           {
             !connecting && !connected && !account ?
-              <SuiWalletButton isButton={true} /> :
-              <div className='btn' onClick={airdrop}>
+              <SuiWalletButton isButton={true} btnClassName={'btn-outline'} /> :
+              <div className='btn btn-outline' onClick={airdrop}>
                 {loading ? <Loading /> : 'Airdrop'}
               </div>
           }

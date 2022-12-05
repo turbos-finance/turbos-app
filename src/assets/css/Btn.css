@@ -42,3 +42,25 @@
     background: #F04438;
     opacity: .5;
 }
+
+.btn-outline {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 5px;
+}
+
+.btn-outline[disabled] {
+    border: 1px solid rgba(255, 255, 255, .2);
+    color: rgb(255, 255, 255, .5);
+    background: transparent;
+}
+
+.btn-outline:hover {
+    border: 1px solid rgba(255, 255, 255, 1);
+    background: transparent;
+}
+
+.btn-outline:active {
+    border: 1px solid rgba(255, 255, 255, .2);
+    background: transparent;
+}

@@ -23,7 +23,8 @@ import { supplyWallets, SupplyWalletType } from '../../contexts/useWallet/supply
 
 
 type SuiWalletButtonProps = {
-  isButton?: boolean
+  isButton?: boolean,
+  btnClassName?: string
 }
 
 function SuiWalletButton(props: SuiWalletButtonProps) {
@@ -80,7 +81,7 @@ function SuiWalletButton(props: SuiWalletButtonProps) {
     <>
       {
         props.isButton ?
-          <div className='btn' onClick={handleOpen}>
+          <div className={`btn ${props.btnClassName}`} onClick={handleOpen}>
             Connect Wallet
           </div>
           :
