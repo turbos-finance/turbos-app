@@ -587,6 +587,10 @@
   margin-right: 0
 }
 
+.toast-error {
+  top: 66px !important;
+}
+
 .toast-error .MuiSnackbarContent-root {
   max-width: 360px;
   background: #F04438;
