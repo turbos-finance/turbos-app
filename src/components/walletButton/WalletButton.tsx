@@ -116,10 +116,10 @@ function SuiWalletButton(props: SuiWalletButtonProps) {
           <span>Sui Wallet</span>
           <img src={suiIcon} alt="" />
         </div>
-        <div onClick={() => { handleConnect('surfWallet') }} className={styles.walletlist}>
+        {/* <div onClick={() => { handleConnect('surfWallet') }} className={styles.walletlist}>
           <span>Surf Wallet</span>
           <img src={surfIcon} alt="" />
-        </div>
+        </div> */}
       </TurbosDialog>
 
     </>
