@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState, useContext } from 'react';
+import { WalletStandardAdapterProvider } from '@mysten/wallet-adapter-all-wallets';
 
-export type WalletType = 'suiWallet' | 'suietWallet';
+export type WalletType = 'suiWallet' | 'suietWallet' | 'surfWallet';
 
 type SuiWalletProvider = {
   children: React.ReactNode
@@ -23,15 +24,36 @@ const StoreContext = React.createContext<SuiWalletContextValues>({
 });
 
 export const UseSuiWalletProvider: React.FC<SuiWalletProvider> = ({ children }) => {
+  const [adapter, setAdapter] = useState<any>(undefined);
   const [walletType, setWalletType] = useState<WalletType | undefined>(undefined);
   const [account, setAccount] = useState<string | undefined>(undefined);
   const [connected, setConnected] = useState(false);
   const [connecting, setConnecting] = useState(false);
 
   const connect = useCallback(async (type: WalletType) => {
+    if (type === 'surfWallet') {
+      const adapters = new WalletStandardAdapterProvider().get();
+      console.log(adapters);
+      const adapter = adapters.find((item: any) => item.name === 'Surf Wallet');
+      if (adapter) {
+        try {
+          await adapter.connect();
+          setConnected(true);
+          setConnecting(true);
+          setWalletType(type);
+          setAdapter(adapter);
+        } catch (err) {
+          console.log(err);
+        }
+      } else {
+        window.open('https://chrome.google.com/webstore/detail/surf-sui-wallet/emeeapjkbcbpbpgaagfchmcgglmebnen', '_blank')
+      }
+
+      return;
+    }
+
     if (type === 'suietWallet') {
       const wallet = (window as any).__suiet__;
-      console.log(wallet);
       if (wallet) {
         try {
           const newLocal = ["viewAccount"];
@@ -92,7 +114,9 @@ export const UseSuiWalletProvider: React.FC<SuiWalletProvider> = ({ children }) 
     else if (walletType === 'suietWallet') {
       const accounts = await (window as any).__suiet__.getAccounts();
       setAccount(accounts.data[0])
-    } else {
+    } else if (walletType === 'surfWallet') {
+      const accounts = await adapter.getAccounts();
+      setAccount(accounts[0]);
     }
 
   }
@@ -101,8 +125,7 @@ export const UseSuiWalletProvider: React.FC<SuiWalletProvider> = ({ children }) 
     if (connected && connecting && walletType) {
       getAccount();
     }
-
-  }, [connecting, connected, walletType]);
+  }, [connecting, connected, walletType, adapter]);
 
   useEffect(() => {
     const initWallet = () => {
@@ -111,6 +134,8 @@ export const UseSuiWalletProvider: React.FC<SuiWalletProvider> = ({ children }) 
         connect('suiWallet');
       } else if (type === 'suietWallet') {
         connect('suietWallet');
+      } else if (type === 'surfWallet') {
+        connect('surfWallet');
       } else {
         disconnect();
       }

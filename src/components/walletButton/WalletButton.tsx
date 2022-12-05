@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useCopyToClipboard } from "react-use";
-import { useSuiWallet, WalletType } from "../../contexts/useSuiWallet";
+// import { useSuiWallet, StandardWalletAdapter } from "../../contexts/useWallet/useWallet";
+import { useSuiWallet,WalletType } from '../../contexts/useSuiWallet';
 import walletIcon from '../../assets/images/wallet.png'
 import suietIcon from '../../assets/images/suiet.webp'
-import suiIcon from '../../assets/images/ic_sui_40.svg'
+import suiIcon from '../../assets/images/suiwallet.svg';
+import surfIcon from '../../assets/images/surf_vector.svg'
 import styles from './WalletButton.module.css';
 import TurbosDialog from '../UI/Dialog/Dialog';
 import downIcon from '../../assets/images/down.png';
@@ -17,7 +19,7 @@ import Dropdown from 'rc-dropdown';
 import Menu, { Item as MenuItem } from 'rc-menu';
 import 'rc-dropdown/assets/index.css';
 import { useToastify } from '../../contexts/toastify';
-// import { Toast } from '../../utils/toastify';
+import { supplyWallets, SupplyWalletType } from '../../contexts/useWallet/supplyWallet';
 
 
 type SuiWalletButtonProps = {
@@ -25,7 +27,8 @@ type SuiWalletButtonProps = {
 }
 
 function SuiWalletButton(props: SuiWalletButtonProps) {
-  const { account, connected, connecting, connect, disconnect } = useSuiWallet();
+  const { account, connected, connecting, connect, disconnect} = useSuiWallet();
+
   const [, copyToClipboard] = useCopyToClipboard();
 
   const { toastify } = useToastify();
@@ -96,6 +99,14 @@ function SuiWalletButton(props: SuiWalletButtonProps) {
       }
 
       <TurbosDialog onClose={handleOpen} open={open} title="Connect a Wallet">
+        {/* {
+          supplyWallets.map((item: SupplyWalletType, index: number) =>
+            <div onClick={async () => { connect(item.name) }} className={styles.walletlist} key={index}>
+              <span>{item.name}</span>
+              <img src={item.icon} alt="" />
+            </div>
+          )
+        } */}
         <div onClick={() => { handleConnect('suietWallet') }} className={styles.walletlist}>
           <span>Suiet</span>
           <img src={suietIcon} alt="" />
@@ -103,6 +114,10 @@ function SuiWalletButton(props: SuiWalletButtonProps) {
         <div onClick={() => { handleConnect('suiWallet') }} className={styles.walletlist}>
           <span>Sui Wallet</span>
           <img src={suiIcon} alt="" />
+        </div>
+        <div onClick={() => { handleConnect('surfWallet') }} className={styles.walletlist}>
+          <span>Surf Wallet</span>
+          <img src={surfIcon} alt="" />
         </div>
       </TurbosDialog>
 
