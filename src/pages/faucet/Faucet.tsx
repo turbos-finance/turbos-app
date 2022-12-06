@@ -79,8 +79,8 @@ function Faucet() {
         toastify(<div>Successfully received 0.05 SUI, please check in your wallet.<a className='view' target={'_blank'} href={`https://explorer.sui.io/transaction/${encodeURIComponent(transactions[0])}?network=devnet`}>View In Explorer</a></div>);
       }
     } catch (err: any) {
-      toastify(`Request limit reached, please try again after 120 minute.`, 'error');
-      // toastify(err.message, 'error');
+      // toastify(`Request limit reached, please try again after 120 minute.`, 'error');
+      toastify(err.message, 'error');
       // toastify('Network error, please switch to the devnet.', 'error');
     }
 
