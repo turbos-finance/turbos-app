@@ -3,12 +3,13 @@ import styles from './Faucet.module.css';
 import suiIcon from '../../assets/images/ic_sui_40.svg';
 import SuiWalletButton from '../../components/walletButton/WalletButton';
 import { useSuiWallet } from '../../contexts/useSuiWallet';
-// import { Toast } from '../../utils/toastify';
 import Loading from '../../components/loading/Loading';
 import { useState } from 'react';
 import { provider } from '../../lib/provider';
 import { useToastify } from '../../contexts/toastify';
+import { getCertifiedTransaction, getTimestampFromTransactionResponse, getTransactionSender } from '@mysten/sui.js';
 
+const paySuiAddress = '0xc4173a804406a365e69dfb297d4eaaf002546ebd';
 
 function Faucet() {
 
@@ -30,16 +31,51 @@ function Faucet() {
     setLoading(true);
     try {
       if (account) {
+        // cache Transaction
+        const lastFaucetTransaction = localStorage.getItem('lastFaucetTransaction');
+        if (lastFaucetTransaction) {
+          const res = await provider.getTransactionWithEffects(lastFaucetTransaction);
+          if (res) {
+            const timestamp = getTimestampFromTransactionResponse(res);
+            if (timestamp && Date.now() - timestamp <= 1000 * 60 * 60 * 2) {
+              toastify(`Request limit reached, please try again after ${Math.ceil((1000 * 60 * 60 * 2 - (Date.now() - timestamp)) / 1000 / 60)} minute.`, 'error');
+            }
+          }
+        }
+
+        // get Transaction
+        const trans = await provider.getTransactionsForAddress(account);
+        const res = await provider.getTransactionWithEffectsBatch(trans);
+
+        for (let i = 0; i < res.length; i++) {
+          const timestamp = getTimestampFromTransactionResponse(res[i]);
+          if (timestamp) {
+            if (Date.now() - timestamp > 1000 * 60 * 60 * 2) {
+              break;
+            } else {
+              const cert = getCertifiedTransaction(res[i]);
+              const sender = cert && getTransactionSender(cert);
+              if (sender === paySuiAddress) {
+                toastify(`Request limit reached, please try again after ${Math.ceil((1000 * 60 * 60 * 2 - (Date.now() - timestamp)) / 1000 / 60)} minute.`, 'error');
+                break;
+              }
+            }
+          }
+        }
+
+        //get faucet
         await provider.requestSuiFromFaucet(
           account
         );
         const transactions = await provider.getTransactionsForAddress(account);
-        toastify(<div>5 test Sui objects are heading to your wallet.<a className='view' target={'_blank'} href={`https://explorer.sui.io/transaction/${encodeURIComponent(transactions[0])}?network=devnet`}>View In Explorer</a></div>);
+        localStorage.setItem('lastFaucetTransaction', transactions[0]);
+        toastify(<div>Successfully received 0.05 SUI, please check in your wallet.<a className='view' target={'_blank'} href={`https://explorer.sui.io/transaction/${encodeURIComponent(transactions[0])}?network=devnet`}>View In Explorer</a></div>);
       }
-
     } catch (err: any) {
-      toastify(err.message, 'error')
+      toastify(err.message, 'error');
+      // toastify('Network error, please switch to the devnet.', 'error');
     }
+
     setLoading(false);
   }
 
@@ -53,7 +89,7 @@ function Faucet() {
             </div>
             <div className={styles['faucet-token']}>
               <p>SUI</p>
-              <p>0 SUI</p>
+              <p>0.05 SUI</p>
             </div>
           </div>
           {
@@ -63,6 +99,7 @@ function Faucet() {
                 {loading ? <Loading /> : 'Airdrop'}
               </div>
           }
+          <div className={styles['faucet-li-network']}>Devnet</div>
         </li>
       </ul>
     </div>
