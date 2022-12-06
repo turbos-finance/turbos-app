@@ -17,6 +17,27 @@
   position: relative;
 }
 
+.faucet-item li.bg0 {
+  background: url(../../assets//images/faucet2.png) no-repeat center;
+  background-size: cover;
+}
+
+.faucet-item li.bg1 {
+  background: url(../../assets//images/faucet3.png) no-repeat center;
+  background-size: cover;
+}
+
+.faucet-item li.bg2 {
+  background: url(../../assets//images/faucet4.png) no-repeat center;
+  background-size: cover;
+}
+
+.faucet-item li.bg3 {
+  background: url(../../assets//images/faucet5.png) no-repeat center;
+  background-size: cover;
+}
+
+
 .faucet-li-top {
   display: flex;
   align-items: center;
