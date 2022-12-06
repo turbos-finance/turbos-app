@@ -32,21 +32,22 @@ function Faucet() {
     try {
       if (account) {
         // cache Transaction
-        const lastFaucetTransaction = localStorage.getItem('lastFaucetTransaction');
-        if (lastFaucetTransaction) {
-          const res = await provider.getTransactionWithEffects(lastFaucetTransaction);
-          if (res) {
-            const timestamp = getTimestampFromTransactionResponse(res);
-            if (timestamp && Date.now() - timestamp <= 1000 * 60 * 60 * 2) {
-              toastify(`Request limit reached, please try again after ${Math.ceil((1000 * 60 * 60 * 2 - (Date.now() - timestamp)) / 1000 / 60)} minute.`, 'error');
-            }
-          }
-        }
+        // const lastFaucetTransaction = localStorage.getItem('lastFaucetTransaction');
+        // if (lastFaucetTransaction) {
+        //   const res = await provider.getTransactionWithEffects(lastFaucetTransaction);
+        //   if (res) {
+        //     const timestamp = getTimestampFromTransactionResponse(res);
+        //     if (timestamp && Date.now() - timestamp <= 1000 * 60 * 60 * 2) {
+        //       setLoading(false);
+        //       return toastify(`Request limit reached, please try again after ${Math.ceil((1000 * 60 * 60 * 2 - (Date.now() - timestamp)) / 1000 / 60)} minute.`, 'error');
+        //     }
+        //   }
+        // }
 
         // get Transaction
         const trans = await provider.getTransactionsForAddress(account);
         const res = await provider.getTransactionWithEffectsBatch(trans);
-
+        let isGetFaucet = false;
         for (let i = 0; i < res.length; i++) {
           const timestamp = getTimestampFromTransactionResponse(res[i]);
           if (timestamp) {
@@ -57,10 +58,16 @@ function Faucet() {
               const sender = cert && getTransactionSender(cert);
               if (sender === paySuiAddress) {
                 toastify(`Request limit reached, please try again after ${Math.ceil((1000 * 60 * 60 * 2 - (Date.now() - timestamp)) / 1000 / 60)} minute.`, 'error');
+                isGetFaucet = true;
                 break;
               }
             }
           }
+        }
+
+        if (isGetFaucet) {
+          setLoading(false);
+          return;
         }
 
         //get faucet
@@ -72,7 +79,8 @@ function Faucet() {
         toastify(<div>Successfully received 0.05 SUI, please check in your wallet.<a className='view' target={'_blank'} href={`https://explorer.sui.io/transaction/${encodeURIComponent(transactions[0])}?network=devnet`}>View In Explorer</a></div>);
       }
     } catch (err: any) {
-      toastify(err.message, 'error');
+      toastify(`Request limit reached, please try again after 120 minute.`, 'error');
+      // toastify(err.message, 'error');
       // toastify('Network error, please switch to the devnet.', 'error');
     }
 
