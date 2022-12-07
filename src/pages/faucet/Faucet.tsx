@@ -8,6 +8,9 @@ import { useState } from 'react';
 import { provider } from '../../lib/provider';
 import { useToastify } from '../../contexts/toastify';
 import { getCertifiedTransaction, getTimestampFromTransactionResponse, getTransactionSender } from '@mysten/sui.js';
+import { symbols as faucetSymbols, SymbolsType } from '../../config/faucet';
+import Big from 'big.js';
+import http from '../../http';
 
 const paySuiAddress = '0xc4173a804406a365e69dfb297d4eaaf002546ebd';
 
@@ -22,6 +25,7 @@ function Faucet() {
   const { toastify } = useToastify();
 
   const [loading, setLoading] = useState(false);
+  const [loads, setLoads] = useState<(boolean | undefined)[]>([]);
 
   const airdrop = async () => {
     if (loading) {
@@ -87,6 +91,41 @@ function Faucet() {
     setLoading(false);
   }
 
+
+  const airdropToken = async (symbol: string, index: number) => {
+    if (loads[index]) {
+      return;
+    }
+
+    const load = [...loads];
+    load[index] = true;
+    setLoads(load);
+
+    const params = {
+      account,
+      symbol
+    }
+    http.post('/faucet', params).then((res: any) => {
+      console.log(res.data);
+      if (res.data.code === 200) {
+        toastify(res.data.message)
+      } else {
+        toastify(res.data.message, 'error');
+      }
+      load[index] = false
+      setLoads(load);
+    }).catch((err: any) => {
+      console.log(err.message);
+      if (err.response && err.response.status === 429) {
+        toastify('Please try again after 10s', 'error');
+      } else {
+        toastify(err.response && err.response.statusText || err.message, 'error');
+      }
+      load[index] = false
+      setLoads(load);
+    });
+  }
+
   return (
     <div className={styles.faucet}>
       <ul className={styles['faucet-item']}>
@@ -109,6 +148,30 @@ function Faucet() {
           }
           <div className={styles['faucet-li-network']}>Devnet</div>
         </li>
+
+        {
+          faucetSymbols.map((item: SymbolsType, index: number) =>
+            <li key={index} className={styles['bg' + index]}>
+              <div className={styles['faucet-li-top']}>
+                <div className="">
+                  <img src={item.icon} alt="" height={60} />
+                </div>
+                <div className={styles['faucet-token']}>
+                  <p>{item.name}</p>
+                  <p>{Big(item.number).div(10 ** item.decimals).toFixed(2)} {item.symbol}</p>
+                </div>
+              </div>
+              {
+                !connecting && !connected && !account ?
+                  <SuiWalletButton isButton={true} btnClassName={'btn-outline'} /> :
+                  <div className='btn btn-outline' onClick={() => { airdropToken(item.symbol, index) }}>
+                    {loads[index] ? <Loading /> : 'Airdrop'}
+                  </div>
+              }
+              <div className={styles['faucet-li-network']}>Devnet</div>
+            </li>
+          )
+        }
       </ul>
     </div>
   )
