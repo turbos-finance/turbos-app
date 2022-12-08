@@ -101,13 +101,14 @@ export const UseSuiWalletProvider: React.FC<SuiWalletProvider> = ({ children }) 
   }, []);
 
   const disconnect = useCallback(() => {
-    if (adapter) {
+    if (adapter && adapter.disconnect) {
       adapter.disconnect();
     }
     setWalletType(undefined);
     setAccount(undefined);
     setConnected(false);
     setConnecting(false);
+    setAdapter(undefined);
     localStorage.removeItem('suiWallet');
   }, [adapter]);
 

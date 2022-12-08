@@ -113,7 +113,7 @@ function SuiWalletButton(props: SuiWalletButtonProps) {
           <img src={suietIcon} alt="" />
         </div>
         <div onClick={() => { handleConnect('martianSuiWallet') }} className={styles.walletlist}>
-          <span>Martian Sui Wallet</span>
+          <span>Martian</span>
           <img src={martiansuiwalletIcon} alt="" />
         </div>
         <div onClick={() => { handleConnect('suiWallet') }} className={styles.walletlist}>
