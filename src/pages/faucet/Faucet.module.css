@@ -77,12 +77,14 @@
   font-size: 16px;
 }
 
-@media screen and (max-width: 960px) {
+@media screen and (max-width: 1100px) {
   .faucet {
     padding: 5rem 2rem;
 
   }
+}
 
+@media screen and (max-width: 960px) {
   .faucet-item {
     grid-template-columns: repeat(2, 1fr);
   }

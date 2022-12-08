@@ -1,11 +1,11 @@
 import { useMemo, useState } from 'react';
 import { useCopyToClipboard } from "react-use";
 // import { useSuiWallet, StandardWalletAdapter } from "../../contexts/useWallet/useWallet";
-import { useSuiWallet,WalletType } from '../../contexts/useSuiWallet';
+import { useSuiWallet, WalletType } from '../../contexts/useSuiWallet';
 import walletIcon from '../../assets/images/wallet.png'
 import suietIcon from '../../assets/images/suiet.webp'
 import suiIcon from '../../assets/images/suiwallet.svg';
-import surfIcon from '../../assets/images/surf_vector.svg'
+import martiansuiwalletIcon from '../../assets/images/martiansuiwallet.png'
 import styles from './WalletButton.module.css';
 import TurbosDialog from '../UI/Dialog/Dialog';
 import downIcon from '../../assets/images/down.png';
@@ -28,7 +28,7 @@ type SuiWalletButtonProps = {
 }
 
 function SuiWalletButton(props: SuiWalletButtonProps) {
-  const { account, connected, connecting, connect, disconnect} = useSuiWallet();
+  const { account, connected, connecting, connect, disconnect } = useSuiWallet();
 
   const [, copyToClipboard] = useCopyToClipboard();
 
@@ -111,6 +111,10 @@ function SuiWalletButton(props: SuiWalletButtonProps) {
         <div onClick={() => { handleConnect('suietWallet') }} className={styles.walletlist}>
           <span>Suiet</span>
           <img src={suietIcon} alt="" />
+        </div>
+        <div onClick={() => { handleConnect('martianSuiWallet') }} className={styles.walletlist}>
+          <span>Martian</span>
+          <img src={martiansuiwalletIcon} alt="" />
         </div>
         <div onClick={() => { handleConnect('suiWallet') }} className={styles.walletlist}>
           <span>Sui Wallet</span>
