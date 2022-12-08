@@ -15,21 +15,21 @@ const symbols: SymbolsType[] = [
         name: 'Ethereum',
         icon: ethereumIcon,
         symbol: 'ETH',
-        number: 100000000,
+        number: 10,
         decimals: 9
     },
     {
         name: 'BitCoin',
         icon: btcIcon,
         symbol: 'BTC',
-        number: 10000000,
+        number: 1,
         decimals: 9
     },
     {
         name: 'USD Coin',
         icon: usdcIcon,
         symbol: 'USDC',
-        number: 100000000000,
+        number: 10000,
         decimals: 9
     }
 ];

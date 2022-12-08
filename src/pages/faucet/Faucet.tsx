@@ -108,7 +108,7 @@ function Faucet() {
     http.post('/faucet', params).then((res: any) => {
       console.log(res.data);
       if (res.data.code === 200) {
-        toastify(res.data.message)
+        toastify(<div>{res.data.message}, please check in your wallet. <a className='view' target={'_blank'} href={`https://explorer.sui.io/address/${account}?network=devnet`}>View In Explorer</a></div>)
       } else {
         toastify(res.data.message, 'error');
       }
@@ -158,7 +158,7 @@ function Faucet() {
                 </div>
                 <div className={styles['faucet-token']}>
                   <p>{item.name}</p>
-                  <p>{Big(item.number).div(10 ** item.decimals).toFixed(2)} {item.symbol}</p>
+                  <p>{Big(item.number).toFixed(2)} {item.symbol}</p>
                 </div>
               </div>
               {
