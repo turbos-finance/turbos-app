@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState, useContext } from 'react';
 import { WalletStandardAdapterProvider } from '@mysten/wallet-adapter-all-wallets';
 
-export type WalletType = 'suiWallet' | 'suietWallet' | 'martianSuiWallet';
+export type WalletType = 'suiWallet' | 'suietWallet' | 'martianSuiWallet' | 'ethosWallet';
 
 type SuiWalletProvider = {
   children: React.ReactNode
@@ -30,7 +30,34 @@ export const UseSuiWalletProvider: React.FC<SuiWalletProvider> = ({ children }) 
   const [connected, setConnected] = useState(false);
   const [connecting, setConnecting] = useState(false);
 
+  // console.log(new WalletStandardAdapterProvider().get());
   const connect = useCallback(async (type: WalletType) => {
+
+    if (type === 'ethosWallet') {
+      const wallet = (window as any).ethosWallet;
+      if (wallet) {
+        try {
+          let given = await wallet.requestPermissions();
+          const newLocal = ["viewAccount"];
+          let perms = await wallet.hasPermissions(newLocal);
+
+          if (given && perms) {
+            setConnected(true);
+            setConnecting(true);
+            setWalletType(type);
+            setAdapter(wallet);
+            localStorage.setItem('suiWallet', type);
+          }
+
+        } catch (err) {
+          console.log(err);
+        }
+      } else {
+        window.open('https://chrome.google.com/webstore/detail/ethos-sui-wallet/mcbigmjiafegjnnogedioegffbooigli?hl=en&authuser=1', '_blank')
+      }
+      return;
+    }
+
     if (type === 'martianSuiWallet') {
       const wallet = (window as any).martian;
       if (wallet && wallet.sui) {
@@ -122,6 +149,10 @@ export const UseSuiWalletProvider: React.FC<SuiWalletProvider> = ({ children }) 
       setAccount(accounts.data[0])
     }
     else if (walletType === 'martianSuiWallet') {
+      const accounts = await adapter.getAccounts();
+      setAccount(accounts[0]);
+    }
+    else if (walletType === 'ethosWallet') {
       const accounts = await adapter.getAccounts();
       setAccount(accounts[0]);
     }
