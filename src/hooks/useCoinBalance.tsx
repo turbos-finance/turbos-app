@@ -1,22 +1,30 @@
 import { useEffect, useState } from 'react';
-import { provider } from '../lib/provider';
+import { getProvider, provider } from '../lib/provider';
 import { Coin } from '@mysten/sui.js';
-import Big from 'big.js';
+import Bignumber from 'bignumber.js';
+import { NetworkType, SymbolType } from '../config/config.type';
+import { contractConfig } from '../config/contract.config';
 
-export const useCoinBalance = (account: string | undefined, symbol: string) => {
-  const [coinBalance, setCoinBalance] = useState('0.00');
+
+export const useCoinBalance = (account: string | undefined, symbol: SymbolType | undefined, network: NetworkType = 'DEVNET') => {
+  const [coinBalance, setCoinBalance] = useState('0');
 
   const getBalance = async () => {
-    if (account) {
-      const responce = await provider.getCoinBalancesOwnedByAddress(account);
-      const balance = Coin.totalBalance(responce)
-      setCoinBalance(Big(balance.toString()).div(10 ** 9).toString());
+    if (account && symbol) {
+      const provider = getProvider(network);
+      const coin = contractConfig[network].Coin;
+      const symbolConfig = coin[symbol];
+
+      const responce = await provider.getCoinBalancesOwnedByAddress(account, symbolConfig.Type === '0x0000000000000000000000000000000000000002::sui::SUI' ? '0x2::sui::SUI' : symbolConfig.Type);
+      const balance = Coin.totalBalance(responce);
+
+      setCoinBalance(Bignumber(balance.toString()).div(10 ** 9).toFixed(2));
     }
   }
 
   useEffect(() => {
     getBalance();
-  }, [account]);
+  }, [account, symbol]);
 
   return {
     coinBalance

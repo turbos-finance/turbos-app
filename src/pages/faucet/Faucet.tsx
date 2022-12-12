@@ -9,7 +9,7 @@ import { provider } from '../../lib/provider';
 import { useToastify } from '../../contexts/toastify';
 import { getCertifiedTransaction, getTimestampFromTransactionResponse, getTransactionSender } from '@mysten/sui.js';
 import { symbols as faucetSymbols, SymbolsType } from '../../config/faucet';
-import Big from 'big.js';
+import Bignumber from 'bignumber.js';
 import http from '../../http';
 
 const paySuiAddress = '0xc4173a804406a365e69dfb297d4eaaf002546ebd';
@@ -158,7 +158,7 @@ function Faucet() {
                 </div>
                 <div className={styles['faucet-token']}>
                   <p>{item.name}</p>
-                  <p>{Big(item.number).toFixed(2)} {item.symbol}</p>
+                  <p>{Bignumber(item.number).toFixed(2)} {item.symbol}</p>
                 </div>
               </div>
               {

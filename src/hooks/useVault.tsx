@@ -3,15 +3,15 @@ import { provider } from '../lib/provider';
 import { Coin } from '@mysten/sui.js';
 import Bignumber from 'bignumber.js';
 
-export const useBalance = (account: string | undefined) => {
+export const useVault = (account: string | undefined, symbol: string | undefined, network: string = 'DEVNET') => {
+
   const [balance, setBalance] = useState('0.00');
 
   const getBalance = async () => {
     if (account) {
-      const responce = await provider.getCoinBalancesOwnedByAddress(account, '0x2::sui::SUI');
-      const balance = Coin.totalBalance(responce);
-
-      setBalance(Bignumber(balance.toString()).div(10 ** 9).toFixed(2));
+      const responce = await provider.getCoinBalancesOwnedByAddress(account);
+      const balance = Coin.totalBalance(responce)
+      setBalance(Bignumber(balance.toString()).div(10 ** 9).toString());
     }
   }
 
