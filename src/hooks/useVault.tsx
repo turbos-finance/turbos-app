@@ -1,25 +1,32 @@
 import { useEffect, useState } from 'react';
-import { provider } from '../lib/provider';
-import { Coin } from '@mysten/sui.js';
+import { getProvider, provider } from '../lib/provider';
+import { Coin, getObjectFields } from '@mysten/sui.js';
 import Bignumber from 'bignumber.js';
+import { contractConfig } from '../config/contract.config';
+import { NetworkType } from '../config/config.type';
 
-export const useVault = (account: string | undefined, symbol: string | undefined, network: string = 'DEVNET') => {
+export const useVault = (network: NetworkType = 'DEVNET') => {
 
-  const [balance, setBalance] = useState('0.00');
+  const [vault, setVault] = useState({});
 
-  const getBalance = async () => {
-    if (account) {
-      const responce = await provider.getCoinBalancesOwnedByAddress(account);
-      const balance = Coin.totalBalance(responce)
-      setBalance(Bignumber(balance.toString()).div(10 ** 9).toString());
-    }
+  const getVault = async () => {
+    const provider = getProvider(network);
+    const vaultObjectId = contractConfig[network].VaultObjectId;
+
+    const vaultResponce = await provider.getObject(vaultObjectId);
+    const vaultField = getObjectFields(vaultResponce);
+
+    console.log(vaultField);
+    setVault({
+      ...vaultField
+    })
   }
 
   useEffect(() => {
-    getBalance();
-  }, [account]);
+    getVault();
+  }, []);
 
   return {
-    balance
+    vault
   }
 }

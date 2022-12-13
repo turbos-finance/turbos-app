@@ -102,4 +102,9 @@
     .table {
         display: none;
     }
+
+    .liquidity-btn a {
+        width: auto;
+        padding: 0 1.6rem;
+    }
 }

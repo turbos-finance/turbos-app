@@ -1,13 +1,18 @@
 import styles from './SelectToken.module.css';
 import closeIcon from '../../assets/images/close.png';
 import searchIcon from '../../assets/images/search.png';
-import { debounce } from '../../utils';
+import { debounce, numberWithCommas } from '../../utils';
 import { useEffect, useState } from 'react';
+import Bignumber from 'bignumber.js';
+import { useSymbolPrice } from '../../hooks/useSymbolPrice';
+import { useCoinBalance } from '../../hooks/useCoinBalance';
+import { useSuiWallet } from '../../contexts/useSuiWallet';
+import { SymbolType } from '../../config/config.type';
 
 export type SelectTokenOption = {
   icon: string,
   name: string,
-  symbol: string,
+  symbol: SymbolType | string,
   balance?: string | number,
   price?: string | number,
   address?: string
@@ -39,6 +44,7 @@ function SelectToken(props: SelectTokenProps) {
 
   useEffect(() => {
     if (visible) {
+      console.log(options);
       setData(options);
     }
   }, [options, visible])
@@ -55,22 +61,38 @@ function SelectToken(props: SelectTokenProps) {
       </div>
       <ul className={styles['token-list']}>
         {
-          data.map((item: SelectTokenOption, index: number) => (
-            <li onClick={() => { handleSelect(item) }} key={index}>
-              <img src={item.icon} alt="" height="24" />
-              <div className={styles['token-name']}>
-                <p className={styles['token-value1']}>{item.name}</p>
-                <p className={styles['token-value2']}>{item.symbol}</p>
-              </div>
-              <div>
-                <p className={styles['token-value1']}>{item.balance}</p>
-                <p className={styles['token-value2']}>$ {item.price}</p>
-              </div>
-            </li>
-          ))
+          data.map((item: SelectTokenOption, index: number) => <SelectTokenList key={index} item={item} handleSelect={handleSelect} />)
         }
       </ul>
     </div>
+  )
+}
+
+
+type SelectTokenListProps = {
+  handleSelect: (value: SelectTokenOption) => void,
+  item: SelectTokenOption,
+}
+
+function SelectTokenList(props: SelectTokenListProps) {
+  const { item, handleSelect } = props;
+  const { account } = useSuiWallet();
+
+  const { symbolPrice } = useSymbolPrice(item.symbol as SymbolType);
+  const { coinBalance } = useCoinBalance(account, item.symbol as SymbolType);
+
+  return (
+    <li onClick={() => { handleSelect(item) }}>
+      <img src={item.icon} alt="" height="24" />
+      <div className={styles['token-name']}>
+        <p className={styles['token-value1']}>{item.name}</p>
+        <p className={styles['token-value2']}>{item.symbol}</p>
+      </div>
+      <div className={styles['token-name-right']}>
+        <p className={styles['token-value1']}>{coinBalance}</p>
+        <p className={styles['token-value2']}>${numberWithCommas(Bignumber(coinBalance).multipliedBy(Bignumber(symbolPrice.price || 0).toNumber()).toFixed(2)) || 0}</p>
+      </div>
+    </li>
   )
 }
 
