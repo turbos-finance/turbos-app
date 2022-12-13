@@ -4,10 +4,18 @@ import { Coin, getObjectFields } from '@mysten/sui.js';
 import Bignumber from 'bignumber.js';
 import { contractConfig } from '../config/contract.config';
 import { NetworkType } from '../config/config.type';
+import { numberWithCommas } from '../utils';
+
+
+export type VaultType = {
+  tlp_supply: { fields: { value: string } };
+}
 
 export const useVault = (network: NetworkType = 'DEVNET') => {
 
-  const [vault, setVault] = useState({});
+  const [vault, setVault] = useState<VaultType>({
+    tlp_supply: { fields: { value: '0' } }
+  });
 
   const getVault = async () => {
     const provider = getProvider(network);
@@ -16,9 +24,13 @@ export const useVault = (network: NetworkType = 'DEVNET') => {
     const vaultResponce = await provider.getObject(vaultObjectId);
     const vaultField = getObjectFields(vaultResponce);
 
-    console.log(vaultField);
     setVault({
-      ...vaultField
+      ...vaultField,
+      tlp_supply: {
+        fields: {
+          value: Bignumber(vaultField?.tlp_supply?.fields.value).div(10 ** 9).toFixed(2)
+        }
+      }
     })
   }
 

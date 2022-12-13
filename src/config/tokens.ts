@@ -46,9 +46,6 @@ const supplyTradeTokens = [
     },
 ];
 
-
-
-
 export {
     tokens,
     supplyTokens,

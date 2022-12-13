@@ -115,13 +115,13 @@ function TrLiquidity(props: TrLiquidityProps) {
           </div>
         </div>
       </td>
-      <td align="right">${symbolPrice.price}</td>
+      <td align="right">${numberWithCommas(symbolPrice.price || '0')}</td>
       <td align="right">
         <TurbosTooltip title={tooltipTitle}>
           <span className="underline">${pool.available}</span>
         </TurbosTooltip>
       </td>
-      <td align="right">{coinBalance || 0} {item.symbol} (${numberWithCommas(Bignumber(coinBalance).multipliedBy(Bignumber(symbolPrice.price || 0).toNumber()).toFixed(2)) || 0})</td>
+      <td align="right">{numberWithCommas(coinBalance) || 0} {item.symbol} (${numberWithCommas(Bignumber(coinBalance).multipliedBy(Bignumber(symbolPrice.price || 0).toNumber()).toFixed(2)) || 0})</td>
       <td align="right">{pool.fee_reserves || '0.00'}%</td>
       <td align="right">
         <div className={styles['liquidity-btn']}>
@@ -163,7 +163,7 @@ function MobileTrLiquidity(props: TrLiquidityProps) {
       </div>
       <div className="line">
         <p className="ll">Max Pool Capacity:</p>
-        <p className="lr">${pool.max_tusd_amounts || 0}</p>
+        <p className="lr">${pool.max_tusd_amounts}</p>
       </div>
     </>
   );
@@ -185,7 +185,7 @@ function MobileTrLiquidity(props: TrLiquidityProps) {
         </div>
         <div className="line">
           <div className="ll">PRICE</div>
-          <div className="lr">${symbolPrice.price}</div>
+          <div className="lr">${numberWithCommas(symbolPrice.price)}</div>
         </div>
         <div className="line">
           <div className="ll">
@@ -201,7 +201,7 @@ function MobileTrLiquidity(props: TrLiquidityProps) {
         </div>
         <div className="line">
           <div className="ll">WALLET</div>
-          <div className="lr">{coinBalance || 0} {item.symbol} (${numberWithCommas(Bignumber(coinBalance).multipliedBy(Bignumber(symbolPrice.price || 0).toNumber()).toFixed(2)) || 0})</div>
+          <div className="lr">{numberWithCommas(coinBalance) || 0} {item.symbol} (${numberWithCommas(Bignumber(coinBalance).multipliedBy(Bignumber(symbolPrice.price || 0).toNumber()).toFixed(2)) || 0})</div>
         </div>
         <div className="line">
           <div className="ll">FEES</div>

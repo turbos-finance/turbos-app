@@ -89,7 +89,7 @@ function SelectTokenList(props: SelectTokenListProps) {
         <p className={styles['token-value2']}>{item.symbol}</p>
       </div>
       <div className={styles['token-name-right']}>
-        <p className={styles['token-value1']}>{coinBalance}</p>
+        <p className={styles['token-value1']}>{numberWithCommas(coinBalance)}</p>
         <p className={styles['token-value2']}>${numberWithCommas(Bignumber(coinBalance).multipliedBy(Bignumber(symbolPrice.price || 0).toNumber()).toFixed(2)) || 0}</p>
       </div>
     </li>

@@ -49,11 +49,13 @@ export type ContractConfigValueType = {
   PriceOraclePackageId: string,
   AumOracleObjectId: string,
   TimeOracleObjectId: string,
+  PriceFeedStorageObjectId: string,
   Coin: {
     [y in SymbolType]: {
       PackageId: string,
       PriceFeedObjectId: string,
       Type: string,
+      PriceFeedId: string,
       PoolObjectId: string
     }
   }
@@ -61,4 +63,10 @@ export type ContractConfigValueType = {
 
 export type ContractConfigType = {
   [x in NetworkType]: ContractConfigValueType
+}
+
+export type TLPConfigType = {
+  [x in NetworkType]: {
+    Type: string
+  }
 }

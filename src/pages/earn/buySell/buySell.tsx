@@ -11,6 +11,11 @@ import SelectToken, { SelectTokenOption } from "../../../components/selectToken/
 import { useSuiWallet } from "../../../contexts/useSuiWallet";
 import SuiWalletButton from "../../../components/walletButton/WalletButton";
 import { useBalance } from "../../../hooks/useBalance";
+import { useVault } from "../../../hooks/useVault";
+import { useAum } from "../../../hooks/useAum";
+import Bignumber from 'bignumber.js';
+import { numberWithCommas } from "../../../utils";
+import { useCoinBalance } from "../../../hooks/useCoinBalance";
 
 function BuySell() {
 
@@ -137,49 +142,10 @@ function BuySell() {
           </div>
 
           <SelectToken visible={selectToken} options={supplyTokens} onClose={toggleSelectToken} onSelect={changeToken} />
-
         </div>
-
       </div>
 
-
-      <div className="main-right">
-        <div className="container">
-          <div className={styles.title}>
-            <img src={tlpIcon} />
-            <div className={styles.tlpname}>
-              <p>TLP</p>
-              <p>TLP</p>
-            </div>
-          </div>
-
-          <div className="line-con">
-            <div className="line">
-              <p className="ll">Price</p>
-              <p className="lr">$1.00</p>
-            </div>
-            <div className="line">
-              <p className="ll">Wallet</p>
-              <p className="lr">0.0000 TLP ($0.00)</p>
-            </div>
-            <div className="line">
-              <p className="ll">Staked</p>
-              <p className="lr">0.0000 TLP ($0.00)</p>
-            </div>
-          </div>
-          <div className="line-con">
-            <div className="line">
-              <p className="ll">APR</p>
-              <p className="lr">20.00%</p>
-            </div>
-            <div className="line">
-              <p className="ll">Totol Supply</p>
-              <p className="lr">100,000,000 TLP ($100,000,000.00) </p>
-            </div>
-          </div>
-        </div>
-        <TlpText />
-      </div>
+      <BuySellRight />
 
     </div>
   )
@@ -190,6 +156,7 @@ type SectionTokensProps = {
   icon: string,
   symbol: string
 }
+
 function SectionTokens(props: SectionTokensProps) {
   const { toggleSelectToken, icon, symbol } = props;
 
@@ -208,6 +175,59 @@ function TlpToken() {
       <img src={tlpIcon} alt="" />
       <span>TLP</span>
     </div>
+  )
+}
+
+
+function BuySellRight() {
+
+  const { account } = useSuiWallet();
+  const { vault } = useVault();
+  const { aum } = useAum();
+  const { coinBalance } = useCoinBalance(account, 'TLP');
+
+  return (
+    <div className="main-right">
+      <div className="container">
+        <div className={styles.title}>
+          <img src={tlpIcon} />
+          <div className={styles.tlpname}>
+            <p>TLP</p>
+            <p>TLP</p>
+          </div>
+        </div>
+
+        <div className="line-con">
+          <div className="line">
+            <p className="ll">Price</p>
+            <p className="lr">${numberWithCommas(aum.amount)}</p>
+          </div>
+          <div className="line">
+            <p className="ll">Wallet</p>
+            <p className="lr">{numberWithCommas(coinBalance)} TLP (${numberWithCommas(Bignumber(coinBalance).multipliedBy(aum.amount).toFixed(2))})</p>
+          </div>
+          {/* <div className="line">
+          <p className="ll">Staked</p>
+          <p className="lr">0.0000 TLP ($0.00)</p>
+        </div> */}
+        </div>
+        <div className="line-con">
+          {/* <div className="line">
+          <p className="ll">APR</p>
+          <p className="lr">20.00%</p>
+        </div> */}
+          <div className="line">
+            <p className="ll">Totol Supply</p>
+            <p className="lr">
+              {numberWithCommas(vault.tlp_supply.fields.value)} TLP
+              (${numberWithCommas(Bignumber(vault.tlp_supply.fields.value).multipliedBy(aum.amount).toFixed(2))})
+            </p>
+          </div>
+        </div>
+      </div>
+      <TlpText />
+    </div>
+
   )
 }
 

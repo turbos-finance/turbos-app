@@ -4,16 +4,23 @@ import { Coin } from '@mysten/sui.js';
 import Bignumber from 'bignumber.js';
 import { NetworkType, SymbolType } from '../config/config.type';
 import { contractConfig } from '../config/contract.config';
+import TLPConfig from '../config/TLP.config';
 
 
-export const useCoinBalance = (account: string | undefined, symbol: SymbolType | undefined, network: NetworkType = 'DEVNET') => {
-  const [coinBalance, setCoinBalance] = useState('0');
+export const useCoinBalance = (account: string | undefined, symbol: SymbolType | undefined | 'TLP', network: NetworkType = 'DEVNET') => {
+  const [coinBalance, setCoinBalance] = useState('0.00');
 
   const getBalance = async () => {
     if (account && symbol) {
       const provider = getProvider(network);
-      const coin = contractConfig[network].Coin;
-      const symbolConfig = coin[symbol];
+
+      let symbolConfig;
+      if (symbol === 'TLP') {
+        symbolConfig = TLPConfig[network];
+      } else {
+        const coin = contractConfig[network].Coin;
+        symbolConfig = coin[symbol];
+      }
 
       const responce = await provider.getCoinBalancesOwnedByAddress(account, symbolConfig.Type === '0x0000000000000000000000000000000000000002::sui::SUI' ? '0x2::sui::SUI' : symbolConfig.Type);
       const balance = Coin.totalBalance(responce);
