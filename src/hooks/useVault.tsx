@@ -8,7 +8,9 @@ import { numberWithCommas } from '../utils';
 
 
 export type VaultType = {
-  tlp_supply: { fields: { value: string } };
+  tlp_supply: { fields: { value: string } },
+  mint_burn_fee_basis_points?: string
+
 }
 
 export const useVault = (network: NetworkType = 'DEVNET') => {
@@ -26,6 +28,7 @@ export const useVault = (network: NetworkType = 'DEVNET') => {
 
     setVault({
       ...vaultField,
+      mint_burn_fee_basis_points: Bignumber(vaultField?.mint_burn_fee_basis_points).multipliedBy(100).div(10 ** 9).toFixed(2),
       tlp_supply: {
         fields: {
           value: Bignumber(vaultField?.tlp_supply?.fields.value).div(10 ** 9).toFixed(2)

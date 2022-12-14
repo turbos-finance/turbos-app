@@ -5,7 +5,7 @@ import { debounce, numberWithCommas } from '../../utils';
 import { useEffect, useState } from 'react';
 import Bignumber from 'bignumber.js';
 import { useSymbolPrice } from '../../hooks/useSymbolPrice';
-import { useCoinBalance } from '../../hooks/useCoinBalance';
+import { useSymbolBalance } from '../../hooks/useSymbolBalance';
 import { useSuiWallet } from '../../contexts/useSuiWallet';
 import { SymbolType } from '../../config/config.type';
 
@@ -44,7 +44,6 @@ function SelectToken(props: SelectTokenProps) {
 
   useEffect(() => {
     if (visible) {
-      console.log(options);
       setData(options);
     }
   }, [options, visible])
@@ -79,7 +78,7 @@ function SelectTokenList(props: SelectTokenListProps) {
   const { account } = useSuiWallet();
 
   const { symbolPrice } = useSymbolPrice(item.symbol as SymbolType);
-  const { coinBalance } = useCoinBalance(account, item.symbol as SymbolType);
+  const { coinBalance } = useSymbolBalance(account, item.symbol as SymbolType);
 
   return (
     <li onClick={() => { handleSelect(item) }}>

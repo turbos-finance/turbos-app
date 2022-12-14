@@ -1,8 +1,8 @@
 import { ContractConfigType } from "./config.type";
 
 export const contractConfig: ContractConfigType = {
-    "DEVNET": {
-        "ExchangePackageId": "0x4c7e6fac5208f4ebe6c40523a68670b0a8d17d5e",
+	"DEVNET": {
+		"ExchangePackageId": "0x4c7e6fac5208f4ebe6c40523a68670b0a8d17d5e",
 		"VaultObjectId": "0x3a847239f43de4d25afba5397bcbc0f32680cde5",
 		"PositionsObjectId": "0x34c86a6018e361664ce360226346bfb34cf7e193",
 		"ManagerCapObjectId": "0xb5e5be4ed854e44f367286750929b7e7cb4018be",
@@ -42,9 +42,9 @@ export const contractConfig: ContractConfigType = {
 				"PoolObjectId": "0xc9b64fa3c0a00b7a4faa262c6f90ceeeba0927db"
 			}
 		}
-    },
-    "TESTNET": {
-        "ExchangePackageId": "0x4c7e6fac5208f4ebe6c40523a68670b0a8d17d5e",
+	},
+	"TESTNET": {
+		"ExchangePackageId": "0x4c7e6fac5208f4ebe6c40523a68670b0a8d17d5e",
 		"VaultObjectId": "0x3a847239f43de4d25afba5397bcbc0f32680cde5",
 		"PositionsObjectId": "0x34c86a6018e361664ce360226346bfb34cf7e193",
 		"ManagerCapObjectId": "0xb5e5be4ed854e44f367286750929b7e7cb4018be",
@@ -84,9 +84,9 @@ export const contractConfig: ContractConfigType = {
 				"PoolObjectId": "0xc9b64fa3c0a00b7a4faa262c6f90ceeeba0927db"
 			}
 		}
-    },
-    "MAINNET": {
-        "ExchangePackageId": "0x4c7e6fac5208f4ebe6c40523a68670b0a8d17d5e",
+	},
+	"MAINNET": {
+		"ExchangePackageId": "0x4c7e6fac5208f4ebe6c40523a68670b0a8d17d5e",
 		"VaultObjectId": "0x3a847239f43de4d25afba5397bcbc0f32680cde5",
 		"PositionsObjectId": "0x34c86a6018e361664ce360226346bfb34cf7e193",
 		"ManagerCapObjectId": "0xb5e5be4ed854e44f367286750929b7e7cb4018be",
@@ -126,5 +126,5 @@ export const contractConfig: ContractConfigType = {
 				"PoolObjectId": "0xc9b64fa3c0a00b7a4faa262c6f90ceeeba0927db"
 			}
 		}
-    }
+	}
 };

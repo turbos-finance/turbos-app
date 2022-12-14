@@ -14,7 +14,7 @@ import { supplyTokens } from '../../../config/tokens';
 import { usePool } from "../../../hooks/usePool";
 import { useSymbolPrice } from "../../../hooks/useSymbolPrice";
 import { useSuiWallet } from "../../../contexts/useSuiWallet";
-import { useCoinBalance } from "../../../hooks/useCoinBalance";
+import { useSymbolBalance } from "../../../hooks/useSymbolBalance";
 import Bignumber from 'bignumber.js';
 import { numberWithCommas } from "../../../utils";
 
@@ -72,12 +72,12 @@ function TrLiquidity(props: TrLiquidityProps) {
 
   const { pool } = usePool(item.symbol);
   const { symbolPrice } = useSymbolPrice(item.symbol);
-  const { coinBalance } = useCoinBalance(account, item.symbol);
+  const { coinBalance } = useSymbolBalance(account, item.symbol);
 
   const menu = (
     <Menu className="overlay-dropdown-ul">
       <MenuItem>
-        <a href={`https://explorer.sui.io/object/${pool.poolAddress}`} rel="noreferrer" target='_blank' className="overlay-dropdown-li" onClick={() => { setVisible(false) }}>
+        <a href={`https://explorer.sui.io/object/${pool.poolObjectId}`} rel="noreferrer" target='_blank' className="overlay-dropdown-li" onClick={() => { setVisible(false) }}>
           <img src={suiIcon} alt="" height={24} />
           <span>View in Explorer</span>
         </a>
@@ -141,13 +141,13 @@ function MobileTrLiquidity(props: TrLiquidityProps) {
 
   const { pool } = usePool(item.symbol);
   const { symbolPrice } = useSymbolPrice(item.symbol);
-  const { coinBalance } = useCoinBalance(account, item.symbol);
+  const { coinBalance } = useSymbolBalance(account, item.symbol);
 
 
   const menu = (
     <Menu className="overlay-dropdown-ul">
       <MenuItem>
-        <a href={`https://explorer.sui.io/object/${pool.poolAddress}`} rel="noreferrer" target='_blank' className="overlay-dropdown-li" onClick={() => { setVisible(false) }}>
+        <a href={`https://explorer.sui.io/object/${pool.poolObjectId}`} rel="noreferrer" target='_blank' className="overlay-dropdown-li" onClick={() => { setVisible(false) }}>
           <img src={suiIcon} alt="" height={24} />
           <span>View in Explorer</span>
         </a>

@@ -10,10 +10,10 @@ export type PoolValueType = {
   max_tusd_amounts?: string,
   price?: string,
   fee_reserves?: string,
-  poolAddress?: string,
   available?: string,
   tusd_amounts?: string,
   coin_amounts?: string,
+  poolObjectId?:string,
 }
 
 export const usePool = (symbol: SymbolType | undefined, network: NetworkType = 'DEVNET') => {
@@ -31,7 +31,7 @@ export const usePool = (symbol: SymbolType | undefined, network: NetworkType = '
 
       poolField && setPool({
         ...poolField,
-        poolAddress: symbolConfig.PoolObjectId,
+        poolObjectId: symbolConfig.PoolObjectId,
         max_tusd_amounts: numberWithCommas(Bignumber(poolField.max_tusd_amounts).div(10 ** poolField.token_decimals).toFixed(2)),
         fee_reserves: Bignumber(poolField.fee_reserves).multipliedBy(100).div(10 ** poolField.token_decimals).toFixed(2),
         available: numberWithCommas(Bignumber(poolField.tusd_amounts).div(10 ** poolField.token_decimals).toFixed(2)),

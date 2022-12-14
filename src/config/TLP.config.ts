@@ -1,4 +1,4 @@
-import { TLPConfigType } from "./config.type"
+import { TLPConfigType } from "./config.type";
 
 const TLPConfig: TLPConfigType = {
     'DEVNET': {

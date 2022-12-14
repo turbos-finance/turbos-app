@@ -2,12 +2,12 @@ import { useEffect, useState } from 'react';
 import { getProvider, provider } from '../lib/provider';
 import { Coin } from '@mysten/sui.js';
 import Bignumber from 'bignumber.js';
-import { NetworkType, SymbolType } from '../config/config.type';
+import { NetworkType, SymbolType, TLPAndSymbolType } from '../config/config.type';
 import { contractConfig } from '../config/contract.config';
 import TLPConfig from '../config/TLP.config';
 
 
-export const useCoinBalance = (account: string | undefined, symbol: SymbolType | undefined | 'TLP', network: NetworkType = 'DEVNET') => {
+export const useSymbolBalance = (account: string | undefined, symbol: TLPAndSymbolType | undefined, network: NetworkType = 'DEVNET') => {
   const [coinBalance, setCoinBalance] = useState('0.00');
 
   const getBalance = async () => {

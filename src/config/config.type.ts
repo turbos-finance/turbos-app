@@ -1,5 +1,6 @@
 export type NetworkType = 'DEVNET' | 'TESTNET' | 'MAINNET';
 export type SymbolType = 'BTC' | 'ETH' | 'USDC' | 'SUI';
+export type TLPAndSymbolType = SymbolType | 'TLP';
 
 export type SymbolConfigValueType = {
   type: string,

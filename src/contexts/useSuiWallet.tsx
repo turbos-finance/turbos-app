@@ -11,16 +11,20 @@ type SuiWalletContextValues = {
   account: string | undefined,
   connected: boolean,
   connecting: boolean,
+  network: string | undefined,
   connect: (type: WalletType) => void,
-  disconnect: () => void
+  disconnect: () => void,
+  adapter: any | undefined
 }
 
 const StoreContext = React.createContext<SuiWalletContextValues>({
   account: undefined,
   connected: false,
   connecting: false,
+  network: undefined,
   connect: (type: WalletType) => { },
-  disconnect: () => { }
+  disconnect: () => { },
+  adapter: undefined
 });
 
 export const UseSuiWalletProvider: React.FC<SuiWalletProvider> = ({ children }) => {
@@ -29,6 +33,17 @@ export const UseSuiWalletProvider: React.FC<SuiWalletProvider> = ({ children }) 
   const [account, setAccount] = useState<string | undefined>(undefined);
   const [connected, setConnected] = useState(false);
   const [connecting, setConnecting] = useState(false);
+  const [network, setNetwork] = useState<string | undefined>(undefined);
+
+
+  const alreadyConnectSet = (type: WalletType, adapter: any) => {
+    setConnected(true);
+    setConnecting(true);
+    setWalletType(type);
+    setAdapter(adapter);
+    setNetwork('DEVNET');
+    localStorage.setItem('suiWallet', type);
+  }
 
   // console.log(new WalletStandardAdapterProvider().get());
   const connect = useCallback(async (type: WalletType) => {
@@ -42,11 +57,7 @@ export const UseSuiWalletProvider: React.FC<SuiWalletProvider> = ({ children }) 
           let perms = await wallet.hasPermissions(newLocal);
 
           if (given && perms) {
-            setConnected(true);
-            setConnecting(true);
-            setWalletType(type);
-            setAdapter(wallet);
-            localStorage.setItem('suiWallet', type);
+            alreadyConnectSet(type, wallet)
           }
 
         } catch (err) {
@@ -64,10 +75,7 @@ export const UseSuiWalletProvider: React.FC<SuiWalletProvider> = ({ children }) 
         try {
           const response = await wallet.sui.connect(['viewAccount', 'suggestTransactions']);
           if (response && response.address) {
-            setConnected(true);
-            setConnecting(true);
-            setWalletType(type);
-            setAdapter(wallet.sui);
+            alreadyConnectSet(type, wallet.sui);
           }
         } catch (err) {
           console.log(err);
@@ -87,11 +95,7 @@ export const UseSuiWalletProvider: React.FC<SuiWalletProvider> = ({ children }) 
           let given = await wallet.connect(newLocal);
 
           if (given.data) {
-            setConnected(true);
-            setConnecting(true);
-            setWalletType(type);
-            setAdapter(wallet);
-            localStorage.setItem('suiWallet', type);
+            alreadyConnectSet(type, wallet);
           }
         } catch (err) {
           console.log(err);
@@ -111,11 +115,7 @@ export const UseSuiWalletProvider: React.FC<SuiWalletProvider> = ({ children }) 
         const newLocal = ["viewAccount"];
         let perms = await wallet.hasPermissions(newLocal);
         if (given && perms) {
-          setConnected(true);
-          setConnecting(true);
-          setWalletType(type);
-          setAdapter(wallet);
-          localStorage.setItem('suiWallet', type);
+          alreadyConnectSet(type, wallet);
         }
 
       } catch (err) {
@@ -136,6 +136,8 @@ export const UseSuiWalletProvider: React.FC<SuiWalletProvider> = ({ children }) 
     setConnected(false);
     setConnecting(false);
     setAdapter(undefined);
+    setNetwork(undefined);
+
     localStorage.removeItem('suiWallet');
   }, [adapter]);
 
@@ -191,7 +193,7 @@ export const UseSuiWalletProvider: React.FC<SuiWalletProvider> = ({ children }) 
   }, []);
 
   return (
-    <StoreContext.Provider value={{ account, connected, connecting, connect, disconnect }}>
+    <StoreContext.Provider value={{ account, connected, connecting, connect, disconnect, adapter, network }}>
       {children}
     </StoreContext.Provider>
   );
