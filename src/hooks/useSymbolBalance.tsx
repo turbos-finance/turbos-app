@@ -26,6 +26,8 @@ export const useSymbolBalance = (account: string | undefined, symbol: TLPAndSymb
       const balance = Coin.totalBalance(responce);
 
       setCoinBalance(Bignumber(balance.toString()).div(10 ** 9).toFixed(2));
+    } else {
+      setCoinBalance('0.00');
     }
   }
 

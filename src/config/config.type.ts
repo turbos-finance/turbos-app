@@ -40,6 +40,14 @@ export type OracleConfigType = {
   }
 }
 
+export type CoinConfigObjectType = {
+  PackageId: string,
+  PriceFeedObjectId: string,
+  Type: string,
+  PriceFeedId: string,
+  PoolObjectId: string
+}
+
 export type ContractConfigValueType = {
   ExchangePackageId: string,
   VaultObjectId: string,
@@ -52,13 +60,7 @@ export type ContractConfigValueType = {
   TimeOracleObjectId: string,
   PriceFeedStorageObjectId: string,
   Coin: {
-    [y in SymbolType]: {
-      PackageId: string,
-      PriceFeedObjectId: string,
-      Type: string,
-      PriceFeedId: string,
-      PoolObjectId: string
-    }
+    [y in SymbolType]: CoinConfigObjectType
   }
 }
 

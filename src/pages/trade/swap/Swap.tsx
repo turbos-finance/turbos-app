@@ -1,3 +1,6 @@
+import Bignumber from 'bignumber.js';
+import { useEffect, useState } from 'react';
+
 import styles from './Swap.module.css';
 import Trades from '../perpetual/components/trades/Trades';
 import downIcon from '../../../assets/images/down.png';
@@ -7,7 +10,6 @@ import toIcon from '../../../assets/images/to.png';
 import swapvertIcon from '../../../assets/images/swapvert.png';
 import addIcon from '../../../assets/images/add.png';
 import shareIcon from '../../../assets/images/share.png';
-import { useState } from 'react';
 import Empty from '../../../components/empty/Empty';
 import SelectToken, { SelectTokenOption } from '../../../components/selectToken/SelectToken';
 import { supplyTokens, supplyTradeTokens } from '../../../config/tokens';
@@ -16,6 +18,11 @@ import TurbosTooltip from '../../../components/UI/Tooltip/Tooltip';
 import Chart from '../perpetual/components/chart/Chart';
 import { useSuiWallet } from '../../../contexts/useSuiWallet';
 import SuiWalletButton from '../../../components/walletButton/WalletButton';
+import { useSymbolBalance } from '../../../hooks/useSymbolBalance';
+import { useSymbolPrice } from '../../../hooks/useSymbolPrice';
+import { TLPAndSymbolType } from '../../../config/config.type';
+import { useAvailableLiquidity } from '../../../hooks/useAvailableLiquidity';
+import { numberWithCommas } from '../../../utils';
 
 type FromToTokenType = {
   balance: string,
@@ -36,9 +43,17 @@ function Perpetual() {
   const [record, setRecord] = useState(0); // 0: posotion ; 1: orders ; 2: trades
   const [selectToken, setSelectToken] = useState(false);
   const [selectTokenSource, setSelectTokenSource] = useState(0); // 0: from token; 1: to token
+
   const [fromToken, setFromToken] = useState<FromToTokenType>({ balance: '', icon: suiIcon, symbol: 'SUI' });
   const [toToken, setToToken] = useState<FromToTokenType>({ balance: '', icon: ethereumIcon, symbol: 'ETH' });
+  const [btnInfo, setBtnInfo] = useState({ state: 0, text: 'Connect Wallet' });
 
+  const fromTokenBalance = useSymbolBalance(account, fromToken.symbol as TLPAndSymbolType);
+  const fromTokenPrice = useSymbolPrice(fromToken.symbol as TLPAndSymbolType);
+  const toTokenBalance = useSymbolBalance(account, toToken.symbol as TLPAndSymbolType);
+  const toTokenPrice = useSymbolPrice(toToken.symbol as TLPAndSymbolType);
+
+  const { availableLiquidity } = useAvailableLiquidity();
 
   const swapvert = () => {
     setFromToken({
@@ -88,12 +103,28 @@ function Perpetual() {
   const recordContent = [<Trades options={[]} />];
   const typeList = ['Market', 'Limit'];
 
-  const btnText = (() => {
-    if (!connecting && !connected && !account) {
-      return 'Connect Wallet';
+  const changeBtnText = () => {
+    if (!fromToken.balance || !Number(fromToken.balance)) {
+      setBtnInfo({
+        state: 1,
+        text: 'Enter a amount'
+      });
+    } else if (Bignumber(fromToken.balance).minus(fromTokenBalance.coinBalance).isGreaterThan(0)) {
+      setBtnInfo({
+        state: 2,
+        text: `Insufficient ${fromToken.symbol} balance`
+      });
+    } else {
+      setBtnInfo({
+        state: -1,
+        text: `Approve`
+      });
     }
-    return 'Enter a amount'
-  })();
+  };
+
+  useEffect(() => {
+    changeBtnText();
+  }, [connecting, connected, account, fromToken, fromTokenBalance.coinBalance]);
 
 
   return (
@@ -118,7 +149,7 @@ function Perpetual() {
                       <div className="sectiontop">
                         <span>Pay</span>
                         <div>
-                          <span className="section-balance">Balance: {balance}</span>
+                          <span className="section-balance">Balance: {fromTokenBalance.coinBalance}</span>
                           <span> | </span><span className='section-max' onClick={() => { handlePercent(1) }}>MAX</span>
                         </div>
                       </div>
@@ -142,8 +173,6 @@ function Perpetual() {
                       <div className="sectiontop">
                         <span>Receive</span>
                         <div>
-                          {/* <span className="balance">Balance: 0.005</span>
-                <span> | </span><span>MAX</span> */}
                         </div>
                       </div>
                       <div className="sectionbottom">
@@ -164,8 +193,6 @@ function Perpetual() {
                           <div className="sectiontop">
                             <span>Price</span>
                             <div>
-                              {/* <span className="balance">Balance: 0.005</span>
-                <span> | </span><span>MAX</span> */}
                             </div>
                           </div>
                           <div className="sectionbottom">
@@ -173,7 +200,7 @@ function Perpetual() {
                               <input type="text" className="sectioninput" placeholder="0.0" />
                             </div>
                             <div className="sectiontokens">
-                              <span>USDC</span>
+                              <span>{fromToken.symbol} per {toToken.symbol}</span>
                             </div>
                           </div>
                         </div>
@@ -192,8 +219,10 @@ function Perpetual() {
             {
               !connecting && !connected && !account ?
                 <SuiWalletButton isButton={true} /> :
-                <div className='btn'>
-                  {btnText}
+                <div>
+                  <button className='btn' disabled={btnInfo.state > 0} >
+                    {btnInfo.text}
+                  </button>
                 </div>
             }
 
@@ -206,16 +235,16 @@ function Perpetual() {
           <div className="container-title">Swap</div>
           <div className="line-con1">
             <div className="line">
-              <p className="ll">ETH Price</p>
-              <p className="lr">$5.45</p>
+              <p className="ll">{fromToken.symbol} Price</p>
+              <p className="lr">${numberWithCommas(fromTokenPrice.symbolPrice.price)}</p>
             </div>
             <div className="line">
-              <p className="ll">Exit Price</p>
-              <p className="lr">$1,146.22</p>
+              <p className="ll">{toToken.symbol} Price</p>
+              <p className="lr">${numberWithCommas(toTokenPrice.symbolPrice.price)}</p>
             </div>
             <div className="line">
               <p className="ll">Available Liquidity</p>
-              <p className="lr">$107,695.16</p>
+              <p className="lr">${availableLiquidity}</p>
             </div>
           </div>
         </div>

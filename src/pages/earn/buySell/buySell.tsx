@@ -142,40 +142,39 @@ function BuySell() {
     if (network && account) {
       const config = contractConfig[network as NetworkType];
       const symbolConfig = config.Coin[(!active ? fromToken.symbol : toToken.symbol) as SymbolType];
-      // console.log(adapter)；
       const balance = await provider.getCoinBalancesOwnedByAddress(account, symbolConfig.Type);
-      const value = Coin.selectCoinWithBalanceGreaterThanOrEqual(balance, BigInt(Bignumber(fromToken.balance).toNumber()))
-      console.log(value);
-      if(value){
-        const id = Coin.getID(value);
-        console.log(id);
+      const value = Coin.selectCoinWithBalanceGreaterThanOrEqual(balance, BigInt(Bignumber(fromToken.balance).toNumber()));
+
+      if (value) {
+        const coinId = Coin.getID(value);
+        try {
+          const executeTransactionTnx = await adapter.executeMoveCall({
+            packageObjectId: config.ExchangePackageId,
+            module: 'exchange',
+            function: 'add_liquidity',
+            typeArguments: [
+              symbolConfig.Type
+            ],
+            arguments: [
+              config.VaultObjectId,
+              symbolConfig.PoolObjectId,
+              coinId,
+              config.PriceFeedStorageObjectId,
+              // toToken.balance,
+              0,
+              config.AumOracleObjectId,
+              config.TimeOracleObjectId
+            ],
+            gasBudget: 1000
+          });
+          const digest = getTransactionDigest(executeTransactionTnx);
+          toastify(<div>Execute Transaction Successfully <a className='view' target={'_blank'} href={`https://explorer.sui.io/transaction/${digest}?network=devnet`}>View In Explorer</a></div>)
+        } catch (err: any) {
+          toastify(err.message, 'error');
+        }
       }
-      
-      // try {
-      //   const executeTransactionTnx = await adapter.executeMoveCall({
-      //     packageObjectId: config.ExchangePackageId,
-      //     module: 'exchange',
-      //     function: 'add_liquidity',
-      //     typeArguments: [
-      //       symbolConfig.Type
-      //     ],
-      //     arguments: [
-      //       config.VaultObjectId,
-      //       symbolConfig.PoolObjectId,
-      //       symbolConfig.Type,
-      //       config.PriceFeedStorageObjectId,
-      //       toToken.balance,
-      //       config.AumOracleObjectId,
-      //       config.TimeOracleObjectId
-      //     ],
-      //     gasBudget: 1000
-      //   });
-      //   const digest = getTransactionDigest(executeTransactionTnx);
-      //   toastify(<div>Execute Transaction Successfully <a className='view' target={'_blank'} href={`https://explorer.sui.io/transaction/${digest}?network=devnet`}>View In Explorer</a></div>)
-      // } catch (err: any) {
-      //   toastify(err.message, 'error');
-      // }
     }
+
   }
 
   const changeBtnText = () => {
