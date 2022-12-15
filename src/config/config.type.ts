@@ -68,9 +68,3 @@ export type ContractConfigValueType = {
 export type ContractConfigType = {
   [x in NetworkType]: ContractConfigValueType
 }
-
-export type TLPConfigType = {
-  [x in NetworkType]: {
-    Type: string
-  }
-}

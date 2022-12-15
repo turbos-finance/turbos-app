@@ -4,8 +4,6 @@ import { Coin, getMoveObjectType, GetObjectDataResponse, getObjectType } from '@
 import Bignumber from 'bignumber.js';
 import { NetworkType, SymbolType, TLPAndSymbolType } from '../config/config.type';
 import { contractConfig } from '../config/contract.config';
-import TLPConfig from '../config/TLP.config';
-
 
 export const useSymbolBalance = (account: string | undefined, symbol: TLPAndSymbolType | undefined, network: NetworkType = 'DEVNET') => {
   const [coinBalance, setCoinBalance] = useState('0.00');
@@ -16,7 +14,9 @@ export const useSymbolBalance = (account: string | undefined, symbol: TLPAndSymb
 
       let symbolConfig;
       if (symbol === 'TLP') {
-        symbolConfig = TLPConfig[network];
+        symbolConfig = {
+          type: contractConfig[network].ExchangePackageId + '::exchange::TLP'
+        };
       } else {
         const coin = contractConfig[network].Coin;
         symbolConfig = coin[symbol];
@@ -59,7 +59,7 @@ export const useAllSymbolBalance = (account: string | undefined, network: Networ
       const getCoinBalances = symbolList.map((item: string) => {
         let type;
         if (item === 'TLP') {
-          type = TLPConfig[network].Type
+          type = contractConfig[network].ExchangePackageId + '::exchange::TLP';
         } else {
           type = coin[item as SymbolType].Type;
         }
