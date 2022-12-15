@@ -7,6 +7,7 @@ import { contractConfig } from '../config/contract.config';
 import { numberWithCommas } from '../utils';
 import { useVault } from './useVault';
 import { useAum } from './useAum';
+import { useRefresh } from '../contexts/refresh';
 
 export type SymbolPriceType = {
   price: string;
@@ -16,6 +17,7 @@ export type SymbolPriceType = {
 export const useSymbolPrice = (symbol: TLPAndSymbolType | undefined, network: NetworkType = 'DEVNET') => {
   const { vault } = useVault();
   const { aum } = useAum();
+  const { refreshTime } = useRefresh();
 
   const [symbolPrice, setSymbolPrice] = useState<SymbolPriceType>({
     price: '0.00'
@@ -23,7 +25,7 @@ export const useSymbolPrice = (symbol: TLPAndSymbolType | undefined, network: Ne
 
   const getSymbolPrice = async () => {
     if (symbol) {
-      const provider = getProvider(network);
+      // const provider = getProvider(network);
       const coin = contractConfig[network].Coin;
       if (symbol === 'TLP') {
         setSymbolPrice({
@@ -49,7 +51,7 @@ export const useSymbolPrice = (symbol: TLPAndSymbolType | undefined, network: Ne
 
   useEffect(() => {
     getSymbolPrice();
-  }, [symbol, vault, aum]);
+  }, [symbol, vault, aum, refreshTime]);
 
   return {
     symbolPrice
@@ -62,10 +64,12 @@ type AllSymbolPriceType = { [x: string]: SymbolPriceType }
 export const useAllSymbolPrice = (network: NetworkType = 'DEVNET') => {
   const { vault } = useVault();
   const { aum } = useAum();
+  const { refreshTime } = useRefresh();
+  
   const [allSymbolPrice, setAllSymbolPrice] = useState<AllSymbolPriceType>({});
 
   const getAllSymbolPrice = async () => {
-    const provider = getProvider(network);
+    // const provider = getProvider(network);
     const coin = contractConfig[network].Coin;
     const symbolList = Object.keys(coin).concat(['TLP']);
     // symbolList.
@@ -102,7 +106,7 @@ export const useAllSymbolPrice = (network: NetworkType = 'DEVNET') => {
     if (contractConfig) {
       getAllSymbolPrice();
     }
-  }, [contractConfig, vault.tlp_supply.fields.value, aum.amount]);
+  }, [contractConfig, vault.tlp_supply.fields.value, aum.amount,refreshTime]);
 
   return {
     allSymbolPrice

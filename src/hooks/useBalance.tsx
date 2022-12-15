@@ -2,8 +2,10 @@ import { useEffect, useState } from 'react';
 import { provider } from '../lib/provider';
 import { Coin } from '@mysten/sui.js';
 import Bignumber from 'bignumber.js';
+import { useRefresh } from '../contexts/refresh';
 
 export const useBalance = (account: string | undefined) => {
+  const { refreshTime } = useRefresh();
   const [balance, setBalance] = useState('0.00');
 
   const getBalance = async () => {
@@ -17,7 +19,7 @@ export const useBalance = (account: string | undefined) => {
 
   useEffect(() => {
     getBalance();
-  }, [account]);
+  }, [account, refreshTime]);
 
   return {
     balance

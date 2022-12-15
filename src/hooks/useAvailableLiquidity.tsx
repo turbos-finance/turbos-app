@@ -5,13 +5,15 @@ import Bignumber from 'bignumber.js';
 import { contractConfig } from '../config/contract.config';
 import { CoinConfigObjectType, NetworkType, SymbolType } from '../config/config.type';
 import { numberWithCommas } from '../utils';
+import { useRefresh } from '../contexts/refresh';
 
 export const useAvailableLiquidity = (network: NetworkType = 'DEVNET') => {
-
+  const { refreshTime } = useRefresh();
+  
   const [availableLiquidity, setAavailableLiquidity] = useState('0.00');
 
   const getAavailableLiquidity = async () => {
-    const provider = getProvider(network);
+    // const provider = getProvider(network);
     const coinConfig = contractConfig[network].Coin;
 
     const pools = Object.keys(coinConfig).map((item: string) => coinConfig[item as SymbolType].PoolObjectId);
@@ -26,7 +28,7 @@ export const useAvailableLiquidity = (network: NetworkType = 'DEVNET') => {
 
   useEffect(() => {
     getAavailableLiquidity();
-  }, []);
+  }, [refreshTime]);
 
   return {
     availableLiquidity

@@ -5,6 +5,7 @@ import Bignumber from 'bignumber.js';
 import { contractConfig } from '../config/contract.config';
 import { NetworkType } from '../config/config.type';
 import { numberWithCommas } from '../utils';
+import { useRefresh } from '../contexts/refresh';
 
 
 export type VaultType = {
@@ -14,13 +15,15 @@ export type VaultType = {
 }
 
 export const useVault = (network: NetworkType = 'DEVNET') => {
+  const { refreshTime } = useRefresh();
+
 
   const [vault, setVault] = useState<VaultType>({
     tlp_supply: { fields: { value: '0' } }
   });
 
   const getVault = async () => {
-    const provider = getProvider(network);
+    // const provider = getProvider(network);
     const vaultObjectId = contractConfig[network].VaultObjectId;
 
     const vaultResponce = await provider.getObject(vaultObjectId);
@@ -39,7 +42,7 @@ export const useVault = (network: NetworkType = 'DEVNET') => {
 
   useEffect(() => {
     getVault();
-  }, []);
+  }, [refreshTime]);
 
   return {
     vault

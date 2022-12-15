@@ -4,13 +4,15 @@ import { Coin, getMoveObjectType, GetObjectDataResponse, getObjectType } from '@
 import Bignumber from 'bignumber.js';
 import { NetworkType, SymbolType, TLPAndSymbolType } from '../config/config.type';
 import { contractConfig } from '../config/contract.config';
+import { useRefresh } from '../contexts/refresh';
 
 export const useSymbolBalance = (account: string | undefined, symbol: TLPAndSymbolType | undefined, network: NetworkType = 'DEVNET') => {
+  const { refreshTime } = useRefresh();
   const [coinBalance, setCoinBalance] = useState('0.00');
 
   const getBalance = async () => {
     if (account && symbol) {
-      const provider = getProvider(network);
+      // const provider = getProvider(network);
 
       let symbolConfig;
       if (symbol === 'TLP') {
@@ -33,7 +35,7 @@ export const useSymbolBalance = (account: string | undefined, symbol: TLPAndSymb
 
   useEffect(() => {
     getBalance();
-  }, [account, symbol]);
+  }, [account, symbol, refreshTime]);
 
   return {
     coinBalance
@@ -48,11 +50,13 @@ type AllSymbolPriceType = {
 }
 
 export const useAllSymbolBalance = (account: string | undefined, network: NetworkType = 'DEVNET') => {
+  const { refreshTime } = useRefresh();
+
   const [allSymbolBalance, setAllSymbolBalance] = useState<AllSymbolPriceType>({});
 
   const getBalance = async () => {
     if (account) {
-      const provider = getProvider(network);
+      // const provider = getProvider(network);
       const coin = contractConfig[network].Coin;
       const symbolList = Object.keys(coin).concat(['TLP']);
 
@@ -87,7 +91,7 @@ export const useAllSymbolBalance = (account: string | undefined, network: Networ
 
   useEffect(() => {
     getBalance();
-  }, [account]);
+  }, [account, refreshTime]);
 
   return {
     allSymbolBalance

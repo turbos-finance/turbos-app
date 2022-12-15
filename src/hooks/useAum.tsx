@@ -5,6 +5,7 @@ import BigNumber from 'bignumber.js';
 import { contractConfig } from '../config/contract.config';
 import { NetworkType, SymbolType } from '../config/config.type';
 import { numberWithCommas } from '../utils';
+import { useRefresh } from '../contexts/refresh';
 
 
 export type AumType = {
@@ -12,12 +13,13 @@ export type AumType = {
 }
 
 export const useAum = (network: NetworkType = 'DEVNET') => {
+  const { refreshTime } = useRefresh();
   const [aum, setAum] = useState<AumType>({
     amount: '0'
   });
 
   const getAum = async () => {
-    const provider = getProvider(network);
+    // const provider = getProvider(network);
     const coinConfig = contractConfig[network].Coin;
 
     const vaultObject = await provider.getObject(contractConfig[network].VaultObjectId);
@@ -83,7 +85,7 @@ export const useAum = (network: NetworkType = 'DEVNET') => {
 
   useEffect(() => {
     getAum();
-  }, []);
+  }, [refreshTime]);
 
   return {
     aum

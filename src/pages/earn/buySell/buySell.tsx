@@ -25,6 +25,7 @@ import { contractConfig } from "../../../config/contract.config";
 import { useToastify } from '../../../contexts/toastify';
 import { Coin, GetObjectDataResponse, getObjectId, getTransactionDigest, getTransactionEffects } from "@mysten/sui.js";
 import Loading from "../../../components/loading/Loading";
+import { Explorer } from "../../../components/explorer/Explorer";
 
 type FromToTokenType = {
   balance: string,
@@ -56,9 +57,10 @@ function BuySell() {
   const [btnInfo, setBtnInfo] = useState({ state: 0, text: 'Connect Wallet' });
   const [loading, setLoading] = useState(false);
 
-  const { vault } = useVault();
-  const { pool } = usePool(fromToken.symbol === 'TLP' ? undefined : fromToken.symbol as SymbolType);
+  const poolArg = active ? toToken.symbol as TLPAndSymbolType : fromToken.symbol as TLPAndSymbolType;
 
+  const { vault } = useVault();
+  const { pool } = usePool(poolArg === 'TLP' ? undefined : poolArg);
   const { allSymbolPrice } = useAllSymbolPrice();
   const { allSymbolBalance } = useAllSymbolBalance(account);
 
@@ -69,7 +71,7 @@ function BuySell() {
         symbol: result.symbol,
         icon: result.icon,
         address: result.address || '',
-        balance: allSymbolBalance[result.symbol].balance
+        balance: allSymbolBalance[result.symbol] ? allSymbolBalance[result.symbol].balance : '0.00',
       });
     } else {
       setFromToken({
@@ -77,7 +79,7 @@ function BuySell() {
         symbol: result.symbol,
         icon: result.icon,
         address: result.address || '',
-        balance: allSymbolBalance[result.symbol].balance
+        balance: allSymbolBalance[result.symbol] ? allSymbolBalance[result.symbol].balance : '0.00',
       });
     }
   }
@@ -148,49 +150,74 @@ function BuySell() {
   const approve = async () => {
     if (network && account) {
       setLoading(true);
-      console.log( BigInt(fromToken.value))
-      // const config = contractConfig[network as NetworkType];
-      // const symbolConfig = config.Coin[(fromToken.symbol) as SymbolType];
-      // const balance = await provider.selectCoinsWithBalanceGreaterThanOrEqual(account, BigInt(fromToken.value), symbolConfig.Type);
-      // const balanceObjects = balance.map((item: GetObjectDataResponse) => getObjectId(item));
 
-      // console.log(symbolConfig, balance);
-      // try {
-      //   const executeTransactionTnx = await adapter.executeMoveCall({
-      //     packageObjectId: config.ExchangePackageId,
-      //     module: 'exchange',
-      //     function: 'add_liquidity',
-      //     typeArguments: [
-      //       symbolConfig.Type
-      //     ],
-      //     arguments: [
-      //       config.VaultObjectId,
-      //       symbolConfig.PoolObjectId,
-      //       balanceObjects,
-      //       Bignumber(fromToken.value).multipliedBy(10 ** 9).toNumber(),
-      //       config.PriceFeedStorageObjectId,
-      //       0,
-      //       config.TimeOracleObjectId
-      //     ],
-      //     gasBudget: 10000
-      //   });
-      //   const effects = getTransactionEffects(executeTransactionTnx);
-      //   if (effects?.status.status === 'failure') {
-      //     toastify(effects.status.error, 'error');
-      //   } else {
-      //     const digest = getTransactionDigest(executeTransactionTnx);
-      //     toastify(
-      //       <div>
-      //         Execute Transaction Successfully!
-      //         <a className='view' target={'_blank'} href={`https://explorer.sui.io/transaction/${digest}?network=devnet`}>
-      //           View In Explorer
-      //         </a>
-      //       </div>
-      //     );
-      //   }
-      // } catch (err: any) {
-      //   toastify(err.message, 'error');
-      // }
+      const config = contractConfig[network as NetworkType];
+      const toSymbolConfig = config.Coin[(toToken.symbol) as SymbolType];
+      const fromSymbolConfig = config.Coin[(fromToken.symbol) as SymbolType];
+
+      const toType = !toSymbolConfig
+        ? config.ExchangePackageId + '::exchange::TLP'
+        : toSymbolConfig.Type === '0x0000000000000000000000000000000000000002::sui::SUI' ? '0x2::sui::SUI' : toSymbolConfig.Type;
+
+      const fromType = !fromSymbolConfig
+        ? config.ExchangePackageId + '::exchange::TLP'
+        : fromSymbolConfig.Type === '0x0000000000000000000000000000000000000002::sui::SUI' ? '0x2::sui::SUI' : fromSymbolConfig.Type;
+
+      const coinBalance = await provider.getCoinBalancesOwnedByAddress(account, fromType);
+      const amount = Bignumber(fromToken.value).multipliedBy(10 ** 9).toNumber();
+      const balanceResponse = Coin.selectCoinSetWithCombinedBalanceGreaterThanOrEqual(coinBalance, BigInt(amount));
+      const balanceObjects = balanceResponse.map((item) => Coin.getID(item));
+
+      let argumentsVal: (string | number | string[])[] = []
+      let typeArgumentsVal: string[] = [];
+
+      if (!active) {
+        argumentsVal = [
+          config.VaultObjectId,
+          fromSymbolConfig.PoolObjectId,
+          balanceObjects,
+          Bignumber(fromToken.value).multipliedBy(10 ** 9).toNumber(),
+          config.PriceFeedStorageObjectId,
+          0,
+          config.TimeOracleObjectId
+        ]
+        typeArgumentsVal = [fromType];
+      } else {
+        argumentsVal = [
+          config.VaultObjectId,
+          toSymbolConfig.PoolObjectId,
+          balanceObjects,
+          Bignumber(fromToken.value).multipliedBy(10 ** 9).toNumber(),
+          config.PriceFeedStorageObjectId,
+          0,
+          account,
+          config.TimeOracleObjectId
+        ]
+        typeArgumentsVal = [toType];
+      }
+
+      try {
+        const executeTransactionTnx = await adapter.executeMoveCall({
+          packageObjectId: config.ExchangePackageId,
+          module: 'exchange',
+          function: !active ? 'add_liquidity' : 'remove_liquidity',
+          typeArguments: typeArgumentsVal,
+          arguments: argumentsVal,
+          gasBudget: 10000
+        });
+
+        const effects = getTransactionEffects(executeTransactionTnx);
+        const digest = getTransactionDigest(executeTransactionTnx);
+
+        if (effects?.status.status === 'success') {
+          toastify(<Explorer message={'Execute Transaction Successfully!'} type="transaction" digest={digest} />);
+
+        } else {
+          toastify(<Explorer message={'Execute Transaction error!'} type="transaction" digest={digest} />, 'error');
+        }
+      } catch (err: any) {
+        toastify(err.message, 'error');
+      }
 
       setLoading(false);
     }
@@ -207,6 +234,11 @@ function BuySell() {
         state: 2,
         text: `Insufficient ${fromToken.symbol} balance`
       });
+    } else if (Bignumber(toToken.value).multipliedBy(10 ** 9).minus(pool.pool_amounts).isGreaterThan(0)) {
+      setBtnInfo({
+        state: 3,
+        text: `Insufficient ${toToken.symbol} liquidity`
+      });
     } else {
       setBtnInfo({
         state: -1,
@@ -217,7 +249,7 @@ function BuySell() {
 
   useEffect(() => {
     changeBtnText();
-  }, [connecting, connected, account, fromToken]);
+  }, [connecting, connected, account, fromToken, toToken, pool]);
 
   useEffect(() => {
     if (allSymbolBalance[fromToken.symbol]) {
@@ -310,7 +342,7 @@ function BuySell() {
             <div className="line">
               <p className="ll">Fees</p>
               <p className="lr">
-                {active ? vault.mint_burn_fee_basis_points + '%' : pool?.fee_reserves ? pool.fee_reserves + '%' : '-'}
+                {active ? vault.mint_burn_fee_basis_points + '%' : pool?.turbos_fee_reserves ? pool.turbos_fee_reserves + '%' : '-'}
               </p>
             </div>
 
