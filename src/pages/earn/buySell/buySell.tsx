@@ -23,7 +23,7 @@ import { usePool } from "../../../hooks/usePool";
 import { provider } from "../../../lib/provider";
 import { contractConfig } from "../../../config/contract.config";
 import { useToastify } from '../../../contexts/toastify';
-import { Coin, getTransactionDigest } from "@mysten/sui.js";
+import { Coin, GetObjectDataResponse, getObjectId, getTransactionDigest, getTransactionEffects } from "@mysten/sui.js";
 import Loading from "../../../components/loading/Loading";
 
 type FromToTokenType = {
@@ -148,48 +148,51 @@ function BuySell() {
   const approve = async () => {
     if (network && account) {
       setLoading(true);
-      const config = contractConfig[network as NetworkType];
-      const symbolConfig = config.Coin[(!active ? fromToken.symbol : toToken.symbol) as SymbolType];
-      const balance = await provider.getCoinBalancesOwnedByAddress(account, symbolConfig.Type);
-      const value = Coin.selectCoinWithBalanceGreaterThanOrEqual(balance, BigInt(Bignumber(fromToken.balance).toNumber()));
-      console.log(value);
-      setLoading(false);
-      // adapter.signAndExecuteTransaction({
-      //   kind: 'splitCoin',
-      //   data: {
-      //     coinObjectId: ObjectId,
-      //     splitAmounts: [fromToken.balance.toString()],
+      console.log( BigInt(fromToken.value))
+      // const config = contractConfig[network as NetworkType];
+      // const symbolConfig = config.Coin[(fromToken.symbol) as SymbolType];
+      // const balance = await provider.selectCoinsWithBalanceGreaterThanOrEqual(account, BigInt(fromToken.value), symbolConfig.Type);
+      // const balanceObjects = balance.map((item: GetObjectDataResponse) => getObjectId(item));
+
+      // console.log(symbolConfig, balance);
+      // try {
+      //   const executeTransactionTnx = await adapter.executeMoveCall({
+      //     packageObjectId: config.ExchangePackageId,
+      //     module: 'exchange',
+      //     function: 'add_liquidity',
+      //     typeArguments: [
+      //       symbolConfig.Type
+      //     ],
+      //     arguments: [
+      //       config.VaultObjectId,
+      //       symbolConfig.PoolObjectId,
+      //       balanceObjects,
+      //       Bignumber(fromToken.value).multipliedBy(10 ** 9).toNumber(),
+      //       config.PriceFeedStorageObjectId,
+      //       0,
+      //       config.TimeOracleObjectId
+      //     ],
       //     gasBudget: 10000
+      //   });
+      //   const effects = getTransactionEffects(executeTransactionTnx);
+      //   if (effects?.status.status === 'failure') {
+      //     toastify(effects.status.error, 'error');
+      //   } else {
+      //     const digest = getTransactionDigest(executeTransactionTnx);
+      //     toastify(
+      //       <div>
+      //         Execute Transaction Successfully!
+      //         <a className='view' target={'_blank'} href={`https://explorer.sui.io/transaction/${digest}?network=devnet`}>
+      //           View In Explorer
+      //         </a>
+      //       </div>
+      //     );
       //   }
-      // });
-      //   if (value) {
-      //     const coinId = Coin.getID(value);
-      //     try {
-      //       const executeTransactionTnx = await adapter.executeMoveCall({
-      //         packageObjectId: config.ExchangePackageId,
-      //         module: 'exchange',
-      //         function: 'add_liquidity',
-      //         typeArguments: [
-      //           symbolConfig.Type
-      //         ],
-      //         arguments: [
-      //           config.VaultObjectId,
-      //           symbolConfig.PoolObjectId,
-      //           coinId,
-      //           config.PriceFeedStorageObjectId,
-      //           // toToken.balance,
-      //           0,
-      //           config.AumOracleObjectId,
-      //           config.TimeOracleObjectId
-      //         ],
-      //         gasBudget: 1000
-      //       });
-      //       const digest = getTransactionDigest(executeTransactionTnx);
-      //       toastify(<div>Execute Transaction Successfully <a className='view' target={'_blank'} href={`https://explorer.sui.io/transaction/${digest}?network=devnet`}>View In Explorer</a></div>)
-      //     } catch (err: any) {
-      //       toastify(err.message, 'error');
-      //     }
-      //   }
+      // } catch (err: any) {
+      //   toastify(err.message, 'error');
+      // }
+
+      setLoading(false);
     }
   }
 

@@ -15,7 +15,7 @@ export const useSymbolBalance = (account: string | undefined, symbol: TLPAndSymb
       let symbolConfig;
       if (symbol === 'TLP') {
         symbolConfig = {
-          type: contractConfig[network].ExchangePackageId + '::exchange::TLP'
+          Type: contractConfig[network].ExchangePackageId + '::exchange::TLP'
         };
       } else {
         const coin = contractConfig[network].Coin;
