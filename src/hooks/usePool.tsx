@@ -13,7 +13,8 @@ export type PoolValueType = {
   available?: string,
   tusd_amounts?: string,
   coin_amounts?: string,
-  poolObjectId?:string,
+  poolDataObjectId?: string,
+  poolObjectId?: string,
 }
 
 export const usePool = (symbol: SymbolType | undefined, network: NetworkType = 'DEVNET') => {
@@ -25,13 +26,14 @@ export const usePool = (symbol: SymbolType | undefined, network: NetworkType = '
       const coin = contractConfig[network].Coin;
       const symbolConfig = coin[symbol];
 
-      const poolResponce = await provider.getObject(symbolConfig.PoolObjectId);
+      const poolResponce = await provider.getObject(symbolConfig.PoolDataObjectId);
       const poolField = getObjectFields(poolResponce);
       // console.log(poolField);
 
       poolField && setPool({
         ...poolField,
         poolObjectId: symbolConfig.PoolObjectId,
+        poolDataObjectId: symbolConfig.PoolDataObjectId,
         max_tusd_amounts: numberWithCommas(Bignumber(poolField.max_tusd_amounts).div(10 ** poolField.token_decimals).toFixed(2)),
         fee_reserves: numberWithCommas(Bignumber(poolField.fee_reserves).multipliedBy(100).div(10 ** poolField.token_decimals).toFixed(2)),
         available: numberWithCommas(Bignumber(poolField.tusd_amounts).div(10 ** poolField.token_decimals).toFixed(2)),

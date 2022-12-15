@@ -77,7 +77,7 @@ function TrLiquidity(props: TrLiquidityProps) {
   const menu = (
     <Menu className="overlay-dropdown-ul">
       <MenuItem>
-        <a href={`https://explorer.sui.io/object/${pool.poolObjectId}`} rel="noreferrer" target='_blank' className="overlay-dropdown-li" onClick={() => { setVisible(false) }}>
+        <a href={`https://explorer.sui.io/object/${pool.poolDataObjectId}`} rel="noreferrer" target='_blank' className="overlay-dropdown-li" onClick={() => { setVisible(false) }}>
           <img src={suiIcon} alt="" height={24} />
           <span>View in Explorer</span>
         </a>
@@ -147,7 +147,7 @@ function MobileTrLiquidity(props: TrLiquidityProps) {
   const menu = (
     <Menu className="overlay-dropdown-ul">
       <MenuItem>
-        <a href={`https://explorer.sui.io/object/${pool.poolObjectId}`} rel="noreferrer" target='_blank' className="overlay-dropdown-li" onClick={() => { setVisible(false) }}>
+        <a href={`https://explorer.sui.io/object/${pool.poolDataObjectId}`} rel="noreferrer" target='_blank' className="overlay-dropdown-li" onClick={() => { setVisible(false) }}>
           <img src={suiIcon} alt="" height={24} />
           <span>View in Explorer</span>
         </a>

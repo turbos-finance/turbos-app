@@ -2,13 +2,13 @@ import { TLPConfigType } from "./config.type";
 
 const TLPConfig: TLPConfigType = {
     'DEVNET': {
-        Type: '0x4c7e6fac5208f4ebe6c40523a68670b0a8d17d5e::exchange::TLP'
+        Type: '0xca6910376e2f0b03025382ec25853b2a39888291::exchange::TLP'
     },
     'TESTNET': {
-        Type: '0xf2e9dc033023ad6487188991135bdf72598e3265::exchange::TLP'
+        Type: '0xca6910376e2f0b03025382ec25853b2a39888291::exchange::TLP'
     },
     'MAINNET': {
-        Type: '0xf2e9dc033023ad6487188991135bdf72598e3265::exchange::TLP'
+        Type: '0xca6910376e2f0b03025382ec25853b2a39888291::exchange::TLP'
     }
 }
 

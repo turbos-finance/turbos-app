@@ -24,7 +24,7 @@ import { provider } from "../../../lib/provider";
 import { contractConfig } from "../../../config/contract.config";
 import { useToastify } from '../../../contexts/toastify';
 import { Coin, getTransactionDigest } from "@mysten/sui.js";
-import { from } from "@apollo/client";
+import Loading from "../../../components/loading/Loading";
 
 type FromToTokenType = {
   balance: string,
@@ -54,6 +54,7 @@ function BuySell() {
 
   const [selectToken, setSelectToken] = useState(false);
   const [btnInfo, setBtnInfo] = useState({ state: 0, text: 'Connect Wallet' });
+  const [loading, setLoading] = useState(false);
 
   const { vault } = useVault();
   const { pool } = usePool(fromToken.symbol === 'TLP' ? undefined : fromToken.symbol as SymbolType);
@@ -146,11 +147,21 @@ function BuySell() {
 
   const approve = async () => {
     if (network && account) {
+      setLoading(true);
       const config = contractConfig[network as NetworkType];
       const symbolConfig = config.Coin[(!active ? fromToken.symbol : toToken.symbol) as SymbolType];
       const balance = await provider.getCoinBalancesOwnedByAddress(account, symbolConfig.Type);
       const value = Coin.selectCoinWithBalanceGreaterThanOrEqual(balance, BigInt(Bignumber(fromToken.balance).toNumber()));
-
+      console.log(value);
+      setLoading(false);
+      // adapter.signAndExecuteTransaction({
+      //   kind: 'splitCoin',
+      //   data: {
+      //     coinObjectId: ObjectId,
+      //     splitAmounts: [fromToken.balance.toString()],
+      //     gasBudget: 10000
+      //   }
+      // });
       //   if (value) {
       //     const coinId = Coin.getID(value);
       //     try {
@@ -305,7 +316,7 @@ function BuySell() {
                 <SuiWalletButton isButton={true} /> :
                 <div>
                   <button className='btn' disabled={btnInfo.state > 0} onClick={approve}>
-                    {btnInfo.text}
+                    {loading ? <Loading /> : btnInfo.text}
                   </button>
                 </div>
             }

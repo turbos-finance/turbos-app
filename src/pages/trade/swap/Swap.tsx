@@ -18,8 +18,8 @@ import TurbosTooltip from '../../../components/UI/Tooltip/Tooltip';
 import Chart from '../perpetual/components/chart/Chart';
 import { useSuiWallet } from '../../../contexts/useSuiWallet';
 import SuiWalletButton from '../../../components/walletButton/WalletButton';
-import { useSymbolBalance } from '../../../hooks/useSymbolBalance';
-import { useSymbolPrice } from '../../../hooks/useSymbolPrice';
+import { useAllSymbolBalance, useSymbolBalance } from '../../../hooks/useSymbolBalance';
+import { useAllSymbolPrice, useSymbolPrice } from '../../../hooks/useSymbolPrice';
 import { TLPAndSymbolType } from '../../../config/config.type';
 import { useAvailableLiquidity } from '../../../hooks/useAvailableLiquidity';
 import { numberWithCommas } from '../../../utils';
@@ -27,16 +27,21 @@ import { numberWithCommas } from '../../../utils';
 type FromToTokenType = {
   balance: string,
   icon: string,
-  symbol: string
+  symbol: string,
+  value: string,
+  price: string,
+  address?: string,
+  isInput?: boolean,
 }
 
 function Perpetual() {
   const balance = 100;
-
   const {
     connecting,
     connected,
-    account
+    account,
+    network,
+    adapter
   } = useSuiWallet();
 
   const [type, setType] = useState(0); // 0: market; 1: limit; 2: Trigger
@@ -44,15 +49,13 @@ function Perpetual() {
   const [selectToken, setSelectToken] = useState(false);
   const [selectTokenSource, setSelectTokenSource] = useState(0); // 0: from token; 1: to token
 
-  const [fromToken, setFromToken] = useState<FromToTokenType>({ balance: '', icon: suiIcon, symbol: 'SUI' });
-  const [toToken, setToToken] = useState<FromToTokenType>({ balance: '', icon: ethereumIcon, symbol: 'ETH' });
+  const [fromToken, setFromToken] = useState<FromToTokenType>({ balance: '0.00', icon: suiIcon, symbol: 'SUI', value: '', price: '0' });
+  const [toToken, setToToken] = useState<FromToTokenType>({ balance: '0.00', icon: ethereumIcon, symbol: 'ETH', value: '', price: '0' });
+
   const [btnInfo, setBtnInfo] = useState({ state: 0, text: 'Connect Wallet' });
 
-  const fromTokenBalance = useSymbolBalance(account, fromToken.symbol as TLPAndSymbolType);
-  const fromTokenPrice = useSymbolPrice(fromToken.symbol as TLPAndSymbolType);
-  const toTokenBalance = useSymbolBalance(account, toToken.symbol as TLPAndSymbolType);
-  const toTokenPrice = useSymbolPrice(toToken.symbol as TLPAndSymbolType);
-
+  const { allSymbolPrice } = useAllSymbolPrice();
+  const { allSymbolBalance } = useAllSymbolBalance(account);
   const { availableLiquidity } = useAvailableLiquidity();
 
   const swapvert = () => {
@@ -73,14 +76,52 @@ function Perpetual() {
     setType(type);
   }
 
-  const changefromToken = (k: keyof FromToTokenType, value: string) => {
-    const newParams = { ...fromToken };
-    newParams[k] = value;
-    setFromToken(newParams)
+  const changeMax = () => {
+    setFromToken({
+      ...fromToken,
+      value: fromToken.balance,
+      isInput: true
+    });
+
+    const newBalance = Bignumber(fromToken.balance).multipliedBy(allSymbolPrice[fromToken.symbol].price).div(allSymbolPrice[toToken.symbol].price);
+    // // const decimalValue = balance.toString().replace(/^\d+\.?/, '');
+    setToToken({
+      ...toToken,
+      value: newBalance.toString(),
+      isInput: false
+    })
   }
 
-  const handlePercent = (balance: number) => {
-    changefromToken('balance', balance.toString());
+  const changeFrom = (e: any) => {
+    setFromToken({
+      ...fromToken,
+      value: e.target.value,
+      isInput: true
+    });
+
+    const newBalance = e.target.value ? Bignumber(e.target.value).multipliedBy(allSymbolPrice[fromToken.symbol].price).div(allSymbolPrice[toToken.symbol].price).toString() : '';
+    // // const decimalValue = balance.toString().replace(/^\d+\.?/, '');
+    setToToken({
+      ...toToken,
+      value: newBalance,
+      isInput: false
+    })
+  }
+
+
+  const changeTo = (e: any) => {
+    setToToken({
+      ...toToken,
+      value: e.target.value,
+      isInput: true
+    });
+    const newBalance = e.target.value ? Bignumber(e.target.value).multipliedBy(allSymbolPrice[toToken.symbol].price).div(allSymbolPrice[fromToken.symbol].price) : '';
+    // // const decimalValue = balance.toString().replace(/^\d+\.?/, '');
+    setFromToken({
+      ...fromToken,
+      value: newBalance.toString(),
+      isInput: false
+    });
   }
 
   const changeSelectToken = (result: SelectTokenOption) => {
@@ -88,28 +129,28 @@ function Perpetual() {
       setToToken({
         ...toToken,
         icon: result.icon,
-        symbol: result.symbol
+        symbol: result.symbol,
+        address: result.address,
+        balance: allSymbolBalance[result.symbol].balance
       });
     } else {
       setFromToken({
         ...fromToken,
         icon: result.icon,
-        symbol: result.symbol
+        symbol: result.symbol,
+        address: result.address,
+        balance: allSymbolBalance[result.symbol].balance
       })
     }
   }
 
-  const recordTitle = ['Trades'];
-  const recordContent = [<Trades options={[]} />];
-  const typeList = ['Market', 'Limit'];
-
   const changeBtnText = () => {
-    if (!fromToken.balance || !Number(fromToken.balance)) {
+    if (!fromToken.value || !Number(fromToken.value)) {
       setBtnInfo({
         state: 1,
         text: 'Enter a amount'
       });
-    } else if (Bignumber(fromToken.balance).minus(fromTokenBalance.coinBalance).isGreaterThan(0)) {
+    } else if (Bignumber(fromToken.value).minus(fromToken.balance).isGreaterThan(0)) {
       setBtnInfo({
         state: 2,
         text: `Insufficient ${fromToken.symbol} balance`
@@ -124,8 +165,44 @@ function Perpetual() {
 
   useEffect(() => {
     changeBtnText();
-  }, [connecting, connected, account, fromToken, fromTokenBalance.coinBalance]);
+  }, [connecting, connected, account, fromToken]);
 
+  useEffect(() => {
+    if (allSymbolBalance[fromToken.symbol]) {
+      setFromToken({
+        ...fromToken,
+        balance: allSymbolBalance[fromToken.symbol].balance
+      })
+    }
+    if (allSymbolBalance[toToken.symbol]) {
+      setToToken({
+        ...toToken,
+        balance: allSymbolBalance[toToken.symbol].balance
+      })
+    }
+  }, [allSymbolBalance]);
+
+
+  useEffect(() => {
+    if (allSymbolPrice[fromToken.symbol]) {
+      setFromToken({
+        ...fromToken,
+        price: allSymbolPrice[fromToken.symbol].price,
+      });
+    }
+
+    if (allSymbolPrice[toToken.symbol]) {
+      setToToken({
+        ...toToken,
+        price: allSymbolPrice[toToken.symbol].price,
+      })
+    }
+  }, [allSymbolPrice]);
+
+
+  const recordTitle = ['Trades'];
+  const recordContent = [<Trades options={[]} />];
+  const typeList = ['Market', 'Limit'];
 
   return (
     <div className="main">
@@ -149,13 +226,13 @@ function Perpetual() {
                       <div className="sectiontop">
                         <span>Pay</span>
                         <div>
-                          <span className="section-balance">Balance: {fromTokenBalance.coinBalance}</span>
-                          <span> | </span><span className='section-max' onClick={() => { handlePercent(1) }}>MAX</span>
+                          <span className="section-balance">Balance: {fromToken.balance}</span>
+                          <span> | </span><span className='section-max' onClick={changeMax}>MAX</span>
                         </div>
                       </div>
                       <div className="sectionbottom">
                         <div className="sectioninputcon" >
-                          <input type="text" value={fromToken.balance} onChange={(e: any) => changefromToken('balance', e.target.value)} className="sectioninput" placeholder="0.0" />
+                          <input type="text" value={fromToken.value} onChange={changeFrom} className="sectioninput" placeholder="0.0" />
                         </div>
                         <div className="sectiontokens" onClick={() => { toggleSelectToken(0) }}>
                           <img src={fromToken.icon} alt="" />
@@ -177,7 +254,7 @@ function Perpetual() {
                       </div>
                       <div className="sectionbottom">
                         <div className="sectioninputcon" >
-                          <input type="text" value={toToken.balance} className="sectioninput" placeholder="0.0" />
+                          <input type="text" value={toToken.value} className="sectioninput" onChange={changeTo} placeholder="0.0" />
                         </div>
                         <div className="sectiontokens" onClick={() => { toggleSelectToken(1) }}>
                           <img src={toToken.icon} alt="" />
@@ -236,11 +313,11 @@ function Perpetual() {
           <div className="line-con1">
             <div className="line">
               <p className="ll">{fromToken.symbol} Price</p>
-              <p className="lr">${numberWithCommas(fromTokenPrice.symbolPrice.price)}</p>
+              <p className="lr">${allSymbolPrice[toToken.symbol] ? numberWithCommas(allSymbolPrice[fromToken.symbol]?.price) : '-'}</p>
             </div>
             <div className="line">
               <p className="ll">{toToken.symbol} Price</p>
-              <p className="lr">${numberWithCommas(toTokenPrice.symbolPrice.price)}</p>
+              <p className="lr">${allSymbolPrice[toToken.symbol] ? numberWithCommas(allSymbolPrice[toToken.symbol].price) : '-'}</p>
             </div>
             <div className="line">
               <p className="ll">Available Liquidity</p>

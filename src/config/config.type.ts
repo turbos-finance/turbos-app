@@ -45,7 +45,8 @@ export type CoinConfigObjectType = {
   PriceFeedObjectId: string,
   Type: string,
   PriceFeedId: string,
-  PoolObjectId: string
+  PoolObjectId: string,
+  PoolDataObjectId: string
 }
 
 export type ContractConfigValueType = {

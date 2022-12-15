@@ -67,15 +67,16 @@ export const useAllSymbolBalance = (account: string | undefined, network: Networ
       })
 
       const responce = await Promise.all(getCoinBalances);
-
       const balanceList: AllSymbolPriceType = {};
       responce.forEach((item: GetObjectDataResponse[]) => {
-        const balance = Coin.totalBalance(item);
-        const type = getMoveObjectType(item[0]);
-        const symbol = type?.slice(type.lastIndexOf(":") + 1).replace('>', '') || 'symbol';
-        balanceList[symbol] = {
-          symbol,
-          balance: Bignumber(balance.toString()).div(10 ** 9).toFixed(2)
+        if (item.length > 0) {
+          const balance = Coin.totalBalance(item);
+          const type = getMoveObjectType(item[0]);
+          const symbol = type?.slice(type.lastIndexOf(":") + 1).replace('>', '') || 'symbol';
+          balanceList[symbol] = {
+            symbol,
+            balance: Bignumber(balance.toString()).div(10 ** 9).toFixed(2)
+          }
         }
       });
       setAllSymbolBalance(balanceList);
