@@ -89,7 +89,7 @@ function TrLiquidity(props: TrLiquidityProps) {
     <>
       <div className="line linetop">
         <p className="ll">Current Pool Amount:</p>
-        <p className="lr lr-right">{pool.tusd_amounts || 0} <br></br> ({pool.coin_amounts || 0} {item.symbol})</p>
+        <p className="lr lr-right">${pool.tusd_amounts || 0} <br></br> ({pool.coin_amounts || 0} {item.symbol})</p>
       </div>
       <div className="line">
         <p className="ll">Max Pool Capacity:</p>
@@ -122,7 +122,7 @@ function TrLiquidity(props: TrLiquidityProps) {
         </TurbosTooltip>
       </td>
       <td align="right">{numberWithCommas(coinBalance) || 0} {item.symbol} (${numberWithCommas(Bignumber(coinBalance).multipliedBy(Bignumber(symbolPrice.price || 0).toNumber()).toFixed(2)) || 0})</td>
-      <td align="right">{pool.fee_reserves || '0.00'}%</td>
+      <td align="right">${pool.fee_reserves || '0.00'}</td>
       <td align="right">
         <div className={styles['liquidity-btn']}>
           <Link to="/earn/buy-sell">Buy with {item.symbol}</Link>
@@ -159,7 +159,7 @@ function MobileTrLiquidity(props: TrLiquidityProps) {
     <>
       <div className="line linetop">
         <p className="ll">Current Pool Amount:</p>
-        <p className="lr lr-right">{pool.tusd_amounts || 0} <br></br> ({pool.coin_amounts || 0} {item.symbol})</p>
+        <p className="lr lr-right">${pool.tusd_amounts || 0} <br></br> ({pool.coin_amounts || 0} {item.symbol})</p>
       </div>
       <div className="line">
         <p className="ll">Max Pool Capacity:</p>
@@ -205,7 +205,7 @@ function MobileTrLiquidity(props: TrLiquidityProps) {
         </div>
         <div className="line">
           <div className="ll">FEES</div>
-          <div className="lr">{pool.fee_reserves || '0.00'}%</div>
+          <div className="lr">${pool.fee_reserves || '0.00'}</div>
         </div>
         <div className="line">
           <div className="ll"></div>

@@ -16,14 +16,15 @@ import SuiWalletButton from "../../../components/walletButton/WalletButton";
 import { useVault } from "../../../hooks/useVault";
 
 import { numberWithCommas } from "../../../utils";
-import { useSymbolBalance } from "../../../hooks/useSymbolBalance";
-import { useSymbolPrice } from "../../../hooks/useSymbolPrice";
+import { useAllSymbolBalance, useSymbolBalance } from "../../../hooks/useSymbolBalance";
+import { useAllSymbolPrice, useSymbolPrice } from "../../../hooks/useSymbolPrice";
 import { NetworkType, SymbolType, TLPAndSymbolType } from "../../../config/config.type";
 import { usePool } from "../../../hooks/usePool";
 import { provider } from "../../../lib/provider";
 import { contractConfig } from "../../../config/contract.config";
 import { useToastify } from '../../../contexts/toastify';
 import { Coin, getTransactionDigest } from "@mysten/sui.js";
+import { from } from "@apollo/client";
 
 type FromToTokenType = {
   balance: string,
@@ -31,9 +32,12 @@ type FromToTokenType = {
   symbol: string,
   address?: string,
   isInput?: boolean,
+  value: string,
+  price: string
 }
 
 function BuySell() {
+
   const {
     connecting,
     connected,
@@ -41,11 +45,12 @@ function BuySell() {
     network,
     adapter
   } = useSuiWallet();
+
   const { toastify } = useToastify();
 
   const [active, setActive] = useState(0); // 0:buy; 1:sell;
-  const [fromToken, setFromToken] = useState<FromToTokenType>({ balance: '', icon: suiIcon, symbol: 'SUI' });
-  const [toToken, setToToken] = useState<FromToTokenType>({ balance: '', icon: tlpIcon, symbol: 'TLP' });
+  const [fromToken, setFromToken] = useState<FromToTokenType>({ balance: '0.00', icon: suiIcon, symbol: 'SUI', value: '', price: '0' });
+  const [toToken, setToToken] = useState<FromToTokenType>({ balance: '0.00', icon: tlpIcon, symbol: 'TLP', value: '', price: '0' });
 
   const [selectToken, setSelectToken] = useState(false);
   const [btnInfo, setBtnInfo] = useState({ state: 0, text: 'Connect Wallet' });
@@ -53,10 +58,8 @@ function BuySell() {
   const { vault } = useVault();
   const { pool } = usePool(fromToken.symbol === 'TLP' ? undefined : fromToken.symbol as SymbolType);
 
-  const fromTokenBalance = useSymbolBalance(account, fromToken.symbol as TLPAndSymbolType);
-  const fromTokenPrice = useSymbolPrice(fromToken.symbol as TLPAndSymbolType);
-  const toTokenBalance = useSymbolBalance(account, toToken.symbol as TLPAndSymbolType);
-  const toTokenPrice = useSymbolPrice(toToken.symbol as TLPAndSymbolType);
+  const { allSymbolPrice } = useAllSymbolPrice();
+  const { allSymbolBalance } = useAllSymbolBalance(account);
 
   const changeToken = (result: SelectTokenOption) => {
     if (active) {
@@ -64,14 +67,16 @@ function BuySell() {
         ...toToken,
         symbol: result.symbol,
         icon: result.icon,
-        address: result.address || ''
+        address: result.address || '',
+        balance: allSymbolBalance[result.symbol].balance
       });
     } else {
       setFromToken({
         ...fromToken,
         symbol: result.symbol,
         icon: result.icon,
-        address: result.address || ''
+        address: result.address || '',
+        balance: allSymbolBalance[result.symbol].balance
       });
     }
   }
@@ -79,15 +84,15 @@ function BuySell() {
   const changeMax = () => {
     setFromToken({
       ...fromToken,
-      balance: fromTokenBalance.coinBalance,
+      value: fromToken.balance,
       isInput: true
     });
 
-    const newBalance = Bignumber(fromTokenBalance.coinBalance).multipliedBy(fromTokenPrice.symbolPrice.price).div(toTokenPrice.symbolPrice.price);
-    // const decimalValue = balance.toString().replace(/^\d+\.?/, '');
+    const newBalance = Bignumber(fromToken.balance).multipliedBy(allSymbolPrice[fromToken.symbol].price).div(allSymbolPrice[toToken.symbol].price);
+    // // const decimalValue = balance.toString().replace(/^\d+\.?/, '');
     setToToken({
       ...toToken,
-      balance: newBalance.toString(),
+      value: newBalance.toString(),
       isInput: false
     })
   }
@@ -111,14 +116,15 @@ function BuySell() {
   const changeFrom = (e: any) => {
     setFromToken({
       ...fromToken,
-      balance: e.target.value,
+      value: e.target.value,
       isInput: true
     });
-    const newBalance = e.target.value ? Bignumber(e.target.value).multipliedBy(fromTokenPrice.symbolPrice.price).div(toTokenPrice.symbolPrice.price).toString() : '';
-    // const decimalValue = balance.toString().replace(/^\d+\.?/, '');
+
+    const newBalance = e.target.value ? Bignumber(e.target.value).multipliedBy(allSymbolPrice[fromToken.symbol].price).div(allSymbolPrice[toToken.symbol].price).toString() : '';
+    // // const decimalValue = balance.toString().replace(/^\d+\.?/, '');
     setToToken({
       ...toToken,
-      balance: newBalance,
+      value: newBalance,
       isInput: false
     })
   }
@@ -126,14 +132,14 @@ function BuySell() {
   const changeTo = (e: any) => {
     setToToken({
       ...toToken,
-      balance: e.target.value,
+      value: e.target.value,
       isInput: true
     });
-    const newBalance = e.target.value ? Bignumber(e.target.value).multipliedBy(toTokenPrice.symbolPrice.price).div(fromTokenPrice.symbolPrice.price) : '';
-    // const decimalValue = balance.toString().replace(/^\d+\.?/, '');
+    const newBalance = e.target.value ? Bignumber(e.target.value).multipliedBy(allSymbolPrice[toToken.symbol].price).div(allSymbolPrice[fromToken.symbol].price) : '';
+    // // const decimalValue = balance.toString().replace(/^\d+\.?/, '');
     setFromToken({
       ...fromToken,
-      balance: newBalance.toString(),
+      value: newBalance.toString(),
       isInput: false
     });
   }
@@ -145,45 +151,44 @@ function BuySell() {
       const balance = await provider.getCoinBalancesOwnedByAddress(account, symbolConfig.Type);
       const value = Coin.selectCoinWithBalanceGreaterThanOrEqual(balance, BigInt(Bignumber(fromToken.balance).toNumber()));
 
-      if (value) {
-        const coinId = Coin.getID(value);
-        try {
-          const executeTransactionTnx = await adapter.executeMoveCall({
-            packageObjectId: config.ExchangePackageId,
-            module: 'exchange',
-            function: 'add_liquidity',
-            typeArguments: [
-              symbolConfig.Type
-            ],
-            arguments: [
-              config.VaultObjectId,
-              symbolConfig.PoolObjectId,
-              coinId,
-              config.PriceFeedStorageObjectId,
-              // toToken.balance,
-              0,
-              config.AumOracleObjectId,
-              config.TimeOracleObjectId
-            ],
-            gasBudget: 1000
-          });
-          const digest = getTransactionDigest(executeTransactionTnx);
-          toastify(<div>Execute Transaction Successfully <a className='view' target={'_blank'} href={`https://explorer.sui.io/transaction/${digest}?network=devnet`}>View In Explorer</a></div>)
-        } catch (err: any) {
-          toastify(err.message, 'error');
-        }
-      }
+      //   if (value) {
+      //     const coinId = Coin.getID(value);
+      //     try {
+      //       const executeTransactionTnx = await adapter.executeMoveCall({
+      //         packageObjectId: config.ExchangePackageId,
+      //         module: 'exchange',
+      //         function: 'add_liquidity',
+      //         typeArguments: [
+      //           symbolConfig.Type
+      //         ],
+      //         arguments: [
+      //           config.VaultObjectId,
+      //           symbolConfig.PoolObjectId,
+      //           coinId,
+      //           config.PriceFeedStorageObjectId,
+      //           // toToken.balance,
+      //           0,
+      //           config.AumOracleObjectId,
+      //           config.TimeOracleObjectId
+      //         ],
+      //         gasBudget: 1000
+      //       });
+      //       const digest = getTransactionDigest(executeTransactionTnx);
+      //       toastify(<div>Execute Transaction Successfully <a className='view' target={'_blank'} href={`https://explorer.sui.io/transaction/${digest}?network=devnet`}>View In Explorer</a></div>)
+      //     } catch (err: any) {
+      //       toastify(err.message, 'error');
+      //     }
+      //   }
     }
-
   }
 
   const changeBtnText = () => {
-    if (!fromToken.balance || !Number(fromToken.balance)) {
+    if (!fromToken.value || !Number(fromToken.value)) {
       setBtnInfo({
         state: 1,
         text: 'Enter a amount'
       });
-    } else if (Bignumber(fromToken.balance).minus(fromTokenBalance.coinBalance).isGreaterThan(0)) {
+    } else if (Bignumber(fromToken.value).minus(fromToken.balance).isGreaterThan(0)) {
       setBtnInfo({
         state: 2,
         text: `Insufficient ${fromToken.symbol} balance`
@@ -198,28 +203,39 @@ function BuySell() {
 
   useEffect(() => {
     changeBtnText();
-  }, [connecting, connected, account, fromToken, fromTokenBalance.coinBalance]);
+  }, [connecting, connected, account, fromToken]);
+
+  useEffect(() => {
+    if (allSymbolBalance[fromToken.symbol]) {
+      setFromToken({
+        ...fromToken,
+        balance: allSymbolBalance[fromToken.symbol].balance
+      })
+    }
+    if (allSymbolBalance[toToken.symbol]) {
+      setToToken({
+        ...toToken,
+        balance: allSymbolBalance[toToken.symbol].balance
+      })
+    }
+  }, [allSymbolBalance]);
 
 
   useEffect(() => {
-    if (fromTokenPrice.symbolPrice.price && fromTokenPrice.symbolPrice.price) {
-      if (fromToken.isInput) {
-        const newBalance = Bignumber(fromToken.balance).multipliedBy(fromTokenPrice.symbolPrice.price).div(toTokenPrice.symbolPrice.price).toString();
-        setToToken({
-          ...toToken,
-          balance: newBalance
-        });
-      }
-
-      if (toToken.isInput) {
-        const newBalance = Bignumber(toToken.balance).multipliedBy(toTokenPrice.symbolPrice.price).div(fromTokenPrice.symbolPrice.price).toString();
-        setFromToken({
-          ...fromToken,
-          balance: newBalance
-        });
-      }
+    if (allSymbolPrice[fromToken.symbol]) {
+      setFromToken({
+        ...fromToken,
+        price: allSymbolPrice[fromToken.symbol].price,
+      });
     }
-  }, [fromTokenPrice.symbolPrice.price, fromTokenPrice.symbolPrice.price]);
+
+    if (allSymbolPrice[toToken.symbol]) {
+      setToToken({
+        ...toToken,
+        price: allSymbolPrice[toToken.symbol].price,
+      })
+    }
+  }, [allSymbolPrice]);
 
   return (
     <div className="main">
@@ -243,14 +259,14 @@ function BuySell() {
                 <div className="sectiontop">
                   <span>Pay</span>
                   <div>
-                    <span className="section-balance">Balance: {fromTokenBalance.coinBalance}</span>
+                    <span className="section-balance">Balance: {fromToken.balance}</span>
                     <span> | </span><span className="section-max" onClick={changeMax}>MAX</span>
                   </div>
                 </div>
 
                 <div className="sectionbottom">
                   <div className="sectioninputcon" >
-                    <input type="number" value={fromToken.balance} className="sectioninput" placeholder="0.0" onChange={changeFrom} />
+                    <input type="number" value={fromToken.value} className="sectioninput" placeholder="0.0" onChange={changeFrom} />
                   </div>
                   <SectionTokens symbol={fromToken.symbol} icon={fromToken.icon} toggleSelectToken={!active ? toggleSelectToken : undefined} />
                 </div>
@@ -264,12 +280,12 @@ function BuySell() {
                 <div className="sectiontop">
                   <span>Receive</span>
                   <div>
-                    <span className="section-balance">Balance: {toTokenBalance.coinBalance}</span>
+                    <span className="section-balance">Balance: {toToken.balance}</span>
                   </div>
                 </div>
                 <div className="sectionbottom">
                   <div className="sectioninputcon" >
-                    <input type="number" value={toToken.balance} className="sectioninput" placeholder="0.0" onChange={changeTo} />
+                    <input type="number" value={toToken.value} className="sectioninput" placeholder="0.0" onChange={changeTo} />
                   </div>
                   <SectionTokens symbol={toToken.symbol} icon={toToken.icon} toggleSelectToken={active ? toggleSelectToken : undefined} />
                 </div>

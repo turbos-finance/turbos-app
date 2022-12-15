@@ -14,7 +14,7 @@ export type AumType = {
 export const useAum = (network: NetworkType = 'DEVNET') => {
 
     const [aum, setAum] = useState<AumType>({
-        amount : '0'
+        amount: '0'
     });
 
     const getVault = async () => {
