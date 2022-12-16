@@ -145,20 +145,16 @@ export const UseSuiWalletProvider: React.FC<SuiWalletProvider> = ({ children }) 
     if (walletType === 'suiWallet') {
       const accounts = await (window as any).suiWallet.getAccounts();
       setAccount(accounts[0])
-    }
-    else if (walletType === 'suietWallet') {
+    }else if (walletType === 'suietWallet') {
       const accounts = await (window as any).__suiet__.getAccounts();
       setAccount(accounts.data[0])
-    }
-    else if (walletType === 'martianSuiWallet') {
+    }else if (walletType === 'martianSuiWallet') {
       const accounts = await adapter.getAccounts();
       setAccount(accounts[0]);
-    }
-    else if (walletType === 'ethosWallet') {
+    } else if (walletType === 'ethosWallet') {
       const accounts = await adapter.getAccounts();
       setAccount(accounts[0]);
-    }
-    else {
+    }else {
 
     }
 
@@ -177,11 +173,11 @@ export const UseSuiWalletProvider: React.FC<SuiWalletProvider> = ({ children }) 
         connect('suiWallet');
       } else if (type === 'suietWallet') {
         connect('suietWallet');
-      }
-      else if (type === 'surfWallet') {
+      } else if (type === 'martianSuiWallet') {
         connect('martianSuiWallet');
-      }
-      else {
+      } else if (type === 'ethosWallet') {
+        connect('ethosWallet');
+      }else {
         disconnect();
       }
     }

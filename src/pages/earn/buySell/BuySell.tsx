@@ -27,6 +27,7 @@ import { Coin, GetObjectDataResponse, getObjectId, getTransactionDigest, getTran
 import Loading from "../../../components/loading/Loading";
 import { Explorer } from "../../../components/explorer/Explorer";
 import { useRefresh } from "../../../contexts/refresh";
+import { ContactSupportRounded } from "@mui/icons-material";
 
 type FromToTokenType = {
   balance: string,
@@ -67,23 +68,64 @@ function BuySell() {
   const { allSymbolBalance } = useAllSymbolBalance(account);
 
   const changeToken = (result: SelectTokenOption) => {
+    let newFromToken = {
+      ...fromToken
+    };
+    let newToToken = {
+      ...toToken
+    };
+
     if (active) {
-      setToToken({
-        ...toToken,
+      newToToken = {
+        ...newToToken,
         symbol: result.symbol,
         icon: result.icon,
         address: result.address || '',
         balance: allSymbolBalance[result.symbol] ? allSymbolBalance[result.symbol].balance : '0.00',
-      });
+      };
+
+      if (fromToken.isInput) {
+        newToToken = {
+          ...newToToken,
+          value: Bignumber(fromToken.value).multipliedBy(fromToken.price).div(allSymbolPrice[result.symbol].price).toString()
+        }
+      }
+
+      if (toToken.isInput) {
+        newFromToken = {
+          ...newFromToken,
+          value: Bignumber(allSymbolPrice[result.symbol].price).multipliedBy(toToken.value).div(fromToken.price).toString()
+        }
+      }
+
     } else {
-      setFromToken({
-        ...fromToken,
+      newFromToken = {
+        ...newFromToken,
         symbol: result.symbol,
         icon: result.icon,
         address: result.address || '',
         balance: allSymbolBalance[result.symbol] ? allSymbolBalance[result.symbol].balance : '0.00',
-      });
+      };
+
+      if (fromToken.isInput) {
+        newToToken = {
+          ...newToToken,
+          value: Bignumber(fromToken.value).multipliedBy(allSymbolPrice[result.symbol].price).div(toToken.price).toString()
+        }
+      }
+
+      if (toToken.isInput) {
+        newFromToken = {
+          ...newFromToken,
+          value: Bignumber(toToken.price).multipliedBy(toToken.value).div(allSymbolPrice[result.symbol].price).toString()
+        }
+      }
+
+
     }
+
+    setFromToken(newFromToken);
+    setToToken(newToToken);
   }
 
   const changeMax = () => {
@@ -231,7 +273,7 @@ function BuySell() {
           }
         }
       } catch (err: any) {
-        toastify(err.message, 'error');
+        toastify(err.message || err, 'error');
       }
 
       setLoading(false);
@@ -288,11 +330,6 @@ function BuySell() {
         ...fromToken,
         price: allSymbolPrice[fromToken.symbol].price,
       });
-
-      // if (fromToken.isInput) {
-
-      // }
-
     }
 
     if (allSymbolPrice[toToken.symbol]) {
@@ -300,6 +337,26 @@ function BuySell() {
         ...toToken,
         price: allSymbolPrice[toToken.symbol].price,
       })
+    }
+
+    if (fromToken.isInput) {
+      setToToken({
+        ...toToken,
+        value: Bignumber(allSymbolPrice[fromToken.symbol].price)
+          .multipliedBy(fromToken.value)
+          .div(allSymbolPrice[toToken.symbol].price)
+          .toString(),
+      });
+    }
+
+    if (toToken.isInput) {
+      setFromToken({
+        ...fromToken,
+        value: Bignumber(allSymbolPrice[toToken.symbol].price)
+          .multipliedBy(toToken.value)
+          .div(allSymbolPrice[fromToken.symbol].price)
+          .toString(),
+      });
     }
 
   }, [allSymbolPrice]);
