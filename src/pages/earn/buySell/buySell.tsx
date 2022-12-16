@@ -274,7 +274,6 @@ function BuySell() {
 
   useEffect(() => {
     if (allSymbolPrice[fromToken.symbol]) {
-
       setFromToken({
         ...fromToken,
         price: allSymbolPrice[fromToken.symbol].price,
