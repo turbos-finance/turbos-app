@@ -430,7 +430,7 @@ function BuySellRight() {
         </div>
         <div className="line-con">
           {/* <div className="line">
-          <p className="ll">APR</p>
+          <p className="ll">APR</p>git 
           <p className="lr">20.00%</p>
         </div> */}
           <div className="line">
