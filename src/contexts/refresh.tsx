@@ -30,6 +30,7 @@ export const UseRefreshProvider: React.FC<RefreshProvider> = ({ children }) => {
   }, []);
 
   const changeRefreshTime = useCallback(() => {
+    setRefreshTime(new Date().getTime());
     clearTimeout(interval);
     changeTime();
   }, [])

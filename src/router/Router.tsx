@@ -1,5 +1,5 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
-import BuySell from '../pages/earn/buySell/BuySell';
+import BuySell from '../pages/earn/buySell/BuySells';
 import Earn from '../pages/earn/Earn';
 import Liquidity from '../pages/earn/liquidity/Liquidity';
 import Faucet from '../pages/faucet/Faucet';
