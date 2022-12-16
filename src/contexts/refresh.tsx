@@ -1,41 +1,46 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useContext } from 'react';
 
 
 type RefreshProvider = {
-  children: React.ReactNode
+  children: React.ReactNode,
 }
 
 type RefreshContextValues = {
-  refreshTime: string | number | null
+  refreshTime: string | number | null,
+  changeRefreshTime: () => void
 }
 
 const RefreshContext = React.createContext<RefreshContextValues>({
   refreshTime: null,
+  changeRefreshTime: () => { },
 });
 
 let interval: NodeJS.Timer | undefined;
-const time = 10000;
+const time = 30000;
 
 export const UseRefreshProvider: React.FC<RefreshProvider> = ({ children }) => {
   const [refreshTime, setRefreshTime] = useState<string | number | null>(null);
 
-  useEffect(() => {
+  const changeTime = useCallback(() => {
+    interval = setTimeout(() => {
+      setRefreshTime(new Date().getTime());
+      changeTime();
+    }, time);
+  }, []);
 
-    const changeTime = () => {
-      interval = setTimeout(() => {
-        setRefreshTime(new Date().getTime());
-        changeTime();
-      }, time);
-    }
-
+  const changeRefreshTime = useCallback(() => {
+    clearTimeout(interval);
     changeTime();
+  }, [])
 
+  useEffect(() => {
+    changeTime();
     return () => clearTimeout(interval);
   }, []);
 
   return (
-    <RefreshContext.Provider value={{ refreshTime }}>
+    <RefreshContext.Provider value={{ refreshTime, changeRefreshTime }}>
       {children}
     </RefreshContext.Provider>
   );

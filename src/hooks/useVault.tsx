@@ -17,7 +17,7 @@ export type VaultType = {
 export const useVault = (network: NetworkType = 'DEVNET') => {
   const { refreshTime } = useRefresh();
 
-
+  console.log(refreshTime);
   const [vault, setVault] = useState<VaultType>({
     tlp_supply: { fields: { value: '0' } }
   });

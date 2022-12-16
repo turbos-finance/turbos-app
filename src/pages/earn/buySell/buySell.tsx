@@ -105,6 +105,10 @@ function BuySell() {
   }
 
   const toggleActive = (value: 0 | 1) => {
+    if (active === value) {
+      return;
+    }
+
     setActive(value);
 
     setToToken({
@@ -114,6 +118,7 @@ function BuySell() {
     setFromToken({
       ...toToken
     });
+
   }
 
   const changeFrom = (e: any) => {
@@ -234,7 +239,7 @@ function BuySell() {
         state: 2,
         text: `Insufficient ${fromToken.symbol} balance`
       });
-    } else if (Bignumber(toToken.value).multipliedBy(10 ** 9).minus(pool.pool_amounts).isGreaterThan(0)) {
+    } else if (active && Bignumber(toToken.value).multipliedBy(10 ** 9).minus(pool.pool_amounts).isGreaterThan(0)) {
       setBtnInfo({
         state: 3,
         text: `Insufficient ${toToken.symbol} liquidity`
@@ -249,7 +254,7 @@ function BuySell() {
 
   useEffect(() => {
     changeBtnText();
-  }, [connecting, connected, account, fromToken, toToken, pool]);
+  }, [connecting, connected, account, fromToken, toToken, pool, active]);
 
   useEffect(() => {
     if (allSymbolBalance[fromToken.symbol]) {
@@ -269,10 +274,16 @@ function BuySell() {
 
   useEffect(() => {
     if (allSymbolPrice[fromToken.symbol]) {
+
       setFromToken({
         ...fromToken,
         price: allSymbolPrice[fromToken.symbol].price,
       });
+
+      // if (fromToken.isInput) {
+
+      // }
+
     }
 
     if (allSymbolPrice[toToken.symbol]) {
@@ -281,6 +292,7 @@ function BuySell() {
         price: allSymbolPrice[toToken.symbol].price,
       })
     }
+
   }, [allSymbolPrice]);
 
   return (

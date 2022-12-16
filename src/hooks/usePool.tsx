@@ -31,7 +31,6 @@ export const usePool = (symbol: SymbolType | undefined, network: NetworkType = '
 
       const poolResponce = await provider.getObject(symbolConfig.PoolDataObjectId);
       const poolField = getObjectFields(poolResponce);
-      // console.log(poolField);
 
       poolField && setPool({
         ...poolField,
