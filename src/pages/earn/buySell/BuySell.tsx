@@ -26,6 +26,7 @@ import { useToastify } from '../../../contexts/toastify';
 import { Coin, GetObjectDataResponse, getObjectId, getTransactionDigest, getTransactionEffects } from "@mysten/sui.js";
 import Loading from "../../../components/loading/Loading";
 import { Explorer } from "../../../components/explorer/Explorer";
+import { useRefresh } from "../../../contexts/refresh";
 
 type FromToTokenType = {
   balance: string,
@@ -46,6 +47,7 @@ function BuySell() {
     network,
     adapter
   } = useSuiWallet();
+  const { changeRefreshTime } = useRefresh();
 
   const { toastify } = useToastify();
 
@@ -202,7 +204,7 @@ function BuySell() {
       }
 
       try {
-        const executeTransactionTnx = await adapter.executeMoveCall({
+        let executeTransactionTnx = await adapter.executeMoveCall({
           packageObjectId: config.ExchangePackageId,
           module: 'exchange',
           function: !active ? 'add_liquidity' : 'remove_liquidity',
@@ -211,14 +213,22 @@ function BuySell() {
           gasBudget: 10000
         });
 
-        const effects = getTransactionEffects(executeTransactionTnx);
-        const digest = getTransactionDigest(executeTransactionTnx);
-
-        if (effects?.status.status === 'success') {
-          toastify(<Explorer message={'Execute Transaction Successfully!'} type="transaction" digest={digest} />);
-
+        if (executeTransactionTnx.error) {
+          toastify(executeTransactionTnx.error.msg, 'error');
         } else {
-          toastify(<Explorer message={'Execute Transaction error!'} type="transaction" digest={digest} />, 'error');
+          if (executeTransactionTnx.data) {
+            executeTransactionTnx = executeTransactionTnx.data;
+          }
+
+          const effects = getTransactionEffects(executeTransactionTnx);
+          const digest = getTransactionDigest(executeTransactionTnx);
+
+          if (effects?.status.status === 'success') {
+            toastify(<Explorer message={'Execute Transaction Successfully!'} type="transaction" digest={digest} />);
+            changeRefreshTime(); // reload data
+          } else {
+            toastify(<Explorer message={'Execute Transaction error!'} type="transaction" digest={digest} />, 'error');
+          }
         }
       } catch (err: any) {
         toastify(err.message, 'error');

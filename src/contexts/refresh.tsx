@@ -33,7 +33,7 @@ export const UseRefreshProvider: React.FC<RefreshProvider> = ({ children }) => {
     setRefreshTime(new Date().getTime());
     clearTimeout(interval);
     changeTime();
-  }, [])
+  }, []);
 
   useEffect(() => {
     changeTime();
