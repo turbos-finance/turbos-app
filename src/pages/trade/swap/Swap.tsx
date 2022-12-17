@@ -20,9 +20,17 @@ import { useSuiWallet } from '../../../contexts/useSuiWallet';
 import SuiWalletButton from '../../../components/walletButton/WalletButton';
 import { useAllSymbolBalance, useSymbolBalance } from '../../../hooks/useSymbolBalance';
 import { useAllSymbolPrice, useSymbolPrice } from '../../../hooks/useSymbolPrice';
-import { TLPAndSymbolType } from '../../../config/config.type';
+import { NetworkType, SymbolType, TLPAndSymbolType } from '../../../config/config.type';
 import { useAvailableLiquidity } from '../../../hooks/useAvailableLiquidity';
 import { numberWithCommas } from '../../../utils';
+import { usePool } from '../../../hooks/usePool';
+import { useToastify } from '../../../contexts/toastify';
+import { contractConfig } from '../../../config/contract.config';
+import { provider } from '../../../lib/provider';
+import { Coin, getTransactionDigest, getTransactionEffects } from '@mysten/sui.js';
+import { useRefresh } from '../../../contexts/refresh';
+import { Explorer } from '../../../components/explorer/Explorer';
+import Loading from '../../../components/loading/Loading';
 
 type FromToTokenType = {
   balance: string,
@@ -43,6 +51,8 @@ function Perpetual() {
     network,
     adapter
   } = useSuiWallet();
+  const { changeRefreshTime } = useRefresh();
+  const { toastify } = useToastify();
 
   const [type, setType] = useState(0); // 0: market; 1: limit; 2: Trigger
   const [record, setRecord] = useState(0); // 0: posotion ; 1: orders ; 2: trades
@@ -53,7 +63,9 @@ function Perpetual() {
   const [toToken, setToToken] = useState<FromToTokenType>({ balance: '0.00', icon: ethereumIcon, symbol: 'ETH', value: '', price: '0' });
 
   const [btnInfo, setBtnInfo] = useState({ state: 0, text: 'Connect Wallet' });
+  const [loading, setLoading] = useState(false);
 
+  const { pool } = usePool(toToken.symbol as SymbolType);
   const { allSymbolPrice } = useAllSymbolPrice();
   const { allSymbolBalance } = useAllSymbolBalance(account);
   const { availableLiquidity } = useAvailableLiquidity();
@@ -125,23 +137,62 @@ function Perpetual() {
   }
 
   const changeSelectToken = (result: SelectTokenOption) => {
+    let newFromToken = {
+      ...fromToken
+    };
+    let newToToken = {
+      ...toToken
+    };
+
     if (selectTokenSource) {
-      setToToken({
-        ...toToken,
+      newToToken = {
+        ...newToToken,
         icon: result.icon,
         symbol: result.symbol,
         address: result.address,
-        balance: allSymbolBalance[result.symbol].balance
-      });
+        balance: allSymbolBalance[result.symbol] ? allSymbolBalance[result.symbol].balance : '0.00'
+      };
+
+      if (fromToken.isInput && fromToken.value) {
+        newToToken = {
+          ...newToToken,
+          value: Bignumber(fromToken.value).multipliedBy(fromToken.price).div(allSymbolPrice[result.symbol].price).toString()
+        }
+      }
+
+      if (toToken.isInput && toToken.value) {
+        newFromToken = {
+          ...newFromToken,
+          value: Bignumber(allSymbolPrice[result.symbol].price).multipliedBy(toToken.value).div(fromToken.price).toString()
+        }
+      }
+
     } else {
-      setFromToken({
-        ...fromToken,
+      newFromToken = {
+        ...newFromToken,
         icon: result.icon,
         symbol: result.symbol,
         address: result.address,
-        balance: allSymbolBalance[result.symbol].balance
-      })
+        balance: allSymbolBalance[result.symbol] ? allSymbolBalance[result.symbol].balance : '0.00'
+      };
+
+      if (fromToken.isInput && fromToken.value) {
+        newToToken = {
+          ...newToToken,
+          value: Bignumber(fromToken.value).multipliedBy(allSymbolPrice[result.symbol].price).div(toToken.price).toString()
+        }
+      }
+
+      if (toToken.isInput && toToken.value) {
+        newFromToken = {
+          ...newFromToken,
+          value: Bignumber(toToken.price).multipliedBy(toToken.value).div(allSymbolPrice[result.symbol].price).toString()
+        }
+      }
     }
+
+    setFromToken(newFromToken);
+    setToToken(newToToken);
   }
 
   const changeBtnText = () => {
@@ -154,6 +205,11 @@ function Perpetual() {
       setBtnInfo({
         state: 2,
         text: `Insufficient ${fromToken.symbol} balance`
+      });
+    } else if (Bignumber(toToken.value).multipliedBy(10 ** 9).minus(pool.pool_amounts).isGreaterThan(0)) {
+      setBtnInfo({
+        state: 3,
+        text: `Insufficient ${toToken.symbol} liquidity`
       });
     } else {
       setBtnInfo({
@@ -173,11 +229,23 @@ function Perpetual() {
         ...fromToken,
         balance: allSymbolBalance[fromToken.symbol].balance
       })
+    } else {
+      setFromToken({
+        ...fromToken,
+        balance: '0.00'
+      })
     }
+
     if (allSymbolBalance[toToken.symbol]) {
       setToToken({
         ...toToken,
         balance: allSymbolBalance[toToken.symbol].balance
+      })
+    }
+    else {
+      setToToken({
+        ...toToken,
+        balance: '0.00'
       })
     }
   }, [allSymbolBalance]);
@@ -197,7 +265,93 @@ function Perpetual() {
         price: allSymbolPrice[toToken.symbol].price,
       })
     }
+
+    if (fromToken.isInput) {
+      setToToken({
+        ...toToken,
+        value: Bignumber(allSymbolPrice[fromToken.symbol].price)
+          .multipliedBy(fromToken.value)
+          .div(allSymbolPrice[toToken.symbol].price)
+          .toString(),
+      });
+    }
+
+    if (toToken.isInput) {
+      setFromToken({
+        ...fromToken,
+        value: Bignumber(allSymbolPrice[toToken.symbol].price)
+          .multipliedBy(toToken.value)
+          .div(allSymbolPrice[fromToken.symbol].price)
+          .toString(),
+      });
+    }
+
   }, [allSymbolPrice]);
+
+  const swap = async () => {
+    if (network && account) {
+      setLoading(true);
+
+      const config = contractConfig[network as NetworkType];
+      const toSymbolConfig = config.Coin[(toToken.symbol) as SymbolType];
+      const fromSymbolConfig = config.Coin[(fromToken.symbol) as SymbolType];
+
+      const fromType = fromSymbolConfig.Type === '0x0000000000000000000000000000000000000002::sui::SUI' ? '0x2::sui::SUI' : fromSymbolConfig.Type;
+
+      const coinBalance = await provider.getCoinBalancesOwnedByAddress(account, fromType);
+      const amount = Bignumber(fromToken.value).multipliedBy(10 ** 9).toNumber();
+      const balanceResponse = Coin.selectCoinSetWithCombinedBalanceGreaterThanOrEqual(coinBalance, BigInt(amount));
+      const balanceObjects = balanceResponse.map((item) => Coin.getID(item));
+
+      let argumentsVal: (string | number | string[])[] = [
+        config.VaultObjectId,
+        balanceObjects,
+        fromSymbolConfig.PoolObjectId,
+        toSymbolConfig.PoolObjectId,
+        config.PriceFeedStorageObjectId,
+        account,
+        config.TimeOracleObjectId
+      ];
+
+      let typeArgumentsVal: string[] = [
+        fromSymbolConfig.Type,
+        toSymbolConfig.Type
+      ];
+
+      try {
+        let executeTransactionTnx = await adapter.executeMoveCall({
+          packageObjectId: config.ExchangePackageId,
+          module: 'exchange',
+          function: 'swap',
+          typeArguments: typeArgumentsVal,
+          arguments: argumentsVal,
+          gasBudget: 10000
+        });
+
+        if (executeTransactionTnx.error) {
+          toastify(executeTransactionTnx.error.msg, 'error');
+        } else {
+          if (executeTransactionTnx.data) {
+            executeTransactionTnx = executeTransactionTnx.data;
+          }
+
+          const effects = getTransactionEffects(executeTransactionTnx);
+          const digest = getTransactionDigest(executeTransactionTnx);
+
+          if (effects?.status.status === 'success') {
+            toastify(<Explorer message={'Execute Transaction Successfully!'} type="transaction" digest={digest} />);
+            changeRefreshTime(); // reload data
+          } else {
+            toastify(<Explorer message={'Execute Transaction error!'} type="transaction" digest={digest} />, 'error');
+          }
+        }
+      } catch (err: any) {
+        toastify(err.message || err, 'error');
+      }
+
+      setLoading(false);
+    }
+  }
 
 
   const recordTitle = ['Trades'];
@@ -297,8 +451,8 @@ function Perpetual() {
               !connecting && !connected && !account ?
                 <SuiWalletButton isButton={true} /> :
                 <div>
-                  <button className='btn' disabled={btnInfo.state > 0} >
-                    {btnInfo.text}
+                  <button className='btn' disabled={btnInfo.state > 0} onClick={swap}>
+                    {loading ? <Loading /> : btnInfo.text}
                   </button>
                 </div>
             }

@@ -84,14 +84,14 @@ function BuySell() {
         balance: allSymbolBalance[result.symbol] ? allSymbolBalance[result.symbol].balance : '0.00',
       };
 
-      if (fromToken.isInput) {
+      if (fromToken.isInput && fromToken.value) {
         newToToken = {
           ...newToToken,
           value: Bignumber(fromToken.value).multipliedBy(fromToken.price).div(allSymbolPrice[result.symbol].price).toString()
         }
       }
 
-      if (toToken.isInput) {
+      if (toToken.isInput && toToken.value) {
         newFromToken = {
           ...newFromToken,
           value: Bignumber(allSymbolPrice[result.symbol].price).multipliedBy(toToken.value).div(fromToken.price).toString()
@@ -107,14 +107,14 @@ function BuySell() {
         balance: allSymbolBalance[result.symbol] ? allSymbolBalance[result.symbol].balance : '0.00',
       };
 
-      if (fromToken.isInput) {
+      if (fromToken.isInput && fromToken.value) {
         newToToken = {
           ...newToToken,
           value: Bignumber(fromToken.value).multipliedBy(allSymbolPrice[result.symbol].price).div(toToken.price).toString()
         }
       }
 
-      if (toToken.isInput) {
+      if (toToken.isInput && toToken.value) {
         newFromToken = {
           ...newFromToken,
           value: Bignumber(toToken.price).multipliedBy(toToken.value).div(allSymbolPrice[result.symbol].price).toString()
@@ -314,11 +314,22 @@ function BuySell() {
         ...fromToken,
         balance: allSymbolBalance[fromToken.symbol].balance
       })
+    } else {
+      setFromToken({
+        ...fromToken,
+        balance: '0.00'
+      })
     }
+
     if (allSymbolBalance[toToken.symbol]) {
       setToToken({
         ...toToken,
         balance: allSymbolBalance[toToken.symbol].balance
+      })
+    } else {
+      setToToken({
+        ...toToken,
+        balance: '0.00'
       })
     }
   }, [allSymbolBalance]);

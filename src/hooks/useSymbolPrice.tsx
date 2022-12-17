@@ -65,7 +65,7 @@ export const useAllSymbolPrice = (network: NetworkType = 'DEVNET') => {
   const { vault } = useVault();
   const { aum } = useAum();
   const { refreshTime } = useRefresh();
-  
+
   const [allSymbolPrice, setAllSymbolPrice] = useState<AllSymbolPriceType>({});
 
   const getAllSymbolPrice = async () => {
@@ -81,7 +81,7 @@ export const useAllSymbolPrice = (network: NetworkType = 'DEVNET') => {
           symbol: symbolList[i],
           price: aum.amount && Bignumber(vault.tlp_supply.fields.value).toNumber() !== 0
             ? Bignumber(aum.amount).div(vault.tlp_supply.fields.value).toFixed(2)
-            : '0.00'
+            : '1.00'
         }
       } else {
         objects.push(coin[symbolList[i] as SymbolType].PriceFeedObjectId);
@@ -106,7 +106,7 @@ export const useAllSymbolPrice = (network: NetworkType = 'DEVNET') => {
     if (contractConfig) {
       getAllSymbolPrice();
     }
-  }, [contractConfig, vault.tlp_supply.fields.value, aum.amount,refreshTime]);
+  }, [contractConfig, vault.tlp_supply.fields.value, aum.amount, refreshTime]);
 
   return {
     allSymbolPrice
