@@ -202,7 +202,7 @@ function Perpetual() {
 
   const recordTitle = ['Trades'];
   const recordContent = [<Trades options={[]} />];
-  const typeList = ['Market', 'Limit'];
+  const typeList = ['Market'];  // ['Market', 'Limit'];
 
   return (
     <div className="main">

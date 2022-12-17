@@ -16,7 +16,7 @@ export const useAvailableLiquidity = (network: NetworkType = 'DEVNET') => {
     // const provider = getProvider(network);
     const coinConfig = contractConfig[network].Coin;
 
-    const pools = Object.keys(coinConfig).map((item: string) => coinConfig[item as SymbolType].PoolObjectId);
+    const pools = Object.keys(coinConfig).map((item: string) => coinConfig[item as SymbolType].PoolDataObjectId);
     const objectBatch = await provider.getObjectBatch(pools);
     const result = objectBatch.reduce((sum: Bignumber, item: GetObjectDataResponse, index: number) => {
       const filed = getObjectFields(item);

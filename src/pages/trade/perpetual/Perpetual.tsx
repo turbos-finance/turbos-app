@@ -117,7 +117,7 @@ function Perpetual() {
 
   const recordTitle = ['Positions', 'Orders', 'Trades'];
   const recordContent = [<Positions options={[]} />, <Orders options={[]} />, <Trades options={[]} />];
-  const typeList = ['Market', 'Limit', 'Trigger'];
+  const typeList = ['Market']; // ['Market', 'Limit', 'Trigger'];
 
   const btnText = (() => {
     if (!connecting && !connected && !account) {
