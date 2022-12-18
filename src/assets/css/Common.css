@@ -170,6 +170,9 @@
   align-items: center;
   justify-content: space-between;
 }
+.line-top-16{
+  margin-top: 1.6rem;
+}
 
 .linetop {
   align-items: flex-start;

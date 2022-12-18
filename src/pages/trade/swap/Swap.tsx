@@ -31,6 +31,7 @@ import { Coin, getTransactionDigest, getTransactionEffects } from '@mysten/sui.j
 import { useRefresh } from '../../../contexts/refresh';
 import { Explorer } from '../../../components/explorer/Explorer';
 import Loading from '../../../components/loading/Loading';
+import { from } from '@apollo/client';
 
 type FromToTokenType = {
   balance: string,
@@ -58,6 +59,7 @@ function Perpetual() {
   const [record, setRecord] = useState(0); // 0: posotion ; 1: orders ; 2: trades
   const [selectToken, setSelectToken] = useState(false);
   const [selectTokenSource, setSelectTokenSource] = useState(0); // 0: from token; 1: to token
+  const [check, setCheck] = useState(false);
 
   const [fromToken, setFromToken] = useState<FromToTokenType>({ balance: '0.00', icon: suiIcon, symbol: 'SUI', value: '', price: '0' });
   const [toToken, setToToken] = useState<FromToTokenType>({ balance: '0.00', icon: ethereumIcon, symbol: 'ETH', value: '', price: '0' });
@@ -69,6 +71,10 @@ function Perpetual() {
   const { allSymbolPrice } = useAllSymbolPrice();
   const { allSymbolBalance } = useAllSymbolBalance(account);
   const { availableLiquidity } = useAvailableLiquidity();
+
+  const toggleCheck = () => {
+    setCheck(!check);
+  }
 
   const swapvert = () => {
     setFromToken({
@@ -196,7 +202,7 @@ function Perpetual() {
   }
 
   const changeBtnText = () => {
-    if (!fromToken.value || !Number(fromToken.value)) {
+    if (!fromToken.value || !Number(fromToken.value) || !toToken.value || !Number(fromToken.value)) {
       setBtnInfo({
         state: 1,
         text: 'Enter a amount'
@@ -214,7 +220,7 @@ function Perpetual() {
     } else {
       setBtnInfo({
         state: -1,
-        text: `Approve`
+        text: `Swap`
       });
     }
   };
@@ -340,6 +346,7 @@ function Perpetual() {
 
           if (effects?.status.status === 'success') {
             toastify(<Explorer message={'Execute Transaction Successfully!'} type="transaction" digest={digest} />);
+            toggleCheck();
             changeRefreshTime(); // reload data
           } else {
             toastify(<Explorer message={'Execute Transaction error!'} type="transaction" digest={digest} />, 'error');
@@ -451,7 +458,7 @@ function Perpetual() {
               !connecting && !connected && !account ?
                 <SuiWalletButton isButton={true} /> :
                 <div>
-                  <button className='btn' disabled={btnInfo.state > 0} onClick={swap}>
+                  <button className='btn' disabled={btnInfo.state > 0} onClick={toggleCheck}>
                     {loading ? <Loading /> : btnInfo.text}
                   </button>
                 </div>
@@ -498,113 +505,43 @@ function Perpetual() {
       </div>
 
 
-      <TurbosDialog open={false} title="Check order" >
+      <TurbosDialog open={check} title="Check order" onClose={toggleCheck} >
         <>
           <div className='check-con'>
             <div className='check-list'>
-              <img src={suiIcon} alt="" height="24" />
+              <img src={fromToken.icon} alt="" height="24" />
               <div className='check-info'>
-                <p>Pay USDC</p>
-                <p>0.19234</p>
+                <p>Pay {fromToken.symbol}</p>
+                <p>{fromToken.value}</p>
               </div>
             </div>
             <div className='check-to'><img src={toIcon} alt="" height="24" /></div>
             <div className='check-list'>
-              <img src={ethereumIcon} alt="" height="24" />
+              <img src={toToken.icon} alt="" height="24" />
               <div className='check-info'>
-                <p>Long ETH</p>
-                <p>1.2323</p>
-              </div>
-            </div>
-          </div>
-          <div className="section section-marbottom">
-            <div className="sectiontop">
-              <span>Pay</span>
-              <div>
-                <span className="section-balance">Balance: {balance}</span>
-                <span> | </span><span className='section-max'>MAX</span>
-              </div>
-            </div>
-            <div className="sectionbottom">
-              <div className="sectioninputcon" >
-                <input type="text" className="sectioninput" placeholder="0.0" />
-              </div>
-              <div className="sectiontokens">
-                <img src={ethereumIcon} alt="" />
-                <span>SUI</span>
-              </div>
-            </div>
-          </div>
-          <div className="section section-marbottom">
-            <div className="sectiontop">
-              <span>Pay</span>
-              <div>
-                <span className="section-balance">Balance: {balance}</span>
-              </div>
-            </div>
-            <div className="sectionbottom">
-              <div className="sectioninputcon" >
-                <input type="text" className="sectioninput" placeholder="0.0" />
-              </div>
-              <div className="sectiontokens">
-                <img src={ethereumIcon} alt="" />
-                <span>SUI</span>
+                <p>Receive {toToken.symbol}</p>
+                <p>{toToken.symbol}</p>
               </div>
             </div>
           </div>
 
-          <div className="line">
-            <p className="ll">Collaterlal In</p>
-            <p className="lr">ETH</p>
+          <div className="line line-top-16">
+            <p className="ll">Min. Ratio</p>
+            <p className="lr">1 {fromToken.symbol} ≈ {toToken.symbol} </p>
           </div>
           <div className="line">
-            <p className="ll">Leverage</p>
-            <p className="lr">USD</p>
-          </div>
-          <div className="line">
-            <p className="ll">Liq. Price</p>
-            <p className="lr">USD</p>
+            <p className="ll">Spread</p>
+            <p className="lr">-</p>
           </div>
           <div className="line">
             <p className="ll">Fees</p>
-            <p className="lr">USD</p>
-          </div>
-          <div className="line">
-            <p className="ll">Collaterlal</p>
-            <p className="lr">USD</p>
-          </div>
-          <div className="line-hr"></div>
-          <div className="line">
-            <p className="ll">Spread</p>
-            <p className="lr">ETH</p>
-          </div>
-          <div className="line">
-            <p className="ll">Entry Price</p>
-            <p className="lr">USD</p>
-          </div>
-          <div className="line">
-            <p className="ll">Borrow Fee</p>
-            <p className="lr">USD</p>
-          </div>
-          <div className="line">
-            <p className="ll">Execution Fee</p>
-            <p className="lr">
-              <TurbosTooltip title={'Max BTC long'}>
-                <span className='underline'>0.03%</span>
-              </TurbosTooltip>
-            </p>
-          </div>
-          <div className="line">
-            <p className="ll">Allowed Slippage</p>
-            <p className="lr">USD</p>
-          </div>
-          <div className="line">
-            <p className="ll">Allow up to 1% slippage</p>
-            <p className="lr"></p>
+            <p className="lr">-</p>
           </div>
 
-          <div className='btn'>
-            Long
+          <div>
+            <button className='btn' onClick={swap}>
+              {loading ? <Loading /> : 'Approve'}
+            </button>
           </div>
         </>
       </TurbosDialog>
