@@ -1,3 +1,6 @@
+import Bignumber from 'bignumber.js';
+import { useEffect, useState } from 'react';
+
 import styles from './Perpetual.module.css';
 import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
@@ -11,7 +14,6 @@ import toIcon from '../../../assets/images/to.png';
 import swapvertIcon from '../../../assets/images/swapvert.png';
 import addIcon from '../../../assets/images/add.png';
 import shareIcon from '../../../assets/images/share.png';
-import { useState } from 'react';
 import Empty from '../../../components/empty/Empty';
 import SelectToken, { SelectTokenOption } from '../../../components/selectToken/SelectToken';
 import { supplyTokens, supplyTradeTokens } from '../../../config/tokens';
@@ -23,6 +25,15 @@ import Chart from './components/chart/Chart';
 import { useSuiWallet } from '../../../contexts/useSuiWallet';
 import SuiWalletButton from '../../../components/walletButton/WalletButton';
 import { useBalance } from '../../../hooks/useBalance';
+import Loading from '../../../components/loading/Loading';
+import { numberWithCommas } from '../../../utils';
+import { SymbolType } from '../../../config/config.type';
+import { usePool } from '../../../hooks/usePool';
+import { useAllSymbolPrice } from '../../../hooks/useSymbolPrice';
+import { useAllSymbolBalance } from '../../../hooks/useSymbolBalance';
+import { useAvailableLiquidity } from '../../../hooks/useAvailableLiquidity';
+
+const tradeType = ['Long', 'Short'];
 
 const sliderGreen = ['rgb(99, 204, 169, .3)', 'rgb(99, 204, 169, 1)'];
 const sliderRed = ['rgba(240, 68, 56, .3)', 'rgba(240, 68, 56, 1)'];
@@ -41,38 +52,55 @@ const percents = [0.25, 0.5, 0.75, 1];
 type FromToTokenType = {
   balance: string,
   icon: string,
-  symbol: string
+  symbol: string,
+  value: string,
+  price: string,
+  address?: string,
+  isInput?: boolean,
 }
 
 function Perpetual() {
-  // const balance = 100;
 
   const {
     connecting,
     connected,
-    account
+    account,
+    network,
+    adapter
   } = useSuiWallet();
-
-  const { balance } = useBalance(account);
 
   const [trade, setTrade] = useState(0); // 0: long; 1: short
   const [type, setType] = useState(0); // 0: market; 1: limit; 2: Trigger
   const [record, setRecord] = useState(0); // 0: posotion ; 1: orders ; 2: trades
   const [selectToken, setSelectToken] = useState(false);
   const [selectTokenSource, setSelectTokenSource] = useState(0); // 0: from token; 1: to token
+
   const [percent, setPercent] = useState(0);
   const [leverage, setLeverage] = useState(1.5);
   const [showLeverage, setShowLeverage] = useState(true);
-  const [fromToken, setFromToken] = useState<FromToTokenType>({ balance: '', icon: suiIcon, symbol: 'SUI' });
-  const [toToken, setToToken] = useState<FromToTokenType>({ balance: '', icon: ethereumIcon, symbol: 'ETH' });
+
+  const [fromToken, setFromToken] = useState<FromToTokenType>({ balance: '0.00', icon: suiIcon, symbol: 'SUI', value: '', price: '0' });
+  const [toToken, setToToken] = useState<FromToTokenType>({ balance: '0.00', icon: ethereumIcon, symbol: 'ETH', value: '', price: '0' });
+
+  const [btnInfo, setBtnInfo] = useState({ state: 0, text: 'Connect Wallet' });
+  const [loading, setLoading] = useState(false);
+
+  const { pool } = usePool(toToken.symbol as SymbolType);
+  const { allSymbolPrice } = useAllSymbolPrice();
+  const { allSymbolBalance } = useAllSymbolBalance(account);
+  const { availableLiquidity } = useAvailableLiquidity();
+
 
   const swapvert = () => {
+
     setFromToken({
       ...toToken,
     });
+
     setToToken({
       ...fromToken,
     });
+
   }
 
   const toggleSelectToken = (source: number) => {
@@ -88,44 +116,214 @@ function Perpetual() {
     setTrade(type);
   }
 
-  const changefromToken = (k: keyof FromToTokenType, value: string) => {
-    const newParams = { ...fromToken };
-    newParams[k] = value;
-    setFromToken(newParams)
-  }
-
   const handlePercent = (percent: number) => {
-    changefromToken('balance', (Number(balance) * percent).toString());
+    const newValue = Bignumber(fromToken.balance).multipliedBy(percent).toString();
     setPercent(percent);
+    setFromToken({
+      ...fromToken,
+      value: newValue,
+      isInput: true
+    });
+
+    const newBalance = Bignumber(newValue).multipliedBy(allSymbolPrice[fromToken.symbol].price).div(allSymbolPrice[toToken.symbol].price).toString();
+    // // const decimalValue = balance.toString().replace(/^\d+\.?/, '');
+    setToToken({
+      ...toToken,
+      value: newBalance,
+      isInput: false
+    });
   }
 
   const changeSelectToken = (result: SelectTokenOption) => {
+    let newFromToken = {
+      ...fromToken
+    };
+    let newToToken = {
+      ...toToken
+    };
+
     if (selectTokenSource) {
-      setToToken({
-        ...toToken,
+      newToToken = {
+        ...newToToken,
         icon: result.icon,
-        symbol: result.symbol
+        symbol: result.symbol,
+        address: result.address,
+        balance: allSymbolBalance[result.symbol] ? allSymbolBalance[result.symbol].balance : '0.00'
+      };
+
+      if (fromToken.isInput && fromToken.value) {
+        newToToken = {
+          ...newToToken,
+          value: Bignumber(fromToken.value).multipliedBy(fromToken.price).div(allSymbolPrice[result.symbol].price).toString()
+        }
+      }
+
+      if (toToken.isInput && toToken.value) {
+        newFromToken = {
+          ...newFromToken,
+          value: Bignumber(allSymbolPrice[result.symbol].price).multipliedBy(toToken.value).div(fromToken.price).toString()
+        }
+      }
+
+    } else {
+      newFromToken = {
+        ...newFromToken,
+        icon: result.icon,
+        symbol: result.symbol,
+        address: result.address,
+        balance: allSymbolBalance[result.symbol] ? allSymbolBalance[result.symbol].balance : '0.00'
+      };
+
+      if (fromToken.isInput && fromToken.value) {
+        newToToken = {
+          ...newToToken,
+          value: Bignumber(fromToken.value).multipliedBy(allSymbolPrice[result.symbol].price).div(toToken.price).toString()
+        }
+      }
+
+      if (toToken.isInput && toToken.value) {
+        newFromToken = {
+          ...newFromToken,
+          value: Bignumber(toToken.price).multipliedBy(toToken.value).div(allSymbolPrice[result.symbol].price).toString()
+        }
+      }
+    }
+
+    setFromToken(newFromToken);
+    setToToken(newToToken);
+  }
+
+  const changeFrom = (e: any) => {
+    setFromToken({
+      ...fromToken,
+      value: e.target.value,
+      isInput: true
+    });
+
+    const newBalance = e.target.value ? Bignumber(e.target.value).multipliedBy(allSymbolPrice[fromToken.symbol].price).div(allSymbolPrice[toToken.symbol].price).toString() : '';
+    // // const decimalValue = balance.toString().replace(/^\d+\.?/, '');
+    setToToken({
+      ...toToken,
+      value: newBalance,
+      isInput: false
+    });
+    setPercent(0);
+  }
+
+
+  const changeTo = (e: any) => {
+    setToToken({
+      ...toToken,
+      value: e.target.value,
+      isInput: true
+    });
+    const newBalance = e.target.value ? Bignumber(e.target.value).multipliedBy(allSymbolPrice[toToken.symbol].price).div(allSymbolPrice[fromToken.symbol].price) : '';
+    // // const decimalValue = balance.toString().replace(/^\d+\.?/, '');
+    setFromToken({
+      ...fromToken,
+      value: newBalance.toString(),
+      isInput: false
+    });
+  }
+
+  const changeBtnText = () => {
+    if (!fromToken.value || !Number(fromToken.value)) {
+      setBtnInfo({
+        state: 1,
+        text: 'Enter a amount'
       });
+    } else if (Bignumber(fromToken.value).minus(fromToken.balance).isGreaterThan(0)) {
+      setBtnInfo({
+        state: 2,
+        text: `Insufficient ${fromToken.symbol} balance`
+      });
+    } else if (Bignumber(toToken.value).multipliedBy(10 ** 9).minus(pool.pool_amounts).isGreaterThan(0)) {
+      setBtnInfo({
+        state: 3,
+        text: `Insufficient ${toToken.symbol} liquidity`
+      });
+    } else {
+      setBtnInfo({
+        state: -1,
+        text: tradeType[trade]
+      });
+    }
+  };
+
+  useEffect(() => {
+    changeBtnText();
+  }, [connecting, connected, account, fromToken, toToken, pool]);
+
+  useEffect(() => {
+    if (allSymbolBalance[fromToken.symbol]) {
+      setFromToken({
+        ...fromToken,
+        balance: allSymbolBalance[fromToken.symbol].balance
+      })
     } else {
       setFromToken({
         ...fromToken,
-        icon: result.icon,
-        symbol: result.symbol
+        balance: '0.00'
       })
     }
-  }
+
+    if (allSymbolBalance[toToken.symbol]) {
+      setToToken({
+        ...toToken,
+        balance: allSymbolBalance[toToken.symbol].balance
+      })
+    }
+    else {
+      setToToken({
+        ...toToken,
+        balance: '0.00'
+      })
+    }
+  }, [allSymbolBalance]);
+
+
+  useEffect(() => {
+    if (allSymbolPrice[fromToken.symbol]) {
+      setFromToken({
+        ...fromToken,
+        price: allSymbolPrice[fromToken.symbol].price,
+      });
+    }
+
+    if (allSymbolPrice[toToken.symbol]) {
+      setToToken({
+        ...toToken,
+        price: allSymbolPrice[toToken.symbol].price,
+      })
+    }
+
+    if (fromToken.isInput) {
+      setToToken({
+        ...toToken,
+        value: Bignumber(allSymbolPrice[fromToken.symbol].price)
+          .multipliedBy(fromToken.value)
+          .div(allSymbolPrice[toToken.symbol].price)
+          .toString(),
+      });
+    }
+
+    if (toToken.isInput) {
+      setFromToken({
+        ...fromToken,
+        value: Bignumber(allSymbolPrice[toToken.symbol].price)
+          .multipliedBy(toToken.value)
+          .div(allSymbolPrice[fromToken.symbol].price)
+          .toString(),
+      });
+    }
+
+  }, [allSymbolPrice]);
+
+
 
   const recordTitle = ['Positions', 'Orders', 'Trades'];
   const recordContent = [<Positions options={[]} />, <Orders options={[]} />, <Trades options={[]} />];
   const typeList = ['Market']; // ['Market', 'Limit', 'Trigger'];
-
-  const btnText = (() => {
-    if (!connecting && !connected && !account) {
-      return 'Connect Wallet';
-    }
-    return 'Enter a amount'
-  })();
-
 
   return (
     <div className="main">
@@ -160,7 +358,7 @@ function Perpetual() {
                       <div className="sectiontop">
                         <span>Pay</span>
                         <div>
-                          <span className="section-balance">Balance: {balance}</span>
+                          <span className="section-balance">Balance: {fromToken.balance}</span>
                           <span> | </span><span className='section-max' onClick={() => { handlePercent(1) }}>MAX</span>
                         </div>
                       </div>
@@ -173,7 +371,12 @@ function Perpetual() {
                       </div>
                       <div className="sectionbottom">
                         <div className="sectioninputcon" >
-                          <input type="text" value={fromToken.balance} onChange={(e: any) => changefromToken('balance', e.target.value)} className="sectioninput" placeholder="0.0" />
+                          <input type="text"
+                            value={fromToken.value}
+                            onChange={changeFrom}
+                            className="sectioninput"
+                            placeholder="0.0"
+                          />
                         </div>
                         <div className="sectiontokens" onClick={() => { toggleSelectToken(0) }}>
                           <img src={fromToken.icon} alt="" />
@@ -189,15 +392,14 @@ function Perpetual() {
 
                     <div className="section">
                       <div className="sectiontop">
-                        <span>{trade === 1 ? 'Short' : 'Long'}</span>
+                        <span>{tradeType[trade]}</span>
                         <div>
-                          {/* <span className="balance">Balance: 0.005</span>
-                <span> | </span><span>MAX</span> */}
+                          {showLeverage ? `Leverage: ${leverage}x` : null}
                         </div>
                       </div>
                       <div className="sectionbottom">
                         <div className="sectioninputcon" >
-                          <input type="text" value={toToken.balance} className="sectioninput" placeholder="0.0" readOnly />
+                          <input type="text" value={toToken.value} className="sectioninput" placeholder="0.0" onChange={changeTo} />
                         </div>
                         <div className="sectiontokens" onClick={() => { toggleSelectToken(1) }}>
                           <img src={toToken.icon} alt="" />
@@ -213,8 +415,7 @@ function Perpetual() {
                           <div className="sectiontop">
                             <span>Price</span>
                             <div>
-                              {/* <span className="balance">Balance: 0.005</span>
-                <span> | </span><span>MAX</span> */}
+
                             </div>
                           </div>
                           <div className="sectionbottom">
@@ -264,15 +465,15 @@ function Perpetual() {
                   </div>
                   <div className="line">
                     <p className="ll">Leverage</p>
-                    <p className="lr">{leverage}</p>
+                    <p className="lr"> {showLeverage ? `${leverage}x` : '-'}</p>
                   </div>
                   <div className="line">
                     <p className="ll">Entry Price</p>
-                    <p className="lr">-</p>
+                    <p className="lr">{fromToken.price ? `\$${numberWithCommas(fromToken.price)}` : '-'}</p>
                   </div>
                   <div className="line">
                     <p className="ll">Liq. Price</p>
-                    <p className="lr">$15.45</p>
+                    <p className="lr">{toToken.price ? `\$${numberWithCommas(toToken.price)}` : '-'}</p>
                   </div>
                   <div className="line">
                     <p className="ll">Fees</p>
@@ -285,8 +486,10 @@ function Perpetual() {
             {
               !connecting && !connected && !account ?
                 <SuiWalletButton isButton={true} /> :
-                <div className={trade === 1 ? 'btn btn-red' : 'btn'}>
-                  {btnText}
+                <div>
+                  <button className={trade === 1 ? 'btn btn-red' : 'btn'} disabled={btnInfo.state > 0}>
+                    {loading ? <Loading /> : btnInfo.text}
+                  </button>
                 </div>
             }
 
@@ -297,23 +500,23 @@ function Perpetual() {
         </div>
 
         <div className="container">
-          <div className="container-title">Long ETH</div>
+          <div className="container-title">{tradeType[trade]} {fromToken.symbol}</div>
           <div className="line-con1">
             <div className="line">
               <p className="ll">Entry Price</p>
-              <p className="lr">$5.45</p>
+              <p className="lr">{toToken.price ? `\$${numberWithCommas(toToken.price)}` : '-'}</p>
             </div>
             <div className="line">
               <p className="ll">Exit Price</p>
-              <p className="lr">$1,146.22</p>
+              <p className="lr">{toToken.price ? `\$${numberWithCommas(toToken.price)}` : '-'}</p>
             </div>
             <div className="line">
               <p className="ll">Borrow Fee</p>
-              <p className="lr">0.0001% / 1h</p>
+              <p className="lr">-</p>
             </div>
             <div className="line">
               <p className="ll">Available Liquidity</p>
-              <p className="lr">$107,695.16</p>
+              <p className="lr">{availableLiquidity ? `\$${availableLiquidity}` : '-'}</p>
             </div>
           </div>
         </div>
@@ -359,7 +562,7 @@ function Perpetual() {
             <div className="sectiontop">
               <span>Pay</span>
               <div>
-                <span className="section-balance">Balance: {balance}</span>
+                <span className="section-balance">Balance: {fromToken.value}</span>
                 <span> | </span><span className='section-max'>MAX</span>
               </div>
             </div>
@@ -377,7 +580,7 @@ function Perpetual() {
             <div className="sectiontop">
               <span>Pay</span>
               <div>
-                <span className="section-balance">Balance: {balance}</span>
+                <span className="section-balance">Balance: {toToken.value}</span>
               </div>
             </div>
             <div className="sectionbottom">

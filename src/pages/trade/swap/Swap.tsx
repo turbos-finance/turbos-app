@@ -221,7 +221,7 @@ function Perpetual() {
 
   useEffect(() => {
     changeBtnText();
-  }, [connecting, connected, account, fromToken]);
+  }, [connecting, connected, account, fromToken, toToken, pool]);
 
   useEffect(() => {
     if (allSymbolBalance[fromToken.symbol]) {
@@ -467,11 +467,11 @@ function Perpetual() {
           <div className="line-con1">
             <div className="line">
               <p className="ll">{fromToken.symbol} Price</p>
-              <p className="lr">${allSymbolPrice[toToken.symbol] ? numberWithCommas(allSymbolPrice[fromToken.symbol]?.price) : '-'}</p>
+              <p className="lr">{allSymbolPrice[fromToken.symbol] ? `\$${numberWithCommas(allSymbolPrice[fromToken.symbol]?.price)}` : '-'}</p>
             </div>
             <div className="line">
               <p className="ll">{toToken.symbol} Price</p>
-              <p className="lr">${allSymbolPrice[toToken.symbol] ? numberWithCommas(allSymbolPrice[toToken.symbol].price) : '-'}</p>
+              <p className="lr">{allSymbolPrice[toToken.symbol] ? `\$${numberWithCommas(allSymbolPrice[toToken.symbol].price)}` : '-'}</p>
             </div>
             <div className="line">
               <p className="ll">Available Liquidity</p>
