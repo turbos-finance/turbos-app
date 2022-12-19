@@ -31,7 +31,6 @@ import { Coin, getTransactionDigest, getTransactionEffects } from '@mysten/sui.j
 import { useRefresh } from '../../../contexts/refresh';
 import { Explorer } from '../../../components/explorer/Explorer';
 import Loading from '../../../components/loading/Loading';
-import { from } from '@apollo/client';
 
 type FromToTokenType = {
   balance: string,
@@ -156,6 +155,7 @@ function Perpetual() {
         icon: result.icon,
         symbol: result.symbol,
         address: result.address,
+        price: allSymbolPrice[result.symbol] ? allSymbolPrice[result.symbol].price : '0',
         balance: allSymbolBalance[result.symbol] ? allSymbolBalance[result.symbol].balance : '0.00'
       };
 
@@ -179,6 +179,7 @@ function Perpetual() {
         icon: result.icon,
         symbol: result.symbol,
         address: result.address,
+        price: allSymbolPrice[result.symbol] ? allSymbolPrice[result.symbol].price : '0',
         balance: allSymbolBalance[result.symbol] ? allSymbolBalance[result.symbol].balance : '0.00'
       };
 
@@ -312,6 +313,7 @@ function Perpetual() {
       let argumentsVal: (string | number | string[])[] = [
         config.VaultObjectId,
         balanceObjects,
+        Bignumber(fromToken.value).multipliedBy(10 ** 9).toNumber(),
         fromSymbolConfig.PoolObjectId,
         toSymbolConfig.PoolObjectId,
         config.PriceFeedStorageObjectId,
@@ -489,7 +491,7 @@ function Perpetual() {
       </div>
 
       <div className="main-right">
-        <Chart />
+        <Chart symbol={toToken.symbol} changeChartSymbol={(() => { })} />
 
         <div>
           <div className={styles.ordertab}>
@@ -520,14 +522,14 @@ function Perpetual() {
               <img src={toToken.icon} alt="" height="24" />
               <div className='check-info'>
                 <p>Receive {toToken.symbol}</p>
-                <p>{toToken.symbol}</p>
+                <p>{toToken.value}</p>
               </div>
             </div>
           </div>
 
           <div className="line line-top-16">
             <p className="ll">Min. Ratio</p>
-            <p className="lr">1 {fromToken.symbol} ≈ {toToken.symbol} </p>
+            <p className="lr">1 {fromToken.symbol} ≈ {Bignumber(fromToken.price).div(toToken.price).toString()}{toToken.symbol} </p>
           </div>
           <div className="line">
             <p className="ll">Spread</p>

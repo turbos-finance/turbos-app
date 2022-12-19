@@ -88,8 +88,13 @@ const getChartOptions = (width: any, height: any) => ({
   },
 });
 
+type ChartProps = {
+  symbol: string,
+  changeChartSymbol: (symbol: string) => void
+}
 
-function Chart() {
+function Chart(props: ChartProps) {
+  const { symbol, changeChartSymbol } = props;
 
   const { refreshTime } = useRefresh();
 
@@ -181,10 +186,12 @@ function Chart() {
 
   // loading data
   useEffect(() => {
-    (async () => {
-      setPricedata(await getChainlinkChartPricesFromGraph(chartToken, chartTime) || []);
-    })();
-  }, [chartToken, chartTime, refreshTime])
+    if (symbol) {
+      (async () => {
+        setPricedata(await getChainlinkChartPricesFromGraph(symbol, chartTime) || []);
+      })();
+    }
+  }, [symbol, chartTime, refreshTime])
 
   // create cart
   useEffect(() => {
@@ -209,10 +216,10 @@ function Chart() {
   const menu = (
     <Menu className="overlay-dropdown-ul">
       <MenuItem>
-        <div className="overlay-dropdown-li menus-dropdown-li" onClick={() => { changeChartToken('BTC'); }}>
+        <div className="overlay-dropdown-li menus-dropdown-li" onClick={() => { changeChartSymbol('BTC'); }}>
           <span>BTC / USD</span>
         </div>
-        <div className="overlay-dropdown-li menus-dropdown-li " onClick={() => { changeChartToken('ETH'); }}>
+        <div className="overlay-dropdown-li menus-dropdown-li " onClick={() => { changeChartSymbol('ETH'); }}>
           <span>ETH / USD</span>
         </div>
       </MenuItem>

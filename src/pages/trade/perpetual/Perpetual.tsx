@@ -16,7 +16,7 @@ import addIcon from '../../../assets/images/add.png';
 import shareIcon from '../../../assets/images/share.png';
 import Empty from '../../../components/empty/Empty';
 import SelectToken, { SelectTokenOption } from '../../../components/selectToken/SelectToken';
-import { supplyTokens, supplyTradeTokens } from '../../../config/tokens';
+import { supplyTokens, supplyTradeTokens, SupplyTokenType } from '../../../config/tokens';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import TurbosDialog from '../../../components/UI/Dialog/Dialog';
@@ -92,15 +92,25 @@ function Perpetual() {
 
 
   const swapvert = () => {
-
     setFromToken({
       ...toToken,
     });
 
-    setToToken({
-      ...fromToken,
-    });
-
+    const isSymbole = supplyTradeTokens.find((item: SupplyTokenType) => fromToken.symbol == item.symbol);
+    if (isSymbole) {
+      setToToken({
+        ...fromToken,
+      });
+    } else {
+      const symbol = supplyTradeTokens[0].symbol;
+      setToToken({
+        ...fromToken,
+        symbol,
+        balance: allSymbolBalance[symbol] ? allSymbolBalance[symbol].balance : '0',
+        price: allSymbolPrice[symbol] ? allSymbolPrice[symbol].price : '0',
+        icon: supplyTradeTokens[0].icon
+      });
+    }
   }
 
   const toggleSelectToken = (source: number) => {
@@ -148,6 +158,7 @@ function Perpetual() {
         icon: result.icon,
         symbol: result.symbol,
         address: result.address,
+        price: allSymbolPrice[result.symbol] ? allSymbolPrice[result.symbol].price : '0',
         balance: allSymbolBalance[result.symbol] ? allSymbolBalance[result.symbol].balance : '0.00'
       };
 
@@ -171,6 +182,7 @@ function Perpetual() {
         icon: result.icon,
         symbol: result.symbol,
         address: result.address,
+        price: allSymbolPrice[result.symbol] ? allSymbolPrice[result.symbol].price : '0',
         balance: allSymbolBalance[result.symbol] ? allSymbolBalance[result.symbol].balance : '0.00'
       };
 
@@ -191,6 +203,10 @@ function Perpetual() {
 
     setFromToken(newFromToken);
     setToToken(newToToken);
+  }
+
+  const changeChartSymbol = (symbol: string) => {
+
   }
 
   const changeFrom = (e: any) => {
@@ -523,7 +539,7 @@ function Perpetual() {
       </div>
 
       <div className="main-right">
-        <Chart />
+        <Chart symbol={toToken.symbol} changeChartSymbol={changeChartSymbol} />
 
         <div>
           <div className={styles.ordertab}>
@@ -541,23 +557,6 @@ function Perpetual() {
 
       <TurbosDialog open={false} title="Check order" >
         <>
-          {/* <div className='check-con'>
-            <div className='check-list'>
-              <img src={suiIcon} alt="" height="24" />
-              <div className='check-info'>
-                <p>Pay USDC</p>
-                <p>0.19234</p>
-              </div>
-            </div>
-            <div className='check-to'><img src={toIcon} alt="" height="24" /></div>
-            <div className='check-list'>
-              <img src={ethereumIcon} alt="" height="24" />
-              <div className='check-info'>
-                <p>Long ETH</p>
-                <p>1.2323</p>
-              </div>
-            </div>
-          </div> */}
           <div className="section section-marbottom">
             <div className="sectiontop">
               <span>Pay</span>

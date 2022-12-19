@@ -81,6 +81,7 @@ function BuySell() {
         symbol: result.symbol,
         icon: result.icon,
         address: result.address || '',
+        price: allSymbolPrice[result.symbol] ? allSymbolPrice[result.symbol].price : '0',
         balance: allSymbolBalance[result.symbol] ? allSymbolBalance[result.symbol].balance : '0.00',
       };
 
@@ -104,6 +105,7 @@ function BuySell() {
         symbol: result.symbol,
         icon: result.icon,
         address: result.address || '',
+        price: allSymbolPrice[result.symbol] ? allSymbolPrice[result.symbol].price : '0',
         balance: allSymbolBalance[result.symbol] ? allSymbolBalance[result.symbol].balance : '0.00',
       };
 
