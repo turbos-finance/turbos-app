@@ -441,7 +441,7 @@ function BuySell() {
               !connecting && !connected && !account ?
                 <SuiWalletButton isButton={true} /> :
                 <div>
-                  <button className='btn' disabled={btnInfo.state > 0} onClick={approve}>
+                  <button className='btn' disabled={btnInfo.state > 0 || loading} onClick={approve}>
                     {loading ? <Loading /> : btnInfo.text}
                   </button>
                 </div>

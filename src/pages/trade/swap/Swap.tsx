@@ -6,13 +6,14 @@ import Trades from '../perpetual/components/trades/Trades';
 import downIcon from '../../../assets/images/down.png';
 import ethereumIcon from '../../../assets/images/ethereum.png';
 import suiIcon from '../../../assets/images/ic_sui_40.svg';
+import btcIcon from '../../../assets/images/ic_btc_40.svg';
 import toIcon from '../../../assets/images/to.png';
 import swapvertIcon from '../../../assets/images/swapvert.png';
 import addIcon from '../../../assets/images/add.png';
 import shareIcon from '../../../assets/images/share.png';
 import Empty from '../../../components/empty/Empty';
 import SelectToken, { SelectTokenOption } from '../../../components/selectToken/SelectToken';
-import { supplyTokens, supplyTradeTokens } from '../../../config/tokens';
+import { supplyTokens, SupplyTokenType, supplyTradeTokens } from '../../../config/tokens';
 import TurbosDialog from '../../../components/UI/Dialog/Dialog';
 import TurbosTooltip from '../../../components/UI/Tooltip/Tooltip';
 import Chart from '../perpetual/components/chart/Chart';
@@ -43,7 +44,6 @@ type FromToTokenType = {
 }
 
 function Perpetual() {
-  const balance = 100;
   const {
     connecting,
     connected,
@@ -61,7 +61,7 @@ function Perpetual() {
   const [check, setCheck] = useState(false);
 
   const [fromToken, setFromToken] = useState<FromToTokenType>({ balance: '0.00', icon: suiIcon, symbol: 'SUI', value: '', price: '0' });
-  const [toToken, setToToken] = useState<FromToTokenType>({ balance: '0.00', icon: ethereumIcon, symbol: 'ETH', value: '', price: '0' });
+  const [toToken, setToToken] = useState<FromToTokenType>({ balance: '0.00', icon: btcIcon, symbol: 'BTC', value: '', price: '0' });
 
   const [btnInfo, setBtnInfo] = useState({ state: 0, text: 'Connect Wallet' });
   const [loading, setLoading] = useState(false);
@@ -79,9 +79,22 @@ function Perpetual() {
     setFromToken({
       ...toToken,
     });
-    setToToken({
-      ...fromToken,
-    });
+
+    const isSymbole = supplyTradeTokens.find((item: SupplyTokenType) => fromToken.symbol == item.symbol);
+    if (isSymbole) {
+      setToToken({
+        ...fromToken,
+      });
+    } else {
+      const symbol = supplyTradeTokens[0].symbol;
+      setToToken({
+        ...fromToken,
+        symbol,
+        balance: allSymbolBalance[symbol] ? allSymbolBalance[symbol].balance : '0',
+        price: allSymbolPrice[symbol] ? allSymbolPrice[symbol].price : '0',
+        icon: supplyTradeTokens[0].icon
+      });
+    }
   }
 
   const toggleSelectToken = (source: number) => {
@@ -491,7 +504,7 @@ function Perpetual() {
       </div>
 
       <div className="main-right">
-        <Chart symbol={toToken.symbol} changeChartSymbol={(() => { })} />
+        <Chart symbol={toToken.symbol} dropdownDisabled={true} />
 
         <div>
           <div className={styles.ordertab}>
@@ -541,7 +554,7 @@ function Perpetual() {
           </div>
 
           <div>
-            <button className='btn' onClick={swap}>
+            <button className='btn' onClick={swap} disabled={loading}>
               {loading ? <Loading /> : 'Approve'}
             </button>
           </div>

@@ -26,7 +26,7 @@
 .btn[disabled] {
     background: rgba(99, 204, 169, .5);
     color: rgba(255, 255, 255, 0.5);
-    cursor: default;
+    cursor: not-allowed;
 }
 
 .btn-red {
@@ -43,7 +43,7 @@
 
 .btn-red[disabled] {
     background: rgb(240, 68, 56, .5);
-    cursor: default;
+    cursor: not-allowed;
 }
 
 .btn-outline {
@@ -56,7 +56,7 @@
     border: 1px solid rgba(255, 255, 255, .2);
     color: rgb(255, 255, 255, .5);
     background: transparent;
-    cursor: default;
+    cursor: not-allowed;
 }
 
 .btn-outline:hover {

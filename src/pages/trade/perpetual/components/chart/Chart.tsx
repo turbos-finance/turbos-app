@@ -90,11 +90,12 @@ const getChartOptions = (width: any, height: any) => ({
 
 type ChartProps = {
   symbol: string,
-  changeChartSymbol: (symbol: string) => void
+  changeChartSymbol?: (symbol: string) => void,
+  dropdownDisabled?: boolean
 }
 
 function Chart(props: ChartProps) {
-  const { symbol, changeChartSymbol } = props;
+  const { symbol, changeChartSymbol, dropdownDisabled } = props;
 
   const { refreshTime } = useRefresh();
 
@@ -125,6 +126,7 @@ function Chart(props: ChartProps) {
 
   const changeChartToken = (value: string) => {
     setChartToken(value);
+    changeChartSymbol && changeChartSymbol(value);
   }
 
   const changeVisible = (visible: boolean) => {
@@ -186,12 +188,12 @@ function Chart(props: ChartProps) {
 
   // loading data
   useEffect(() => {
-    if (symbol) {
+    if (chartToken) {
       (async () => {
-        setPricedata(await getChainlinkChartPricesFromGraph(symbol, chartTime) || []);
+        setPricedata(await getChainlinkChartPricesFromGraph(chartToken, chartTime) || []);
       })();
     }
-  }, [symbol, chartTime, refreshTime])
+  }, [chartToken, chartTime, refreshTime])
 
   // create cart
   useEffect(() => {
@@ -212,14 +214,19 @@ function Chart(props: ChartProps) {
     setHoveredCandlestick(pricedata[pricedata.length - 1]);
   }, [node, chartNode, pricedata]);
 
+  useEffect(() => {
+    if (symbol && symbol !== chartToken) {
+      setChartToken(symbol);
+    }
+  }, [symbol]);
 
   const menu = (
     <Menu className="overlay-dropdown-ul">
       <MenuItem>
-        <div className="overlay-dropdown-li menus-dropdown-li" onClick={() => { changeChartSymbol('BTC'); }}>
+        <div className="overlay-dropdown-li menus-dropdown-li" onClick={() => { changeChartToken('BTC'); }}>
           <span>BTC / USD</span>
         </div>
-        <div className="overlay-dropdown-li menus-dropdown-li " onClick={() => { changeChartSymbol('ETH'); }}>
+        <div className="overlay-dropdown-li menus-dropdown-li " onClick={() => { changeChartToken('ETH'); }}>
           <span>ETH / USD</span>
         </div>
       </MenuItem>
@@ -273,13 +280,18 @@ function Chart(props: ChartProps) {
   return (
     <>
       <div className="main-right-container">
-
-        <Dropdown overlay={menu} trigger={['click']} overlayClassName={'overlay-dropdown menus-dropdown'} onVisibleChange={changeVisible}>
-          <div className={styles.tokenselect}>
-            <span>{chartToken} / USD</span>
-            <img src={visible ? upIcon : downIcon} className="sectiontokensicon" alt="" />
-          </div>
-        </Dropdown>
+        {
+          dropdownDisabled
+            ? <div className={styles.tokenselect}>
+              <span>{chartToken} / USD</span>
+            </div>
+            : <Dropdown overlay={menu} trigger={['click']} overlayClassName={'overlay-dropdown menus-dropdown'} onVisibleChange={changeVisible}>
+              <div className={styles.tokenselect}>
+                <span>{chartToken} / USD</span>
+                <img src={visible ? upIcon : downIcon} className="sectiontokensicon" alt="" />
+              </div>
+            </Dropdown>
+        }
 
         <div className={styles.pricelistcon}>
           <div className={styles.pricelist}>

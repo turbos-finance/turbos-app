@@ -10,6 +10,7 @@ import shortIcon from '../../../assets/images/short.png';
 import downIcon from '../../../assets/images/down.png';
 import ethereumIcon from '../../../assets/images/ethereum.png';
 import suiIcon from '../../../assets/images/ic_sui_40.svg';
+import btcIcon from '../../../assets/images/ic_btc_40.svg';
 import toIcon from '../../../assets/images/to.png';
 import swapvertIcon from '../../../assets/images/swapvert.png';
 import addIcon from '../../../assets/images/add.png';
@@ -27,11 +28,17 @@ import SuiWalletButton from '../../../components/walletButton/WalletButton';
 import { useBalance } from '../../../hooks/useBalance';
 import Loading from '../../../components/loading/Loading';
 import { numberWithCommas } from '../../../utils';
-import { SymbolType } from '../../../config/config.type';
+import { NetworkType, SymbolType } from '../../../config/config.type';
 import { usePool } from '../../../hooks/usePool';
 import { useAllSymbolPrice } from '../../../hooks/useSymbolPrice';
 import { useAllSymbolBalance } from '../../../hooks/useSymbolBalance';
 import { useAvailableLiquidity } from '../../../hooks/useAvailableLiquidity';
+import { contractConfig } from '../../../config/contract.config';
+import { provider } from '../../../lib/provider';
+import { Coin, getObjectId, getTransactionDigest, getTransactionEffects } from '@mysten/sui.js';
+import { Explorer } from '../../../components/explorer/Explorer';
+import { useRefresh } from '../../../contexts/refresh';
+import { useToastify } from '../../../contexts/toastify';
 
 const tradeType = ['Long', 'Short'];
 
@@ -68,6 +75,8 @@ function Perpetual() {
     network,
     adapter
   } = useSuiWallet();
+  const { changeRefreshTime } = useRefresh();
+  const { toastify } = useToastify();
 
   const [trade, setTrade] = useState(0); // 0: long; 1: short
   const [type, setType] = useState(0); // 0: market; 1: limit; 2: Trigger
@@ -78,9 +87,10 @@ function Perpetual() {
   const [percent, setPercent] = useState(0);
   const [leverage, setLeverage] = useState(1.5);
   const [showLeverage, setShowLeverage] = useState(true);
+  const [check, setCheck] = useState(false);
 
   const [fromToken, setFromToken] = useState<FromToTokenType>({ balance: '0.00', icon: suiIcon, symbol: 'SUI', value: '', price: '0' });
-  const [toToken, setToToken] = useState<FromToTokenType>({ balance: '0.00', icon: ethereumIcon, symbol: 'ETH', value: '', price: '0' });
+  const [toToken, setToToken] = useState<FromToTokenType>({ balance: '0.00', icon: btcIcon, symbol: 'BTC', value: '', price: '0' });
 
   const [btnInfo, setBtnInfo] = useState({ state: 0, text: 'Connect Wallet' });
   const [loading, setLoading] = useState(false);
@@ -90,6 +100,9 @@ function Perpetual() {
   const { allSymbolBalance } = useAllSymbolBalance(account);
   const { availableLiquidity } = useAvailableLiquidity();
 
+  const toggleCheck = () => {
+    setCheck(!check);
+  }
 
   const swapvert = () => {
     setFromToken({
@@ -135,8 +148,12 @@ function Perpetual() {
       isInput: true
     });
 
-    const newBalance = Bignumber(newValue).multipliedBy(allSymbolPrice[fromToken.symbol].price).div(allSymbolPrice[toToken.symbol].price).toString();
-    // // const decimalValue = balance.toString().replace(/^\d+\.?/, '');
+    const newBalance = Bignumber(newValue)
+      .multipliedBy(allSymbolPrice[fromToken.symbol].price)
+      .div(allSymbolPrice[toToken.symbol].price)
+      .multipliedBy(leverage)
+      .toString();
+
     setToToken({
       ...toToken,
       value: newBalance,
@@ -155,7 +172,6 @@ function Perpetual() {
     if (selectTokenSource) {
       newToToken = {
         ...newToToken,
-        icon: result.icon,
         symbol: result.symbol,
         address: result.address,
         price: allSymbolPrice[result.symbol] ? allSymbolPrice[result.symbol].price : '0',
@@ -165,14 +181,14 @@ function Perpetual() {
       if (fromToken.isInput && fromToken.value) {
         newToToken = {
           ...newToToken,
-          value: Bignumber(fromToken.value).multipliedBy(fromToken.price).div(allSymbolPrice[result.symbol].price).toString()
+          value: Bignumber(fromToken.value).multipliedBy(fromToken.price).div(allSymbolPrice[result.symbol].price).multipliedBy(leverage).toString()
         }
       }
 
       if (toToken.isInput && toToken.value) {
         newFromToken = {
           ...newFromToken,
-          value: Bignumber(allSymbolPrice[result.symbol].price).multipliedBy(toToken.value).div(fromToken.price).toString()
+          value: Bignumber(allSymbolPrice[result.symbol].price).multipliedBy(toToken.value).div(fromToken.price).div(leverage).toString()
         }
       }
 
@@ -189,14 +205,14 @@ function Perpetual() {
       if (fromToken.isInput && fromToken.value) {
         newToToken = {
           ...newToToken,
-          value: Bignumber(fromToken.value).multipliedBy(allSymbolPrice[result.symbol].price).div(toToken.price).toString()
+          value: Bignumber(fromToken.value).multipliedBy(allSymbolPrice[result.symbol].price).div(toToken.price).multipliedBy(leverage).toString()
         }
       }
 
       if (toToken.isInput && toToken.value) {
         newFromToken = {
           ...newFromToken,
-          value: Bignumber(toToken.price).multipliedBy(toToken.value).div(allSymbolPrice[result.symbol].price).toString()
+          value: Bignumber(toToken.price).multipliedBy(toToken.value).div(allSymbolPrice[result.symbol].price).div(leverage).toString()
         }
       }
     }
@@ -206,7 +222,32 @@ function Perpetual() {
   }
 
   const changeChartSymbol = (symbol: string) => {
+    const tradeToken = supplyTradeTokens.find((item: SupplyTokenType) => item.symbol === symbol);
+    if (tradeToken) {
+      setToToken({
+        ...toToken,
+        symbol: tradeToken.symbol,
+        icon: tradeToken.icon
+      });
 
+
+      if (fromToken.isInput && fromToken.value) {
+        setToToken({
+          ...toToken,
+          symbol: tradeToken.symbol,
+          icon: tradeToken.icon,
+          price: allSymbolPrice[tradeToken.symbol].price,
+          value: Bignumber(fromToken.value).multipliedBy(fromToken.price).div(allSymbolPrice[tradeToken.symbol].price).multipliedBy(leverage).toString()
+        })
+      }
+
+      if (toToken.isInput && toToken.value) {
+        setFromToken({
+          ...fromToken,
+          value: Bignumber(allSymbolPrice[tradeToken.symbol].price).multipliedBy(toToken.value).div(fromToken.price).div(leverage).toString()
+        })
+      }
+    }
   }
 
   const changeFrom = (e: any) => {
@@ -216,7 +257,13 @@ function Perpetual() {
       isInput: true
     });
 
-    const newBalance = e.target.value ? Bignumber(e.target.value).multipliedBy(allSymbolPrice[fromToken.symbol].price).div(allSymbolPrice[toToken.symbol].price).toString() : '';
+    const newBalance = e.target.value ?
+      Bignumber(e.target.value)
+        .multipliedBy(allSymbolPrice[fromToken.symbol].price)
+        .div(allSymbolPrice[toToken.symbol].price)
+        .multipliedBy(leverage)
+        .toString()
+      : '';
     // // const decimalValue = balance.toString().replace(/^\d+\.?/, '');
     setToToken({
       ...toToken,
@@ -233,11 +280,17 @@ function Perpetual() {
       value: e.target.value,
       isInput: true
     });
-    const newBalance = e.target.value ? Bignumber(e.target.value).multipliedBy(allSymbolPrice[toToken.symbol].price).div(allSymbolPrice[fromToken.symbol].price) : '';
+    const newBalance = e.target.value ?
+      Bignumber(e.target.value)
+        .multipliedBy(allSymbolPrice[toToken.symbol].price)
+        .div(allSymbolPrice[fromToken.symbol].price)
+        .div(leverage)
+        .toString()
+      : '';
     // // const decimalValue = balance.toString().replace(/^\d+\.?/, '');
     setFromToken({
       ...fromToken,
-      value: newBalance.toString(),
+      value: newBalance,
       isInput: false
     });
   }
@@ -261,14 +314,84 @@ function Perpetual() {
     } else {
       setBtnInfo({
         state: -1,
-        text: tradeType[trade]
+        text: `${tradeType[trade]} ${toToken.symbol}`
       });
     }
   };
 
+  const approve = async () => {
+    if (network && account) {
+      setLoading(true);
+
+      const config = contractConfig[network as NetworkType];
+      const toSymbolConfig = config.Coin[(toToken.symbol) as SymbolType];
+      const fromSymbolConfig = config.Coin[(fromToken.symbol) as SymbolType];
+
+      const fromType = fromSymbolConfig.Type === '0x0000000000000000000000000000000000000002::sui::SUI' ? '0x2::sui::SUI' : fromSymbolConfig.Type;
+
+      const coinBalance = await provider.getCoinBalancesOwnedByAddress(account, fromType);
+      const amount = Bignumber(fromToken.value).multipliedBy(10 ** 9).toNumber();
+      const balanceResponse = Coin.selectCoinSetWithCombinedBalanceGreaterThanOrEqual(coinBalance, BigInt(amount));
+      const balanceObjects = balanceResponse.map((item) => Coin.getID(item));
+
+      let argumentsVal: (string | number | boolean | string[])[] = [
+        config.VaultObjectId,
+        balanceObjects,
+        Bignumber(fromToken.value).multipliedBy(10 ** 9).toNumber(),
+        fromSymbolConfig.PoolObjectId,
+        toSymbolConfig.PoolObjectId,
+        config.PriceFeedStorageObjectId,
+        config.PositionsObjectId,
+        !trade ? true : false,
+        Bignumber(leverage).multipliedBy(10 ** 9).toNumber(),
+        Bignumber(toToken.price).multipliedBy(10 ** 9).toNumber(),
+        config.TimeOracleObjectId
+      ];
+
+      let typeArgumentsVal: string[] = [
+        fromSymbolConfig.Type,
+        toSymbolConfig.Type
+      ];
+
+      try {
+        let executeTransactionTnx = await adapter.executeMoveCall({
+          packageObjectId: config.ExchangePackageId,
+          module: 'exchange',
+          function: 'increase_position',
+          typeArguments: typeArgumentsVal,
+          arguments: argumentsVal,
+          gasBudget: 10000
+        });
+
+        if (executeTransactionTnx.error) {
+          toastify(executeTransactionTnx.error.msg, 'error');
+        } else {
+          if (executeTransactionTnx.data) {
+            executeTransactionTnx = executeTransactionTnx.data;
+          }
+
+          const effects = getTransactionEffects(executeTransactionTnx);
+          const digest = getTransactionDigest(executeTransactionTnx);
+
+          if (effects?.status.status === 'success') {
+            toastify(<Explorer message={'Execute Transaction Successfully!'} type="transaction" digest={digest} />);
+            toggleCheck();
+            changeRefreshTime(); // reload data
+          } else {
+            toastify(<Explorer message={'Execute Transaction error!'} type="transaction" digest={digest} />, 'error');
+          }
+        }
+      } catch (err: any) {
+        toastify(err.message || err, 'error');
+      }
+
+      setLoading(false);
+    }
+  }
+
   useEffect(() => {
     changeBtnText();
-  }, [connecting, connected, account, fromToken, toToken, pool]);
+  }, [connecting, connected, account, fromToken, toToken, pool, trade]);
 
   useEffect(() => {
     if (allSymbolBalance[fromToken.symbol]) {
@@ -319,6 +442,7 @@ function Perpetual() {
         value: Bignumber(allSymbolPrice[fromToken.symbol].price)
           .multipliedBy(fromToken.value)
           .div(allSymbolPrice[toToken.symbol].price)
+          .multipliedBy(leverage)
           .toString(),
       });
     }
@@ -329,17 +453,22 @@ function Perpetual() {
         value: Bignumber(allSymbolPrice[toToken.symbol].price)
           .multipliedBy(toToken.value)
           .div(allSymbolPrice[fromToken.symbol].price)
+          .div(leverage)
           .toString(),
       });
     }
 
-  }, [allSymbolPrice]);
-
-
+  }, [allSymbolPrice, leverage]);
 
   const recordTitle = ['Positions', 'Orders', 'Trades'];
   const recordContent = [<Positions options={[]} />, <Orders options={[]} />, <Trades options={[]} />];
   const typeList = ['Market']; // ['Market', 'Limit', 'Trigger'];
+
+  const liqPrice = !trade ?
+    Bignumber(toToken.price).minus(Bignumber(fromToken.value).multipliedBy(fromToken.price).div(leverage)).toFixed(2) :
+    Bignumber(toToken.price).plus(Bignumber(fromToken.value).multipliedBy(fromToken.price).div(leverage)).toFixed(2);
+
+  const fees = Bignumber(toToken.value).multipliedBy(toToken.price).multipliedBy(0.001).toFixed(2);
 
   return (
     <div className="main">
@@ -485,15 +614,18 @@ function Perpetual() {
                   </div>
                   <div className="line">
                     <p className="ll">Entry Price</p>
-                    <p className="lr">{fromToken.price ? `\$${numberWithCommas(fromToken.price)}` : '-'}</p>
-                  </div>
-                  <div className="line">
-                    <p className="ll">Liq. Price</p>
                     <p className="lr">{toToken.price ? `\$${numberWithCommas(toToken.price)}` : '-'}</p>
                   </div>
                   <div className="line">
+                    <p className="ll">Liq. Price</p>
+                    <p className="lr">{toToken.value ?
+                      `\$${numberWithCommas(liqPrice)}`
+                      : '-'}
+                    </p>
+                  </div>
+                  <div className="line">
                     <p className="ll">Fees</p>
-                    <p className="lr">-</p>
+                    <p className="lr">{toToken.value ? `\$${fees}` : '-'}</p>
                   </div>
                 </>
                 : null
@@ -503,8 +635,8 @@ function Perpetual() {
               !connecting && !connected && !account ?
                 <SuiWalletButton isButton={true} /> :
                 <div>
-                  <button className={trade === 1 ? 'btn btn-red' : 'btn'} disabled={btnInfo.state > 0}>
-                    {loading ? <Loading /> : btnInfo.text}
+                  <button className={trade === 1 ? 'btn btn-red' : 'btn'} disabled={btnInfo.state > 0} onClick={toggleCheck}>
+                    {btnInfo.text}
                   </button>
                 </div>
             }
@@ -555,9 +687,9 @@ function Perpetual() {
       </div>
 
 
-      <TurbosDialog open={false} title="Check order" >
+      <TurbosDialog open={check} title="Check order" onClose={toggleCheck}>
         <>
-          <div className="section section-marbottom">
+          {/* <div className="section section-marbottom">
             <div className="sectiontop">
               <span>Pay</span>
               <div>
@@ -591,60 +723,82 @@ function Perpetual() {
                 <span>SUI</span>
               </div>
             </div>
+          </div> */}
+
+          <div className='check-con'>
+            <div className='check-list'>
+              <img src={fromToken.icon} alt="" height="24" />
+              <div className='check-info'>
+                <p>Pay {fromToken.symbol}</p>
+                <p>{fromToken.value}</p>
+              </div>
+            </div>
+            <div className='check-to'><img src={toIcon} alt="" height="24" /></div>
+            <div className='check-list'>
+              <img src={toToken.icon} alt="" height="24" />
+              <div className='check-info'>
+                <p>Receive {toToken.symbol}</p>
+                <p>{toToken.value}</p>
+              </div>
+            </div>
           </div>
 
-          <div className="line">
+          <div className="line line-top-16">
             <p className="ll">Collaterlal In</p>
-            <p className="lr">ETH</p>
+            <p className="lr">USD</p>
           </div>
           <div className="line">
             <p className="ll">Leverage</p>
-            <p className="lr">USD</p>
+            <p className="lr">{leverage}x</p>
           </div>
           <div className="line">
             <p className="ll">Liq. Price</p>
-            <p className="lr">USD</p>
+            <p className="lr">${numberWithCommas(liqPrice)}</p>
           </div>
           <div className="line">
             <p className="ll">Fees</p>
-            <p className="lr">USD</p>
+            <p className="lr">${fees}</p>
           </div>
           <div className="line">
             <p className="ll">Collaterlal</p>
-            <p className="lr">USD</p>
+            <p className="lr">${numberWithCommas(Bignumber(toToken.value).multipliedBy(toToken.price).toFixed(2))}</p>
           </div>
           <div className="line-hr"></div>
           <div className="line">
             <p className="ll">Spread</p>
-            <p className="lr">ETH</p>
+            <p className="lr">-</p>
           </div>
           <div className="line">
             <p className="ll">Entry Price</p>
-            <p className="lr">USD</p>
+            <p className="lr">${numberWithCommas(fromToken.price)}</p>
           </div>
           <div className="line">
             <p className="ll">Borrow Fee</p>
-            <p className="lr">USD</p>
+            <p className="lr">-</p>
           </div>
           <div className="line">
             <p className="ll">Execution Fee</p>
             <p className="lr">
               <TurbosTooltip title={'Max BTC long'}>
-                <span className='underline'>0.03%</span>
+                <span className='underline'>0.03{fromToken.symbol}</span>
               </TurbosTooltip>
             </p>
           </div>
           <div className="line">
             <p className="ll">Allowed Slippage</p>
-            <p className="lr">USD</p>
+            <p className="lr">0.03%</p>
           </div>
           <div className="line">
             <p className="ll">Allow up to 1% slippage</p>
-            <p className="lr"></p>
+            <p className="lr">
+
+            </p>
           </div>
 
-          <div className='btn'>
-            Long
+          <div>
+            <button className={trade === 1 ? 'btn btn-red' : 'btn'} onClick={approve} disabled={loading}>
+              {loading ? <Loading /> : tradeType[trade]}
+            </button>
           </div>
         </>
       </TurbosDialog>
