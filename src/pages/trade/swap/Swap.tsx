@@ -2,7 +2,7 @@ import Bignumber from 'bignumber.js';
 import { useEffect, useState } from 'react';
 
 import styles from './Swap.module.css';
-import Trades from '../perpetual/components/trades/Trades';
+import Trades from './components/trades/Trades';
 import downIcon from '../../../assets/images/down.png';
 import ethereumIcon from '../../../assets/images/ethereum.png';
 import suiIcon from '../../../assets/images/ic_sui_40.svg';
@@ -375,9 +375,8 @@ function Perpetual() {
     }
   }
 
-
   const recordTitle = ['Trades'];
-  const recordContent = [<Trades options={[]} />];
+  const recordContent = [<Trades />];
   const typeList = ['Market'];  // ['Market', 'Limit'];
 
   return (
@@ -562,137 +561,6 @@ function Perpetual() {
       </TurbosDialog>
 
     </div>
-  )
-}
-
-type PositionsProps = {
-  options: any[]
-}
-
-function Positions(props: PositionsProps) {
-  const { options } = props;
-
-  return (
-    <table width="100%" className={styles.table}>
-      <thead>
-        <tr>
-          <th align='left'>Position</th>
-          <th align='left'>Total</th>
-          <th align='left'>Margin</th>
-          <th align='left'>Entry Price</th>
-          <th align='left'>Mark Price</th>
-          <th align='left'>Liq. Price</th>
-          <th align='left'>PnL/PnL (%)</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        {
-          options.length <= 0 ?
-            <tr>
-              <td colSpan={8}><Empty /></td>
-            </tr>
-            :
-            options.map((item: any, index: number) =>
-              <tr key={index}>
-                <td align='left'>
-                  <div className={styles['table-position']}>
-                    <img src={ethereumIcon} alt="" height="24" />
-                    <span>BTC</span>
-                  </div>
-                  <div className={styles['table-position']}>
-                    10.0x&nbsp;&nbsp;<span className={styles.red}>Short</span>
-                  </div>
-                </td>
-                <td align='left'>
-                  $200.00
-                </td>
-                <td align='left'>
-                  <div className={styles['table-position']}>
-                    <span>$20.00</span>
-                    <img src={addIcon} alt="" height="24" className={styles.icon} />
-                  </div>
-                </td>
-                <td align='left'>
-                  $200.00
-                </td>
-                <td align='left'>
-                  $200.00
-                </td>
-                <td align='left'>
-                  $200.00
-                </td>
-                <td align='left'>
-                  <span className={styles.red}>
-                    +10.0
-                  </span>
-                  <div className={styles['table-position']}>
-                    <span className={styles.red}>-1.16%</span>
-                    <img src={shareIcon} alt="" height="24" className={styles.icon} />
-                  </div>
-                </td>
-                <td>
-                  <button className={styles['table-btn']}>TP/SL</button>
-                  <button className={styles['table-btn-green']}>Close</button>
-                </td>
-              </tr>
-            )
-        }
-      </tbody>
-    </table>
-  )
-}
-
-type OrdersProps = {
-  options: any[]
-}
-
-function Orders(props: OrdersProps) {
-  const { options } = props;
-
-  return (
-    <>
-      <table width="100%" className={styles.table}>
-        <thead>
-          <tr>
-            <th align='left'>Type</th>
-            <th align='left'>Order</th>
-            <th align='left'>Trigger Price</th>
-            <th align='left'>Mark Pirce</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          {
-            options.length > 0 ?
-              options.map((item: any, index: number) =>
-                <tr key={index}>
-                  <td align='left'>
-                    Limit
-                  </td>
-                  <td align='left'>
-                    Increase BTC Long by $197.14
-                  </td>
-                  <td align='left'>
-                    {`< 16,633.00`}
-                  </td>
-                  <td align='left'>
-                    16,633.00
-                  </td>
-                  <td>
-                    <button className={styles['table-btn']}>TP/SL</button>
-                    <button className={styles['table-btn-red']}>Close</button>
-                  </td>
-                </tr>
-              )
-              :
-              <tr>
-                <td colSpan={5}><Empty /></td>
-              </tr>
-          }
-        </tbody>
-      </table>
-    </>
   )
 }
 

@@ -1,0 +1,22 @@
+.trades {
+    padding: 2rem;
+    background-color: rgb(14, 17, 23);
+    margin-bottom: 1rem;
+    border-radius: 1rem;
+}
+
+.trades-time {
+    color: #fff;
+    line-height: 22px;
+    margin-bottom: 2px;
+    font-size: 14px;
+    opacity: .5;
+}
+
+.trades-info {
+    color: #fff;
+    font-weight: 600;
+    line-height: 24px;
+    font-size: 16px;
+    font-family: 'Montserrat Regular';
+}

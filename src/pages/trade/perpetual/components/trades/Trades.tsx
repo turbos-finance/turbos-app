@@ -1,6 +1,9 @@
 
 
+import { SuiEventEnvelope, SuiEvents } from '@mysten/sui.js';
+import { useEffect } from 'react';
 import Empty from '../../../../../components/empty/Empty';
+import { provider } from '../../../../../lib/provider';
 import styles from './Trades.module.css';
 
 type TradesProps = {
@@ -8,6 +11,24 @@ type TradesProps = {
 }
 function Trades(props: TradesProps) {
   const { options } = props;
+
+  const getTrades = async () => {
+    
+    // const result = await provider.getEvents({ MoveEvent: `${}::exchange::SwapEvent` }, null, 10);
+    // console.log(result);
+
+    // result.data.map((item: SuiEventEnvelope) => {
+
+    // })
+
+    // const trans = await provider.getTransactionWithEffects('2zxTnLAZFnT2MmMyYjJTJLPPtjLJW2BhEb8hzNCpKcoX');
+    // console.log(trans);
+
+  }
+
+  useEffect(() => {
+    getTrades()
+  }, []);
 
   return (
     <>

@@ -343,8 +343,8 @@ function Perpetual() {
         config.PriceFeedStorageObjectId,
         config.PositionsObjectId,
         !trade ? true : false,
-        Bignumber(leverage).multipliedBy(10 ** 9).toNumber(),
-        Bignumber(toToken.price).multipliedBy(10 ** 9).toNumber(),
+        Bignumber(Bignumber(toToken.value).multipliedBy(10 ** 9).multipliedBy(toToken.price).toFixed(0)).toNumber(),
+        Bignumber(toToken.price).multipliedBy(!trade ? 1.01 : 0.99).multipliedBy(10 ** 9).toNumber(),
         config.TimeOracleObjectId
       ];
 
