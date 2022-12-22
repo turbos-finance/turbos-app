@@ -8,14 +8,10 @@ import Trades from './components/trades/Trades';
 import longIcon from '../../../assets/images/long.png';
 import shortIcon from '../../../assets/images/short.png';
 import downIcon from '../../../assets/images/down.png';
-import ethereumIcon from '../../../assets/images/ethereum.png';
 import suiIcon from '../../../assets/images/ic_sui_40.svg';
 import btcIcon from '../../../assets/images/ic_btc_40.svg';
 import toIcon from '../../../assets/images/to.png';
 import swapvertIcon from '../../../assets/images/swapvert.png';
-import addIcon from '../../../assets/images/add.png';
-import shareIcon from '../../../assets/images/share.png';
-import Empty from '../../../components/empty/Empty';
 import SelectToken, { SelectTokenOption } from '../../../components/selectToken/SelectToken';
 import { supplyTokens, supplyTradeTokens, SupplyTokenType } from '../../../config/tokens';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
@@ -25,7 +21,6 @@ import TurbosTooltip from '../../../components/UI/Tooltip/Tooltip';
 import Chart from './components/chart/Chart';
 import { useSuiWallet } from '../../../contexts/useSuiWallet';
 import SuiWalletButton from '../../../components/walletButton/WalletButton';
-import { useBalance } from '../../../hooks/useBalance';
 import Loading from '../../../components/loading/Loading';
 import { numberWithCommas } from '../../../utils';
 import { NetworkType, SymbolType } from '../../../config/config.type';
@@ -39,6 +34,8 @@ import { Coin, getObjectId, getTransactionDigest, getTransactionEffects } from '
 import { Explorer } from '../../../components/explorer/Explorer';
 import { useRefresh } from '../../../contexts/refresh';
 import { useToastify } from '../../../contexts/toastify';
+import Positions from './components/positions/Positions';
+import Orders from './components/orders/Orders';
 
 const tradeType = ['Long', 'Short'];
 
@@ -178,14 +175,12 @@ function Perpetual() {
         balance: allSymbolBalance[result.symbol] ? allSymbolBalance[result.symbol].balance : '0.00'
       };
 
-      if (fromToken.isInput && fromToken.value) {
+      if (fromToken.isInput && fromToken.value && showLeverage) {
         newToToken = {
           ...newToToken,
           value: Bignumber(fromToken.value).multipliedBy(fromToken.price).div(allSymbolPrice[result.symbol].price).multipliedBy(leverage).toString()
         }
-      }
-
-      if (toToken.isInput && toToken.value) {
+      } else if (toToken.isInput && toToken.value && showLeverage) {
         newFromToken = {
           ...newFromToken,
           value: Bignumber(allSymbolPrice[result.symbol].price).multipliedBy(toToken.value).div(fromToken.price).div(leverage).toString()
@@ -202,14 +197,12 @@ function Perpetual() {
         balance: allSymbolBalance[result.symbol] ? allSymbolBalance[result.symbol].balance : '0.00'
       };
 
-      if (fromToken.isInput && fromToken.value) {
+      if (fromToken.isInput && fromToken.value && showLeverage) {
         newToToken = {
           ...newToToken,
           value: Bignumber(fromToken.value).multipliedBy(allSymbolPrice[result.symbol].price).div(toToken.price).multipliedBy(leverage).toString()
         }
-      }
-
-      if (toToken.isInput && toToken.value) {
+      } else if (toToken.isInput && toToken.value && showLeverage) {
         newFromToken = {
           ...newFromToken,
           value: Bignumber(toToken.price).multipliedBy(toToken.value).div(allSymbolPrice[result.symbol].price).div(leverage).toString()
@@ -239,9 +232,7 @@ function Perpetual() {
           price: allSymbolPrice[tradeToken.symbol].price,
           value: Bignumber(fromToken.value).multipliedBy(fromToken.price).div(allSymbolPrice[tradeToken.symbol].price).multipliedBy(leverage).toString()
         })
-      }
-
-      if (toToken.isInput && toToken.value) {
+      } else if (toToken.isInput && toToken.value) {
         setFromToken({
           ...fromToken,
           value: Bignumber(allSymbolPrice[tradeToken.symbol].price).multipliedBy(toToken.value).div(fromToken.price).div(leverage).toString()
@@ -256,6 +247,10 @@ function Perpetual() {
       value: e.target.value,
       isInput: true
     });
+
+    if (!showLeverage) {
+      return;
+    }
 
     const newBalance = e.target.value ?
       Bignumber(e.target.value)
@@ -273,13 +268,17 @@ function Perpetual() {
     setPercent(0);
   }
 
-
   const changeTo = (e: any) => {
     setToToken({
       ...toToken,
       value: e.target.value,
       isInput: true
     });
+
+    if (!showLeverage) {
+      return;
+    }
+
     const newBalance = e.target.value ?
       Bignumber(e.target.value)
         .multipliedBy(allSymbolPrice[toToken.symbol].price)
@@ -319,7 +318,7 @@ function Perpetual() {
     }
   };
 
-  const approve = async () => {
+  const increase_position = async () => {
     if (network && account) {
       setLoading(true);
 
@@ -374,7 +373,7 @@ function Perpetual() {
           const digest = getTransactionDigest(executeTransactionTnx);
 
           if (effects?.status.status === 'success') {
-            toastify(<Explorer message={'Execute Transaction Successfully!'} type="transaction" digest={digest} />);
+            toastify(<Explorer message={`Request increase of ${fromToken.symbol} ${tradeType[trade]} by ${toToken.value} ${toToken.symbol}.`} type="transaction" digest={digest} />);
             toggleCheck();
             changeRefreshTime(); // reload data
           } else {
@@ -445,9 +444,7 @@ function Perpetual() {
           .multipliedBy(leverage)
           .toString(),
       });
-    }
-
-    if (toToken.isInput) {
+    } else if (toToken.isInput) {
       setFromToken({
         ...fromToken,
         value: Bignumber(allSymbolPrice[toToken.symbol].price)
@@ -460,8 +457,21 @@ function Perpetual() {
 
   }, [allSymbolPrice, leverage]);
 
-  const recordTitle = ['Positions', 'Orders', 'Trades'];
-  const recordContent = [<Positions options={[]} />, <Orders options={[]} />, <Trades options={[]} />];
+  useEffect(() => {
+    if (showLeverage && fromToken.price && toToken.price && fromToken.value) {
+      setToToken({
+        ...toToken,
+        value: Bignumber(fromToken.price)
+          .multipliedBy(fromToken.value)
+          .div(toToken.price)
+          .multipliedBy(leverage)
+          .toString(),
+      });
+    }
+  }, [showLeverage])
+
+  const recordTitle = ['Positions', 'Trades'];
+  const recordContent = [<Positions options={[]} />, <Trades options={[]} />];
   const typeList = ['Market']; // ['Market', 'Limit', 'Trigger'];
 
   const liqPrice = !trade ?
@@ -469,6 +479,11 @@ function Perpetual() {
     Bignumber(toToken.price).plus(Bignumber(fromToken.value).multipliedBy(fromToken.price).div(leverage)).toFixed(2);
 
   const fees = Bignumber(toToken.value).multipliedBy(toToken.price).multipliedBy(0.001).toFixed(2);
+
+  const lever = showLeverage ? `${leverage}x` :
+    fromToken.value && toToken.value ?
+      `${Bignumber(toToken.value).multipliedBy(toToken.price).div(fromToken.price).div(fromToken.value).toFixed(1)}x`
+      : '-';
 
   return (
     <div className="main">
@@ -610,7 +625,7 @@ function Perpetual() {
                   </div>
                   <div className="line">
                     <p className="ll">Leverage</p>
-                    <p className="lr"> {showLeverage ? `${leverage}x` : '-'}</p>
+                    <p className="lr">{lever}</p>
                   </div>
                   <div className="line">
                     <p className="ll">Entry Price</p>
@@ -673,14 +688,12 @@ function Perpetual() {
       <div className="main-right">
         <Chart symbol={toToken.symbol} changeChartSymbol={changeChartSymbol} />
 
-        <div>
-          <div className={styles.ordertab}>
-            {
-              recordTitle.map((item: string, index: number) =>
-                <span key={index} className={index === record ? styles.active : ''} onClick={() => setRecord(index)}>{item}</span>
-              )
-            }
-          </div>
+        <div className={styles.ordertab}>
+          {
+            recordTitle.map((item: string, index: number) =>
+              <span key={index} className={index === record ? styles.active : ''} onClick={() => setRecord(index)}>{item}</span>
+            )
+          }
         </div>
 
         {recordContent[record]}
@@ -689,42 +702,6 @@ function Perpetual() {
 
       <TurbosDialog open={check} title="Check order" onClose={toggleCheck}>
         <>
-          {/* <div className="section section-marbottom">
-            <div className="sectiontop">
-              <span>Pay</span>
-              <div>
-                <span className="section-balance">Balance: {fromToken.value}</span>
-                <span> | </span><span className='section-max'>MAX</span>
-              </div>
-            </div>
-            <div className="sectionbottom">
-              <div className="sectioninputcon" >
-                <input type="text" className="sectioninput" placeholder="0.0" />
-              </div>
-              <div className="sectiontokens">
-                <img src={ethereumIcon} alt="" />
-                <span>SUI</span>
-              </div>
-            </div>
-          </div>
-          <div className="section section-marbottom">
-            <div className="sectiontop">
-              <span>Pay</span>
-              <div>
-                <span className="section-balance">Balance: {toToken.value}</span>
-              </div>
-            </div>
-            <div className="sectionbottom">
-              <div className="sectioninputcon" >
-                <input type="text" className="sectioninput" placeholder="0.0" />
-              </div>
-              <div className="sectiontokens">
-                <img src={ethereumIcon} alt="" />
-                <span>SUI</span>
-              </div>
-            </div>
-          </div> */}
-
           <div className='check-con'>
             <div className='check-list'>
               <img src={fromToken.icon} alt="" height="24" />
@@ -770,7 +747,7 @@ function Perpetual() {
           </div>
           <div className="line">
             <p className="ll">Entry Price</p>
-            <p className="lr">${numberWithCommas(fromToken.price)}</p>
+            <p className="lr">${numberWithCommas(toToken.price)}</p>
           </div>
           <div className="line">
             <p className="ll">Borrow Fee</p>
@@ -796,7 +773,7 @@ function Perpetual() {
           </div>
 
           <div>
-            <button className={trade === 1 ? 'btn btn-red' : 'btn'} onClick={approve} disabled={loading}>
+            <button className={trade === 1 ? 'btn btn-red' : 'btn'} onClick={increase_position} disabled={loading}>
               {loading ? <Loading /> : tradeType[trade]}
             </button>
           </div>
@@ -804,283 +781,6 @@ function Perpetual() {
       </TurbosDialog>
 
     </div>
-  )
-}
-
-type PositionsProps = {
-  options: any[]
-}
-
-function Positions(props: PositionsProps) {
-  const { options } = props;
-
-  return (
-    <>
-      <table width="100%" className={styles.table}>
-        <thead>
-          <tr>
-            <th align='left'>Position</th>
-            <th align='left'>Total</th>
-            <th align='left'>Margin</th>
-            <th align='left'>Entry Price</th>
-            <th align='left'>Mark Price</th>
-            <th align='left'>Liq. Price</th>
-            <th align='left'>PnL/PnL (%)</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          {
-            options.length <= 0 ?
-              <tr>
-                <td colSpan={8}><Empty /></td>
-              </tr>
-              :
-              options.map((item: any, index: number) =>
-                <tr key={index}>
-                  <td align='left'>
-                    <div className={styles['table-position']}>
-                      <img src={ethereumIcon} alt="" height="24" />
-                      <span>BTC</span>
-                    </div>
-                    <div className={styles['table-position']}>
-                      10.0x&nbsp;&nbsp;<span className={styles.red}>Short</span>
-                    </div>
-                  </td>
-                  <td align='left'>
-                    $200.00
-                  </td>
-                  <td align='left'>
-                    <div className={styles['table-position']}>
-                      <span>$20.00</span>
-                      <img src={addIcon} alt="" height="24" className={styles.icon} />
-                    </div>
-                  </td>
-                  <td align='left'>
-                    $200.00
-                  </td>
-                  <td align='left'>
-                    $200.00
-                  </td>
-                  <td align='left'>
-                    $200.00
-                  </td>
-                  <td align='left'>
-                    <span className={styles.red}>
-                      +10.0
-                    </span>
-                    <div className={styles['table-position']}>
-                      <span className={styles.red}>-1.16%</span>
-                      <img src={shareIcon} alt="" height="24" className={styles.icon} />
-                    </div>
-                  </td>
-                  <td>
-                    <button className={styles['table-btn']}>TP/SL</button>
-                    <button className={styles['table-btn-green']}>Close</button>
-                  </td>
-                </tr>
-              )
-          }
-        </tbody>
-      </table>
-
-      <div className='container mobile-container'>
-        {
-          options.length <= 0 ?
-            <Empty />
-            :
-            <div className='line-con'>
-
-              <div className='line'>
-                <div className='ll'>Position</div>
-                <div className='lr'>
-                  <div>
-                    <div className={styles['table-position']}>
-                      <img src={ethereumIcon} alt="" height="24" />
-                      <span>BTC</span>
-                    </div>
-                    <div className={styles['table-position']}>
-                      10.0x&nbsp;&nbsp;<span className={styles.red}>Short</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className='line'>
-                <div className='ll'>Total</div>
-                <div className='lr'>
-                  $200.00
-                </div>
-              </div>
-
-              <div className='line'>
-                <div className='ll'>Margin</div>
-                <div className='lr'>
-                  <div className={styles['table-position']}>
-                    <span>$20.00</span>
-                    <img src={addIcon} alt="" height="24" className={styles.icon} />
-                  </div>
-                </div>
-              </div>
-
-              <div className='line'>
-                <div className='ll'>Entry Price</div>
-                <div className='lr'>
-                  $200.00
-                </div>
-              </div>
-
-              <div className='line'>
-                <div className='ll'>Mark Price</div>
-                <div className='lr'>
-                  $200.00
-                </div>
-              </div>
-
-              <div className='line'>
-                <div className='ll'>Liq. Price</div>
-                <div className='lr'>
-                  $200.00
-                </div>
-              </div>
-
-              <div className='line'>
-                <div className='ll'>PnL/PnL (%)</div>
-                <div className='lr'>
-                  <div>
-                    <span className={styles.red}>
-                      +10.0
-                    </span>
-                    <div className={styles['table-position']}>
-                      <span className={styles.red}>-1.16%</span>
-                      <img src={shareIcon} alt="" height="24" className={styles.icon} />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className='line'>
-                <div className='ll'>Liq. Price</div>
-                <div className='lr'>
-                  $200.00
-                </div>
-              </div>
-
-              <div className='line'>
-                <div className='ll'></div>
-                <div className='lr'>
-                  <button className={styles['table-btn']}>TP/SL</button>
-                  <button className={styles['table-btn-green']}>Close</button>
-                </div>
-              </div>
-
-            </div>
-        }
-
-      </div>
-
-    </>
-  )
-}
-
-type OrdersProps = {
-  options: any[]
-}
-
-function Orders(props: OrdersProps) {
-  const { options } = props;
-
-  return (
-    <>
-      <table width="100%" className={styles.table}>
-        <thead>
-          <tr>
-            <th align='left'>Type</th>
-            <th align='left'>Order</th>
-            <th align='left'>Trigger Price</th>
-            <th align='left'>Mark Pirce</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          {
-            options.length > 0 ?
-              options.map((item: any, index: number) =>
-                <tr key={index}>
-                  <td align='left'>
-                    Limit
-                  </td>
-                  <td align='left'>
-                    Increase BTC Long by $197.14
-                  </td>
-                  <td align='left'>
-                    {`< 16,633.00`}
-                  </td>
-                  <td align='left'>
-                    16,633.00
-                  </td>
-                  <td>
-                    <button className={styles['table-btn']}>TP/SL</button>
-                    <button className={styles['table-btn-red']}>Close</button>
-                  </td>
-                </tr>
-              )
-              :
-              <tr>
-                <td colSpan={5}><Empty /></td>
-              </tr>
-          }
-        </tbody>
-      </table>
-
-      <div className='container mobile-container'>
-        {
-          options.length <= 0 ?
-            <Empty />
-            :
-            <div className='line-con'>
-
-              <div className='line'>
-                <div className='ll'>Type</div>
-                <div className='lr'>
-                  Limit
-                </div>
-              </div>
-
-              <div className='line'>
-                <div className='ll'>Order</div>
-                <div className='lr'>
-                  Increase BTC Long by $197.14
-                </div>
-              </div>
-
-              <div className='line'>
-                <div className='ll'>Trigger Price</div>
-                <div className='lr'>
-                  {`< 16,633.00`}
-                </div>
-              </div>
-              <div className='line'>
-                <div className='ll'>Mark Pirce</div>
-                <div className='lr'>
-                  16,633.00
-                </div>
-              </div>
-
-              <div className='line'>
-                <div className='ll'></div>
-                <div className='lr'>
-                  <button className={styles['table-btn']}>TP/SL</button>
-                  <button className={styles['table-btn-green']}>Close</button>
-                </div>
-              </div>
-
-            </div>
-        }
-
-      </div>
-
-    </>
   )
 }
 

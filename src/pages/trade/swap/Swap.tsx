@@ -480,7 +480,7 @@ function Perpetual() {
 
           </div>
 
-          <SelectToken visible={selectToken} options={selectTokenSource ? supplyTradeTokens : supplyTokens} onClose={toggleSelectToken} onSelect={changeSelectToken} />
+          <SelectToken visible={selectToken} options={supplyTokens} onClose={toggleSelectToken} onSelect={changeSelectToken} />
         </div>
 
         <div className="container">
@@ -505,14 +505,12 @@ function Perpetual() {
       <div className="main-right">
         <Chart symbol={toToken.symbol} dropdownDisabled={true} />
 
-        <div>
-          <div className={styles.ordertab}>
-            {
-              recordTitle.map((item: string, index: number) =>
-                <span key={index} className={index === record ? styles.active : ''} onClick={() => setRecord(index)}>{item}</span>
-              )
-            }
-          </div>
+        <div className={styles.ordertab}>
+          {
+            recordTitle.map((item: string, index: number) =>
+              <span key={index} className={index === record ? styles.active : ''} onClick={() => setRecord(index)}>{item}</span>
+            )
+          }
         </div>
 
         {recordContent[record]}
