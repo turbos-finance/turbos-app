@@ -9,6 +9,7 @@ import downIcon from '../../../../../assets/images/down.png';
 import upIcon from '../../../../../assets/images/up.png';
 import { numberWithCommas } from "../../../../../utils";
 import { useRefresh } from "../../../../../contexts/refresh";
+import { useAllSymbolPrice, useSymbolPrice } from "../../../../../hooks/useSymbolPrice";
 
 const times = [
   { label: '5m', id: '5' },
@@ -98,6 +99,7 @@ function Chart(props: ChartProps) {
   const { symbol, changeChartSymbol, dropdownDisabled } = props;
 
   const { refreshTime } = useRefresh();
+  const { allSymbolPrice } = useAllSymbolPrice()
 
   const [node, setNode] = useState<HTMLDivElement | null>(null);
   const [chartNode, setChartNode] = useState<HTMLDivElement | null>(null);
@@ -295,8 +297,14 @@ function Chart(props: ChartProps) {
 
         <div className={styles.pricelistcon}>
           <div className={styles.pricelist}>
-            <div className={styles.value1}>{deltaPrice && numberWithCommas(deltaPrice.toFixed(2)) || '-'}</div>
-            <div className={styles.value2}>${deltaPrice && numberWithCommas(deltaPrice.toFixed(2)) || '-'}</div>
+            <div className={styles.value1}>
+              {allSymbolPrice[chartToken] ? `\$${numberWithCommas(allSymbolPrice[chartToken].price)}` : '-'}
+              {/* {deltaPrice && numberWithCommas(deltaPrice.toFixed(2)) || '-'} */}
+            </div>
+            <div className={styles.value2}>
+              {allSymbolPrice[chartToken] ? `\$${numberWithCommas(allSymbolPrice[chartToken].emaPrice)}` : '-'}
+              {/* ${deltaPrice && numberWithCommas(deltaPrice.toFixed(2)) || '-'} */}
+            </div>
           </div>
           <div className={styles.pricelist}>
             <div className={styles.value2}>24h Change</div>

@@ -35,7 +35,7 @@ function Positions(props: PositionsProps) {
     adapter
   } = useSuiWallet();
 
-  const { changeRefreshTime } = useRefresh();
+  const { changeRefreshTime, refreshTime } = useRefresh();
   const { toastify } = useToastify();
   const { allSymbolPrice } = useAllSymbolPrice();
 
@@ -44,12 +44,15 @@ function Positions(props: PositionsProps) {
   const [check, setCheck] = useState(false);
   const [edit, setEdit] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [option, setOption] = useState<{ [x: string]: any } | undefined>();
 
-  const toggleCheck = () => {
+  const toggleCheck = (value?: any) => {
+    value && setOption(value);
     setCheck(!check);
   }
 
-  const toggleEdit = () => {
+  const toggleEdit = (value?: any) => {
+    value && setOption(value);
     setEdit(!edit);
   }
 
@@ -242,7 +245,7 @@ function Positions(props: PositionsProps) {
 
   useEffect(() => {
     getPositions();
-  }, [network, account]);
+  }, [network, account, refreshTime]);
 
   return (
     <>
@@ -268,26 +271,29 @@ function Positions(props: PositionsProps) {
               :
               data.map((item: any, index: number) => {
 
-
                 const coin = contractConfig[network as NetworkType].Coin;
                 const symbol = Object.keys(coin).find((k: string) => item.index_pool_address === coin[k as SymbolType].PoolObjectId);
                 const symbolPrice = allSymbolPrice[symbol as SymbolType];
 
                 const supplyTradeToken = supplyTradeTokens.find((item: SupplyTokenType) => item.symbol === symbol);
 
-                const differencePrice = Bignumber(item.collateral).div(item.reserve_amount).multipliedBy(item.collateral);
+                const leverage = Bignumber(item.size).div(item.collateral)
+                const differencePrice = Bignumber(item.average_price).div(leverage);
                 const liqPirce = item.is_long ?
                   Bignumber(item.average_price).minus(differencePrice)
                   :
                   Bignumber(item.average_price).plus(differencePrice);
 
-
                 const isGreaterThanOrEqual = Bignumber(symbolPrice.originalPrice).minus(item.average_price).isGreaterThanOrEqualTo(0);
-                const isGreen = (item.is_long && isGreaterThanOrEqual) || (!item.is_long && !isGreaterThanOrEqual) ? true : false;
+                const isLessThanOrEqual = Bignumber(symbolPrice.originalPrice).minus(item.average_price).isLessThanOrEqualTo(0)
+                const isGreen = (item.is_long && isGreaterThanOrEqual) || (!item.is_long && !isLessThanOrEqual) ? true : false;
 
-                const pnlPrice = Bignumber(symbolPrice.originalPrice).minus(item.average_price).multipliedBy(item.reserve_amount).div(item.collateral);
+                const pnlPrice = Bignumber(symbolPrice.originalPrice)
+                  .minus(item.average_price)
+                  .div(Bignumber(item.average_price)
+                    .div(leverage))
+                  .multipliedBy(item.collateral);
                 const pnl = pnlPrice.div(item.collateral).multipliedBy(100).toFixed(2);
-
 
                 return (<tr key={index}>
                   <td align='left'>
@@ -296,14 +302,14 @@ function Positions(props: PositionsProps) {
                       <span>{symbol}</span>
                     </div>
                     <div className={styles['table-position']}>
-                      {Bignumber(item.reserve_amount).div(item.collateral).toFixed(1)}x&nbsp;&nbsp;
+                      {Bignumber(item.size).div(item.collateral).toFixed(1)}x&nbsp;&nbsp;
                       <span className={item.is_long ? styles.green : styles.red}>
                         {item.is_long ? 'Long' : 'Short'}
                       </span>
                     </div>
                   </td>
                   <td align='left'>
-                    ${numberWithCommas(Bignumber(item.reserve_amount).div(10 ** 9).toFixed(2))}
+                    ${numberWithCommas(Bignumber(item.size).div(10 ** 9).toFixed(2))}
                   </td>
                   <td align='left'>
                     <div className={styles['table-position']}>
@@ -331,7 +337,7 @@ function Positions(props: PositionsProps) {
                   </td>
                   <td>
                     {/* <button className={styles['table-btn']}>TP/SL</button> */}
-                    <button className={styles['table-btn-green']} onClick={toggleCheck}>Close</button>
+                    <button className={styles[item.is_long ? 'table-btn-green' : 'table-btn-red']} onClick={() => { toggleCheck(item) }}>Close</button>
                   </td>
                 </tr>)
               })
@@ -443,126 +449,221 @@ function Positions(props: PositionsProps) {
 
       </div>
 
-      <TurbosDialog open={check} title="Check order" onClose={toggleCheck}>
-        <div className="section section-marbottom">
-          <div className="sectiontop">
-            <span>Pay</span>
-            <div>
-              <span className="section-balance">Balance: { }</span>
-              <span> | </span><span className='section-max'>MAX</span>
-            </div>
-          </div>
-          <div className="sectionbottom">
-            <div className="sectioninputcon" >
-              <input type="text" className="sectioninput" placeholder="0.0" />
-            </div>
-            <div className="sectiontokens">
-              <img src={ethereumIcon} alt="" />
-              <span>SUI</span>
-            </div>
-          </div>
-        </div>
-        <div className="line line-top-16">
-          <p className="ll">Mark Price</p>
-          <p className="lr">$</p>
-        </div>
-        <div className="line">
-          <p className="ll">Entry Price</p>
-          <p className="lr">$</p>
-        </div>
-        <div className="line">
-          <p className="ll">Liq. Price</p>
-          <p className="lr">$</p>
-        </div>
-        <div className="line-hr"></div>
-        <div className="line">
-          <p className="ll">Sise</p>
-          <p className="lr"></p>
-        </div>
-        <div className="line">
-          <p className="ll">Collaterlal(BTC)</p>
-          <p className="lr">$</p>
-        </div>
-        <div className="line">
-          <p className="ll">PnL</p>
-          <p className="lr">$</p>
-        </div>
-        <div className="line">
-          <p className="ll">Fees</p>
-          <p className="lr">$</p>
-        </div>
-        <div className="line-hr"></div>
-        <div className="line">
-          <p className="ll">Receive</p>
-          <p className="lr">0.00 BTC($0.00)</p>
-        </div>
+      <ClosePositionTurbosDialog open={check} onClose={toggleCheck} data={option} />
+      <AddAndRemoveMarginTurbosDialog open={edit} onClose={toggleEdit} data={option} />
 
-        <div>
-          <button className='btn' onClick={decrease_position} disabled={loading}>
-            {loading ? <Loading /> : 'Colse'}
-          </button>
-        </div>
-      </TurbosDialog>
-
-      <TurbosDialog open={edit} title="Edit Long BTC" onClose={toggleEdit}>
-        <div className='tabs'>
-          <div onClick={() => { }}>
-            <span>Add Margin</span>
-          </div>
-          <div onClick={() => { }}>
-            <span>Remove Margin</span>
-          </div>
-        </div>
-
-        <div className="section section-marbottom">
-          <div className="sectiontop">
-            <span>Pay</span>
-            <div>
-              <span className="section-balance">Balance: { }</span>
-              <span> | </span><span className='section-max'>MAX</span>
-            </div>
-          </div>
-          <div className="sectionbottom">
-            <div className="sectioninputcon" >
-              <input type="text" className="sectioninput" placeholder="0.0" />
-            </div>
-            <div className="sectiontokens">
-              <img src={ethereumIcon} alt="" />
-              <span>SUI</span>
-            </div>
-          </div>
-        </div>
-        <div className="line line-top-16">
-          <p className="ll">Total</p>
-          <p className="lr">$</p>
-        </div>
-        <div className="line">
-          <p className="ll">Margin</p>
-          <p className="lr">$</p>
-        </div>
-        <div className="line">
-          <p className="ll">Leverage</p>
-          <p className="lr">$</p>
-        </div>
-        <div className="line">
-          <p className="ll">Mark Price</p>
-          <p className="lr"></p>
-        </div>
-        <div className="line">
-          <p className="ll">Liq. Price</p>
-          <p className="lr">$</p>
-        </div>
-        <div className="line">
-          <p className="ll">Execution Fees</p>
-          <p className="lr">$</p>
-        </div>
-        <div>
-          <button className='btn' onClick={decrease_position} disabled={loading}>
-            {loading ? <Loading /> : 'Colse'}
-          </button>
-        </div>
-      </TurbosDialog>
     </>
+  )
+}
+
+type TurbosDialogProps = {
+  open: boolean,
+  onClose: () => void,
+  data: { [x: string]: any } | undefined
+}
+
+function ClosePositionTurbosDialog(props: TurbosDialogProps) {
+  const { open, onClose, data } = props;
+
+  const {
+    connecting,
+    connected,
+    account,
+    network,
+    adapter
+  } = useSuiWallet();
+
+  const { allSymbolPrice } = useAllSymbolPrice();
+  const [value, setValue] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [btnInfo, setBtnInfo] = useState({ state: 0, text: 'Approve' });
+
+  useEffect(() => {
+    if (!value) {
+      setBtnInfo({ state: 1, text: 'Enter a amount' })
+    } else {
+      setBtnInfo({ state: 0, text: 'Approve' });
+    }
+  }, [value])
+
+  if (!network || !account || !open || !data) {
+    return null;
+  }
+
+  const changeMax = () => {
+    setValue(Bignumber(data.size).div(data.average_price).toString())
+  }
+
+  const changeValue = (e: any) => {
+    setValue(e.target.value)
+  }
+
+  const decrease_position = async () => {
+    if (network && account) {
+      setLoading(true);
+    }
+  }
+
+  const coin = contractConfig[network as NetworkType].Coin;
+  const symbol = Object.keys(coin).find((k: string) => data.index_pool_address === coin[k as SymbolType].PoolObjectId);
+  const supplyTradeToken = supplyTradeTokens.find((item: SupplyTokenType) => item.symbol === symbol);
+
+  const symbolPrice = allSymbolPrice[symbol as SymbolType] || {};
+
+  const pnlPrice = Bignumber(symbolPrice.originalPrice).minus(data.average_price).multipliedBy(data.reserve_amount).div(data.collateral);
+  const pnl = pnlPrice.div(data.collateral).multipliedBy(100).toFixed(2);
+
+  return (
+    <TurbosDialog open={open} title={`Close ${data.is_long ? 'Long' : 'Short'} ${symbol}`} onClose={onClose}>
+      <div className="section section-marbottom">
+        <div className="sectiontop">
+          <span>Pay</span>
+          <div>
+            <span className="section-balance">Balance: {Bignumber(data.size).div(data.average_price).toString()}</span>
+            <span> | </span><span className='section-max' onClick={changeMax}>MAX</span>
+          </div>
+        </div>
+        <div className="sectionbottom">
+          <div className="sectioninputcon" >
+            <input type="text" className="sectioninput" value={value} placeholder="0.0" onChange={changeValue} />
+          </div>
+          <div className="sectiontokens">
+            <img src={supplyTradeToken?.icon} alt="" />
+            <span>{symbol}</span>
+          </div>
+        </div>
+      </div>
+      <div className="line line-top-16">
+        <p className="ll">Mark Price</p>
+        <p className="lr">${numberWithCommas(Bignumber(data.average_price).div(10 ** 9).toFixed(2))}</p>
+      </div>
+      <div className="line">
+        <p className="ll">Entry Price</p>
+        <p className="lr">${numberWithCommas(symbolPrice.price)}</p>
+      </div>
+      <div className="line">
+        <p className="ll">Liq. Price</p>
+        <p className="lr">-</p>
+      </div>
+      <div className="line-hr"></div>
+      <div className="line">
+        <p className="ll">Size</p>
+        <p className="lr">-</p>
+      </div>
+      <div className="line">
+        <p className="ll">Collaterlal({symbol})</p>
+        <p className="lr">{value ? `\$${numberWithCommas(Bignumber(value).multipliedBy(symbolPrice.price).toFixed(2))}` : '-'}</p>
+      </div>
+      <div className="line">
+        <p className="ll">PnL</p>
+        <p className="lr">{pnlPrice.div(10 ** 9).toFixed(2).indexOf('-') > -1 ? pnlPrice.div(10 ** 9).toFixed(2).replace('-', '-$') : `\$${pnlPrice.div(10 ** 9).toFixed(2)}`}({pnl}%)</p>
+      </div>
+      <div className="line">
+        <p className="ll">Fees</p>
+        <p className="lr">{value ? `\$${Bignumber(value).multipliedBy(symbolPrice.price).multipliedBy(0.001).toFixed(2)}` : '-'}</p>
+      </div>
+      <div className="line-hr"></div>
+      <div className="line">
+        <p className="ll">Receive</p>
+        <p className="lr">0.00 BTC($0.00)</p>
+      </div>
+
+      <div>
+        <button className='btn' onClick={decrease_position} disabled={btnInfo.state > 0 || loading}>
+          {loading ? <Loading /> : btnInfo.text}
+        </button>
+      </div>
+    </TurbosDialog>
+  )
+}
+
+function AddAndRemoveMarginTurbosDialog(props: TurbosDialogProps) {
+  const { open, onClose, data } = props;
+
+  const {
+    connecting,
+    connected,
+    account,
+    network,
+    adapter
+  } = useSuiWallet();
+
+  const { allSymbolPrice } = useAllSymbolPrice();
+  const [loading, setLoading] = useState(false);
+
+  if (!network || !account || !open || !data) {
+    return null;
+  }
+
+  const decrease_position = async () => {
+
+  }
+
+  const coin = contractConfig[network as NetworkType].Coin;
+  const symbol = Object.keys(coin).find((k: string) => data.index_pool_address === coin[k as SymbolType].PoolObjectId);
+  const supplyTradeToken = supplyTradeTokens.find((item: SupplyTokenType) => item.symbol === symbol);
+
+  const symbolPrice = allSymbolPrice[symbol as SymbolType] || {};
+
+  return (
+    <TurbosDialog open={open} title={`Edit ${data.is_long ? 'Long' : 'Short'} ${symbol}`} onClose={onClose}>
+      <div className='tabs'>
+        <div onClick={() => { }}>
+          <span>Add Margin</span>
+        </div>
+        <div onClick={() => { }}>
+          <span>Remove Margin</span>
+        </div>
+      </div>
+
+      <div className="section section-marbottom">
+        <div className="sectiontop">
+          <span>Pay</span>
+          <div>
+            <span className="section-balance">Balance: { }</span>
+            <span> | </span><span className='section-max'>MAX</span>
+          </div>
+        </div>
+        <div className="sectionbottom">
+          <div className="sectioninputcon" >
+            <input type="text" className="sectioninput" placeholder="0.0" />
+          </div>
+          <div className="sectiontokens">
+            <img src={ethereumIcon} alt="" />
+            <span>SUI</span>
+          </div>
+        </div>
+      </div>
+      <div className="line line-top-16">
+        <p className="ll">Total</p>
+        <p className="lr">$</p>
+      </div>
+      <div className="line">
+        <p className="ll">Margin</p>
+        <p className="lr">${numberWithCommas(Bignumber(data.average_price).div(10 ** 9).toFixed(2))}</p>
+      </div>
+      <div className="line">
+        <p className="ll">Leverage</p>
+        <p className="lr">$</p>
+      </div>
+      <div className="line">
+        <p className="ll">Mark Price</p>
+        <p className="lr"></p>
+      </div>
+      <div className="line">
+        <p className="ll">Liq. Price</p>
+        <p className="lr">$</p>
+      </div>
+      <div className="line">
+        <p className="ll">Execution Fees</p>
+        <p className="lr">$</p>
+      </div>
+      <div>
+        <button className='btn' onClick={decrease_position} disabled={loading}>
+          {loading ? <Loading /> : 'Colse'}
+        </button>
+      </div>
+    </TurbosDialog >
   )
 }
 

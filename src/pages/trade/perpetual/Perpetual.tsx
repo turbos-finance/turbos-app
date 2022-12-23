@@ -482,8 +482,8 @@ function Perpetual() {
   const typeList = ['Market']; // ['Market', 'Limit', 'Trigger'];
 
   const liqPrice = !trade ?
-    Bignumber(toToken.price).minus(Bignumber(fromToken.value).multipliedBy(fromToken.price).div(leverage)).toFixed(2) :
-    Bignumber(toToken.price).plus(Bignumber(fromToken.value).multipliedBy(fromToken.price).div(leverage)).toFixed(2);
+    Bignumber(toToken.price).minus(Bignumber(toToken.price).div(leverage)).toFixed(2) :
+    Bignumber(toToken.price).plus(Bignumber(toToken.price).div(leverage)).toFixed(2);
 
   const fees = Bignumber(toToken.value).multipliedBy(toToken.price).multipliedBy(0.001).toFixed(2);
 
@@ -670,7 +670,7 @@ function Perpetual() {
         </div>
 
         <div className="container">
-          <div className="container-title">{tradeType[trade]} {fromToken.symbol}</div>
+          <div className="container-title">{tradeType[trade]} {toToken.symbol}</div>
           <div className="line-con1">
             <div className="line">
               <p className="ll">Entry Price</p>

@@ -12,6 +12,8 @@ import { useRefresh } from '../contexts/refresh';
 export type SymbolPriceType = {
   price: string,
   originalPrice: string,
+  emaPrice?: string,
+  originalEmaPrice?: string,
   symbol?: string
 }
 
@@ -47,7 +49,8 @@ export const useSymbolPrice = (symbol: TLPAndSymbolType | undefined, network: Ne
           ...priceFeedField,
           symbol,
           originalPrice: priceFeedField.price,
-          price: Bignumber(priceFeedField.price).div(10 ** priceFeedField.decimal).toFixed(2)
+          price: Bignumber(priceFeedField.price).div(10 ** priceFeedField.decimal).toFixed(2),
+          emaPrice: Bignumber(priceFeedField.ema_price).div(10 ** priceFeedField.decimal).toFixed(2)
         });
       }
 
@@ -103,7 +106,8 @@ export const useAllSymbolPrice = (network: NetworkType = 'DEVNET') => {
       priceList[symbol] = {
         symbol,
         originalPrice: field?.price,
-        price: Bignumber(field?.price).div(10 ** field?.decimal || 1).toFixed(2)
+        price: Bignumber(field?.price).div(10 ** field?.decimal || 1).toFixed(2),
+        emaPrice: Bignumber(field?.ema_price).div(10 ** field?.decimal).toFixed(2)
       }
     });
 

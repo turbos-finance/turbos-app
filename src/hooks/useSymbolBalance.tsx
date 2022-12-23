@@ -24,9 +24,7 @@ export const useSymbolBalance = (account: string | undefined, symbol: TLPAndSymb
         symbolConfig = coin[symbol];
       }
 
-      console.log(account, symbolConfig.Type === '0x0000000000000000000000000000000000000002::sui::SUI' ? '0x2::sui::SUI' : symbolConfig.Type);
       const responce = await provider.getCoinBalancesOwnedByAddress(account, symbolConfig.Type === '0x0000000000000000000000000000000000000002::sui::SUI' ? '0x2::sui::SUI' : symbolConfig.Type);
-      console.log(responce);
       const balance = Coin.totalBalance(responce);
 
       setCoinBalance(Bignumber(balance.toString()).div(10 ** 9).toFixed(2));
