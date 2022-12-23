@@ -93,6 +93,7 @@ function Perpetual() {
   const [loading, setLoading] = useState(false);
 
   const { pool } = usePool(toToken.symbol as SymbolType);
+  const fromTokenPool = usePool(fromToken.symbol as SymbolType);
   const { allSymbolPrice } = useAllSymbolPrice();
   const { allSymbolBalance } = useAllSymbolBalance(account);
   const { availableLiquidity } = useAvailableLiquidity();
@@ -305,9 +306,15 @@ function Perpetual() {
         state: 2,
         text: `Insufficient ${fromToken.symbol} balance`
       });
-    } else if (Bignumber(toToken.value).multipliedBy(10 ** 9).minus(pool.pool_amounts).isGreaterThan(0)) {
+    } else if (Bignumber(fromToken.value).multipliedBy(10 ** 9).minus(fromTokenPool.pool.pool_amounts).isGreaterThanOrEqualTo(0)) {
       setBtnInfo({
         state: 3,
+        text: `Insufficient ${fromToken.symbol} liquidity`
+      });
+    }
+    else if (Bignumber(toToken.value).multipliedBy(10 ** 9).minus(pool.pool_amounts).isGreaterThanOrEqualTo(0)) {
+      setBtnInfo({
+        state: 4,
         text: `Insufficient ${toToken.symbol} liquidity`
       });
     } else {

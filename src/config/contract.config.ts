@@ -2,46 +2,46 @@ import { ContractConfigType } from "./config.type";
 
 export const contractConfig: ContractConfigType = {
 	"DEVNET": {
-		"ExchangePackageId": "0xf6f4e0459f429e5247e7a9ba4d95d730532bb0bf",
-		"VaultObjectId": "0x81e6b66cb3fa30fea648de0e547f9f1881198269",
-		"PositionsObjectId": "0x71b6187f25bb3e90eab9d5bc014ae96e2bad3043",
-		"ManagerCapObjectId": "0x37a8fd0627b964c167308cdb7bd85d7aa3987738",
-		"TimeOraclePackageId": "0xcc3bb45c48cdde1a8c99d756db1ecab9dcfb7005",
-		"PriceOraclePackageId": "0x4d5445f5e06ba3598d5f3c851ded4240684c06a8",
-		"TimeOracleObjectId": "0xe3e6ec368588aecfbb4d4d5fa4440a403e2d0264",
-		"PriceFeedStorageObjectId": "0x416289c352ebbe67e72629685d0b44739eb662c3",
+		"ExchangePackageId": "0xfca9b5d7977594a4602680c74d470ea220bad7d8",
+		"VaultObjectId": "0x9919822de514939964197629168c5f5764f5fc9e",
+		"PositionsObjectId": "0xc7e9dabfbadca95ba5ded11a2e2b28fc506c4a47",
+		"ManagerCapObjectId": "0x909d781f75114f31a692f5c1a7b5c31a5f0244b7",
+		"TimeOraclePackageId": "0x268496428ee1ad90e62cfaca5d44e6ae6584eec3",
+		"PriceOraclePackageId": "0x8542a56d4aaba0f79dc56a0d7417871d4cd61cc7",
+		"TimeOracleObjectId": "0xf5a44a9834fddcc941668ab8b9e27c353e854911",
+		"PriceFeedStorageObjectId": "0x0b4e156548a5cd1e86d19f3669f3c4dd36d7f509",
 		"Coin": {
 			"BTC": {
-				"PackageId": "0xbbb52e39a23992c3ae1486a0f976c4386d76691c",
-				"PriceFeedObjectId": "0x32527e861c7f336c393a8e2ed31af4192def3f72",
+				"PackageId": "0xbe76f977de1d4cfae56b79f6f87c1436b6da4abd",
+				"PriceFeedObjectId": "0x96e935a7d0c906ab35e8e3844fc5824b463b6950",
 				"PriceFeedId": "fbd7c495fcc83ec7ce6522eb44a453a70f88ef64664f1ed49e011be87ffe3525",
-				"Type": "0xbbb52e39a23992c3ae1486a0f976c4386d76691c::btc::BTC",
-				"PoolObjectId": "0x74fcf6456164c15b12e84d628f34d708c1d9b502",
-				"PoolDataObjectId": "0xbb9dbfd35befce95b8c7ac071ba643393a0e01b3"
+				"Type": "0xbe76f977de1d4cfae56b79f6f87c1436b6da4abd::btc::BTC",
+				"PoolObjectId": "0x2b081c8500776c881ede62aa1ff267e164e657ad",
+				"PoolDataObjectId": "0x75975ce02222b3e12e2c3f125d6f4572c07f900d"
 			},
 			"ETH": {
-				"PackageId": "0xbbb52e39a23992c3ae1486a0f976c4386d76691c",
-				"PriceFeedObjectId": "0x49c226766eb3c983348a12becd025fc20f603391",
+				"PackageId": "0xbe76f977de1d4cfae56b79f6f87c1436b6da4abd",
+				"PriceFeedObjectId": "0xecd480e2b293484942be2312c4cebe6db8d14f21",
 				"PriceFeedId": "3b3852469b9667b95ce1ef1fe4ceba4ebba4e07b42acda4e8e3246598e5cb73f",
-				"Type": "0xbbb52e39a23992c3ae1486a0f976c4386d76691c::eth::ETH",
-				"PoolObjectId": "0x6174dee6f0872be5222de9dd1067c8e2916cb694",
-				"PoolDataObjectId": "0xe63caf914ff154682765ea31c4dda07d080c9bb0"
+				"Type": "0xbe76f977de1d4cfae56b79f6f87c1436b6da4abd::eth::ETH",
+				"PoolObjectId": "0xd0612e654e5c61c92fcac836f95da23f3e3e8dd6",
+				"PoolDataObjectId": "0xd07a8d5b008afb02574a54b746e4cad9f6ed389b"
 			},
 			"USDC": {
-				"PackageId": "0xbbb52e39a23992c3ae1486a0f976c4386d76691c",
-				"PriceFeedObjectId": "0x7931aed4b2eeda8a6c9af769cf9182abf90372a8",
+				"PackageId": "0xbe76f977de1d4cfae56b79f6f87c1436b6da4abd",
+				"PriceFeedObjectId": "0x4a5efec4d48d044079806c678daa3ca4707123ca",
 				"PriceFeedId": "348eb3a88317813f7541e4008843b907822259c008a2793e43edce2d1360e27d",
-				"Type": "0xbbb52e39a23992c3ae1486a0f976c4386d76691c::usdc::USDC",
-				"PoolObjectId": "0x45080fdb11ccefa3cbaeb89459e3692ebad1279e",
-				"PoolDataObjectId": "0x7765f3b31ac0100ccf8a092c0897c9a0bc588cde"
+				"Type": "0xbe76f977de1d4cfae56b79f6f87c1436b6da4abd::usdc::USDC",
+				"PoolObjectId": "0x442ed5a70ace9da8b95ad2c7b3b6362a1467ac50",
+				"PoolDataObjectId": "0x878aceb9d5b568d1d0cce8636711cbcd161961ef"
 			},
 			"SUI": {
 				"PackageId": "0x0000000000000000000000000000000000000002",
-				"PriceFeedObjectId": "0x7fbb4522e74997f5d4cdf01163f049ebdc17e283",
+				"PriceFeedObjectId": "0xa96ec3484a6403b61ca529438209d5063f25a115",
 				"PriceFeedId": "16c3533d98cb020a2304c7f26169ac2597079f9aac853dd141d0aff86f540d56",
 				"Type": "0x0000000000000000000000000000000000000002::sui::SUI",
-				"PoolObjectId": "0xff045d3d2e9301e3933a06224ee60a3316a4754c",
-				"PoolDataObjectId": "0x05ffb2f43a670fdb238bcbf1f80507557890ad0b"
+				"PoolObjectId": "0x77a6a0ea334c837536ef21a37d3ff3aeab389570",
+				"PoolDataObjectId": "0x2980dc3ddf7afac5867f6ffd620603472097fbb2"
 			}
 		}
 	},

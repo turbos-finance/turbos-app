@@ -482,7 +482,7 @@ function BuySellRight() {
   const { vault } = useVault();
   const { coinBalance } = useSymbolBalance(account, 'TLP');
   const { symbolPrice } = useSymbolPrice('TLP');
-
+  
   return (
     <div className="main-right">
       <div className="container">

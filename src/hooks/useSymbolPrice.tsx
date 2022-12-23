@@ -10,7 +10,8 @@ import { useAum } from './useAum';
 import { useRefresh } from '../contexts/refresh';
 
 export type SymbolPriceType = {
-  price: string;
+  price: string,
+  originalPrice: string,
   symbol?: string
 }
 
@@ -20,7 +21,8 @@ export const useSymbolPrice = (symbol: TLPAndSymbolType | undefined, network: Ne
   const { refreshTime } = useRefresh();
 
   const [symbolPrice, setSymbolPrice] = useState<SymbolPriceType>({
-    price: '0.00'
+    price: '0.00',
+    originalPrice: '0'
   });
 
   const getSymbolPrice = async () => {
@@ -30,6 +32,8 @@ export const useSymbolPrice = (symbol: TLPAndSymbolType | undefined, network: Ne
       if (symbol === 'TLP') {
         setSymbolPrice({
           symbol,
+          originalPrice: aum.amount && Bignumber(vault.tlp_supply.fields.value).toNumber() !== 0 ?
+            Bignumber(aum.amount).div(vault.tlp_supply.fields.value).multipliedBy(10 ** 9).toString() : '0',
           price: aum.amount && Bignumber(vault.tlp_supply.fields.value).toNumber() !== 0
             ? Bignumber(aum.amount).div(vault.tlp_supply.fields.value).toFixed(2)
             : '0.00'
@@ -42,6 +46,7 @@ export const useSymbolPrice = (symbol: TLPAndSymbolType | undefined, network: Ne
         priceFeedField && setSymbolPrice({
           ...priceFeedField,
           symbol,
+          originalPrice: priceFeedField.price,
           price: Bignumber(priceFeedField.price).div(10 ** priceFeedField.decimal).toFixed(2)
         });
       }
@@ -79,6 +84,8 @@ export const useAllSymbolPrice = (network: NetworkType = 'DEVNET') => {
       if (symbolList[i] === 'TLP') {
         priceList[symbolList[i]] = {
           symbol: symbolList[i],
+          originalPrice: aum.amount && Bignumber(vault.tlp_supply.fields.value).toNumber() !== 0 ?
+            Bignumber(aum.amount).div(vault.tlp_supply.fields.value).multipliedBy(10 ** 9).toString() : '0',
           price: aum.amount && Bignumber(vault.tlp_supply.fields.value).toNumber() !== 0
             ? Bignumber(aum.amount).div(vault.tlp_supply.fields.value).toFixed(2)
             : '1.00'
@@ -95,6 +102,7 @@ export const useAllSymbolPrice = (network: NetworkType = 'DEVNET') => {
       const symbol = field?.symbol.replace(/USD$/, '');
       priceList[symbol] = {
         symbol,
+        originalPrice: field?.price,
         price: Bignumber(field?.price).div(10 ** field?.decimal || 1).toFixed(2)
       }
     });
