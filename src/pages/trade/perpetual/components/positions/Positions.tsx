@@ -19,6 +19,9 @@ import { useToastify } from '../../../../../contexts/toastify';
 import { Explorer } from '../../../../../components/explorer/Explorer';
 import { useAllSymbolPrice } from '../../../../../hooks/useSymbolPrice';
 import { SupplyTokenType, supplyTradeTokens } from '../../../../../config/tokens';
+import { findContractConfigCoinSymbol, findsupplyTokenSymbol, findSupplyTradeTokeSymbol } from '../../../../../lib';
+import { useAllPool } from '../../../../../hooks/usePool';
+import { useAllSymbolBalance } from '../../../../../hooks/useSymbolBalance';
 
 type PositionsProps = {
   options: any[]
@@ -81,165 +84,9 @@ function Positions(props: PositionsProps) {
           options.push(field);
         }
       });
-      console.log(options);
       setData(options);
     } else {
       setData([]);
-    }
-  }
-
-  const decrease_position = async () => {
-    if (network && account) {
-      setLoading(true);
-
-      // const config = contractConfig[network as NetworkType];
-      // const toSymbolConfig = config.Coin[(toToken.symbol) as SymbolType];
-      // const fromSymbolConfig = config.Coin[(fromToken.symbol) as SymbolType];
-
-      // const fromType = fromSymbolConfig.Type === '0x0000000000000000000000000000000000000002::sui::SUI' ? '0x2::sui::SUI' : fromSymbolConfig.Type;
-
-      // const coinBalance = await provider.getCoinBalancesOwnedByAddress(account, fromType);
-      // const amount = Bignumber(fromToken.value).multipliedBy(10 ** 9).toNumber();
-      // const balanceResponse = Coin.selectCoinSetWithCombinedBalanceGreaterThanOrEqual(coinBalance, BigInt(amount));
-      // const balanceObjects = balanceResponse.map((item) => Coin.getID(item));
-
-      // let argumentsVal: (string | number | boolean | string[])[] = [
-      //   config.VaultObjectId,
-      //   balanceObjects,
-      //   Bignumber(fromToken.value).multipliedBy(10 ** 9).toNumber(),
-      //   fromSymbolConfig.PoolObjectId,
-      //   toSymbolConfig.PoolObjectId,
-      //   config.PriceFeedStorageObjectId,
-      //   config.PositionsObjectId,
-      //   true,
-      //   Bignumber(Bignumber(toToken.value).multipliedBy(10 ** 9).multipliedBy(toToken.price).toFixed(0)).toNumber(),
-      //   Bignumber(toToken.price).multipliedBy(!trade ? 1.01 : 0.99).multipliedBy(10 ** 9).toNumber(),
-      //   config.TimeOracleObjectId
-      // ];
-
-      // let typeArgumentsVal: string[] = [
-      //   fromSymbolConfig.Type,
-      //   toSymbolConfig.Type
-      // ];
-
-      // // vault: & mut Vault,
-      // //   collateral_coins: vector<Coin<T>>,
-      // //     collateral_amount: u64,
-      // //       collateral_pool: & mut Pool<T>,
-      // //         index_pool: & mut Pool<P>,
-      // //           price_feed_storage: & PriceFeedStorage,
-      // //             positions: & mut Positions,
-      // //               is_long: bool,
-      // //                 position_size_delta: u64,
-      // //                   price: u64,
-      // //                     timestamp: & Timestamp,
-
-
-
-      // try {
-      //   let executeTransactionTnx = await adapter.executeMoveCall({
-      //     packageObjectId: config.ExchangePackageId,
-      //     module: 'exchange',
-      //     function: 'increase_position',
-      //     typeArguments: typeArgumentsVal,
-      //     arguments: argumentsVal,
-      //     gasBudget: 10000
-      //   });
-
-      //   if (executeTransactionTnx.error) {
-      //     toastify(executeTransactionTnx.error.msg, 'error');
-      //   } else {
-      //     if (executeTransactionTnx.data) {
-      //       executeTransactionTnx = executeTransactionTnx.data;
-      //     }
-
-      //     const effects = getTransactionEffects(executeTransactionTnx);
-      //     const digest = getTransactionDigest(executeTransactionTnx);
-
-      //     if (effects?.status.status === 'success') {
-      //       toastify(<Explorer message={`Request increase of ${fromToken.symbol} ${tradeType[trade]} by ${toToken.value} ${toToken.symbol}.`} type="transaction" digest={digest} />);
-      //       toggleCheck();
-      //       changeRefreshTime(); // reload data
-      //     } else {
-      //       toastify(<Explorer message={'Execute Transaction error!'} type="transaction" digest={digest} />, 'error');
-      //     }
-      //   }
-      // } catch (err: any) {
-      //   toastify(err.message || err, 'error');
-      // }
-
-      setLoading(false);
-    }
-
-  }
-
-  const increase_position = async () => {
-    if (network && account) {
-      setLoading(true);
-
-      // const config = contractConfig[network as NetworkType];
-      // const toSymbolConfig = config.Coin[(toToken.symbol) as SymbolType];
-      // const fromSymbolConfig = config.Coin[(fromToken.symbol) as SymbolType];
-
-      // const fromType = fromSymbolConfig.Type === '0x0000000000000000000000000000000000000002::sui::SUI' ? '0x2::sui::SUI' : fromSymbolConfig.Type;
-
-      // const coinBalance = await provider.getCoinBalancesOwnedByAddress(account, fromType);
-      // const amount = Bignumber(fromToken.value).multipliedBy(10 ** 9).toNumber();
-      // const balanceResponse = Coin.selectCoinSetWithCombinedBalanceGreaterThanOrEqual(coinBalance, BigInt(amount));
-      // const balanceObjects = balanceResponse.map((item) => Coin.getID(item));
-
-      // let argumentsVal: (string | number | boolean | string[])[] = [
-      //   config.VaultObjectId,
-      //   balanceObjects,
-      //   Bignumber(fromToken.value).multipliedBy(10 ** 9).toNumber(),
-      //   fromSymbolConfig.PoolObjectId,
-      //   toSymbolConfig.PoolObjectId,
-      //   config.PriceFeedStorageObjectId,
-      //   config.PositionsObjectId,
-      //   !trade ? true : false,
-      //   Bignumber(Bignumber(toToken.value).multipliedBy(10 ** 9).multipliedBy(toToken.price).toFixed(0)).toNumber(),
-      //   Bignumber(toToken.price).multipliedBy(!trade ? 1.01 : 0.99).multipliedBy(10 ** 9).toNumber(),
-      //   config.TimeOracleObjectId
-      // ];
-
-      // let typeArgumentsVal: string[] = [
-      //   fromSymbolConfig.Type,
-      //   toSymbolConfig.Type
-      // ];
-
-      // try {
-      //   let executeTransactionTnx = await adapter.executeMoveCall({
-      //     packageObjectId: config.ExchangePackageId,
-      //     module: 'exchange',
-      //     function: 'increase_position',
-      //     typeArguments: typeArgumentsVal,
-      //     arguments: argumentsVal,
-      //     gasBudget: 10000
-      //   });
-
-      //   if (executeTransactionTnx.error) {
-      //     toastify(executeTransactionTnx.error.msg, 'error');
-      //   } else {
-      //     if (executeTransactionTnx.data) {
-      //       executeTransactionTnx = executeTransactionTnx.data;
-      //     }
-
-      //     const effects = getTransactionEffects(executeTransactionTnx);
-      //     const digest = getTransactionDigest(executeTransactionTnx);
-
-      //     if (effects?.status.status === 'success') {
-      //       toastify(<Explorer message={`Request increase of ${fromToken.symbol} ${tradeType[trade]} by ${toToken.value} ${toToken.symbol}.`} type="transaction" digest={digest} />);
-      //       toggleCheck();
-      //       changeRefreshTime(); // reload data
-      //     } else {
-      //       toastify(<Explorer message={'Execute Transaction error!'} type="transaction" digest={digest} />, 'error');
-      //     }
-      //   }
-      // } catch (err: any) {
-      //   toastify(err.message || err, 'error');
-      // }
-
-      // setLoading(false);
     }
   }
 
@@ -314,7 +161,7 @@ function Positions(props: PositionsProps) {
                   <td align='left'>
                     <div className={styles['table-position']}>
                       <span>${numberWithCommas(Bignumber(item.collateral).div(10 ** 9).toFixed(2))}</span>
-                      <img src={addIcon} alt="" height="24" className={styles.icon} onClick={toggleEdit} />
+                      <img src={addIcon} alt="" height="24" className={styles.icon} onClick={() => toggleEdit(item)} />
                     </div>
                   </td>
                   <td align='left'>
@@ -353,13 +200,27 @@ function Positions(props: PositionsProps) {
             data.map((item: any, index: number) => {
               const coin = contractConfig[network as NetworkType].Coin;
               const symbol = Object.keys(coin).find((k: string) => item.index_pool_address === coin[k as SymbolType].PoolObjectId);
+              const symbolPrice = allSymbolPrice[symbol as SymbolType];
+
               const supplyTradeToken = supplyTradeTokens.find((item: SupplyTokenType) => item.symbol === symbol);
 
-              const differencePrice = Bignumber(item.collateral).div(item.reserve_amount).multipliedBy(item.collateral);
+              const leverage = Bignumber(item.size).div(item.collateral)
+              const differencePrice = Bignumber(item.average_price).div(leverage);
               const liqPirce = item.is_long ?
                 Bignumber(item.average_price).minus(differencePrice)
                 :
                 Bignumber(item.average_price).plus(differencePrice);
+
+              const isGreaterThanOrEqual = Bignumber(symbolPrice.originalPrice).minus(item.average_price).isGreaterThanOrEqualTo(0);
+              const isLessThanOrEqual = Bignumber(symbolPrice.originalPrice).minus(item.average_price).isLessThanOrEqualTo(0)
+              const isGreen = (item.is_long && isGreaterThanOrEqual) || (!item.is_long && !isLessThanOrEqual) ? true : false;
+
+              const pnlPrice = Bignumber(symbolPrice.originalPrice)
+                .minus(item.average_price)
+                .div(Bignumber(item.average_price)
+                  .div(leverage))
+                .multipliedBy(item.collateral);
+              const pnl = pnlPrice.div(item.collateral).multipliedBy(100).toFixed(2);
 
               return (
                 <div className='line-con' key={index}>
@@ -393,7 +254,7 @@ function Positions(props: PositionsProps) {
                     <div className='lr'>
                       <div className={styles['table-position']}>
                         <span>${numberWithCommas(Bignumber(item.collateral).div(10 ** 9).toFixed(2))}</span>
-                        <img src={addIcon} alt="" height="24" className={styles.icon} onClick={toggleEdit} />
+                        <img src={addIcon} alt="" height="24" className={styles.icon} onClick={() => toggleEdit(item)} />
                       </div>
                     </div>
                   </div>
@@ -423,12 +284,12 @@ function Positions(props: PositionsProps) {
                     <div className='ll'>PnL/PnL (%)</div>
                     <div className='lr'>
                       <div>
-                        <span className={styles.red}>
-                          +10.0
+                        <span className={isGreen ? styles.green : styles.red}>
+                          {pnlPrice.div(10 ** 9).toFixed(2).indexOf('-') > -1 ? pnlPrice.div(10 ** 9).toFixed(2).replace('-', '-$') : `\$${pnlPrice.div(10 ** 9).toFixed(2)}`}
                         </span>
                         <div className={styles['table-position']}>
-                          <span className={styles.red}>-1.16%</span>
-                          <img src={shareIcon} alt="" height="24" className={styles.icon} />
+                          <span className={isGreen ? styles.green : styles.red}>{pnl}%</span>
+                          {/* <img src={shareIcon} alt="" height="24" className={styles.icon} /> */}
                         </div>
                       </div>
                     </div>
@@ -437,8 +298,8 @@ function Positions(props: PositionsProps) {
                   <div className='line'>
                     <div className='ll'></div>
                     <div className='lr'>
-                      <button className={styles['table-btn']}>TP/SL</button>
-                      <button className={styles['table-btn-green']} onClick={toggleCheck}>Close</button>
+                      {/* <button className={styles['table-btn']}>TP/SL</button> */}
+                      <button className={styles['table-btn-green']} onClick={() => { toggleCheck(item) }}>Close</button>
                     </div>
                   </div>
 
@@ -466,70 +327,206 @@ function ClosePositionTurbosDialog(props: TurbosDialogProps) {
   const { open, onClose, data } = props;
 
   const {
-    connecting,
-    connected,
     account,
     network,
     adapter
   } = useSuiWallet();
 
-  const { allSymbolPrice } = useAllSymbolPrice();
-  const [value, setValue] = useState('');
+  const { changeRefreshTime, refreshTime } = useRefresh();
+  const { toastify } = useToastify();
+
   const [loading, setLoading] = useState(false);
-  const [btnInfo, setBtnInfo] = useState({ state: 0, text: 'Approve' });
+  const [btnInfo, setBtnInfo] = useState({ state: 1, text: 'Enter a amount' });
+
+  const [fromToken, setFromToken] = useState({ symbol: '', value: '', price: '0', size: '', balance: '0' });
+  const [toToken, setToToken] = useState({ symbol: '', value: '', price: '0', size: '', balance: '0' });
+
+  const { allSymbolPrice } = useAllSymbolPrice();
+  const { allPool } = useAllPool();
 
   useEffect(() => {
-    if (!value) {
-      setBtnInfo({ state: 1, text: 'Enter a amount' })
-    } else {
-      setBtnInfo({ state: 0, text: 'Approve' });
+    if (network && data && open) {
+      if (!fromToken.value) {
+        setBtnInfo({ state: 1, text: 'Enter a amount' })
+      } else if (Bignumber(fromToken.size).minus(data.size).isGreaterThan(0)) {
+        const symbol = findContractConfigCoinSymbol(network, data.index_pool_address, 'PoolObjectId');
+        setBtnInfo({ state: 2, text: `Insufficient ${symbol} balance` });
+      } else {
+        setBtnInfo({ state: 0, text: 'Approve' });
+      }
     }
-  }, [value])
+  }, [fromToken, network, data, open]);
+
+  useEffect(() => {
+    if (data && network && open) {
+      if (data.index_pool_address) {
+        const symbol = findContractConfigCoinSymbol(network, data.index_pool_address, 'PoolObjectId');
+        setFromToken({
+          ...fromToken,
+          symbol: symbol || '',
+          price: allSymbolPrice[symbol as SymbolType].price || '0',
+          balance: Bignumber(data.size).div(data.average_price).toString()
+        })
+      }
+    }
+  }, [data, allSymbolPrice, network, open]);
+
+  useEffect(() => {
+    if (data && network && open) {
+      if (data.collateral_pool_address && fromToken.symbol) {
+        const symbol = findContractConfigCoinSymbol(network, data.collateral_pool_address, 'PoolObjectId');
+        setToToken({
+          ...toToken,
+          symbol: symbol || '',
+          price: allSymbolPrice[symbol as SymbolType].price || '0',
+          value: fromToken.value ? Bignumber(fromToken.value)
+            .multipliedBy(allSymbolPrice[fromToken.symbol as SymbolType].originalPrice)
+            .div(allSymbolPrice[symbol as SymbolType].originalPrice).toFixed(2) : '0.00'
+        })
+      }
+    }
+  }, [data, allSymbolPrice, network, open, fromToken])
 
   if (!network || !account || !open || !data) {
     return null;
   }
 
+  const changeClose = () => {
+    onClose();
+    setFromToken({
+      ...fromToken,
+      value: '',
+      size: ''
+    });
+  }
+
   const changeMax = () => {
-    setValue(Bignumber(data.size).div(data.average_price).toString())
+    setFromToken({
+      ...fromToken,
+      value: fromToken.balance,
+      size: data.size
+    });
+
+    setToToken({
+      ...toToken,
+      value: Bignumber(fromToken.balance)
+        .multipliedBy(allSymbolPrice[fromToken.symbol as SymbolType].originalPrice)
+        .div(allSymbolPrice[toToken.symbol as SymbolType].originalPrice).toFixed(2),
+    })
   }
 
   const changeValue = (e: any) => {
-    setValue(e.target.value)
+    setFromToken({
+      ...fromToken,
+      value: e.target.value,
+      size: e.target.value ? Bignumber(e.target.value).multipliedBy(data.average_price).toString() : ''
+    });
+
+    setToToken({
+      ...toToken,
+      value: e.target.value ? Bignumber(e.target.value)
+        .multipliedBy(allSymbolPrice[fromToken.symbol as SymbolType].originalPrice)
+        .div(allSymbolPrice[toToken.symbol as SymbolType].originalPrice).toFixed(2) : '0.00',
+    })
   }
 
   const decrease_position = async () => {
-    if (network && account) {
+    if (network && account && adapter) {
       setLoading(true);
+
+      const config = contractConfig[network as NetworkType];
+      const toSymbolConfig = config.Coin[(toToken.symbol) as SymbolType];
+      const fromSymbolConfig = config.Coin[(fromToken.symbol) as SymbolType];
+
+      let argumentsVal: (string | number | boolean | string[])[] = [
+        config.VaultObjectId,
+        data.collateral_pool_address,
+        data.index_pool_address,
+        config.PriceFeedStorageObjectId,
+        config.PositionsObjectId,
+        Bignumber(Bignumber(toToken.value).multipliedBy(10 ** 9).multipliedBy(toToken.price).toFixed(0)).toNumber(),
+        data.is_long,
+        Bignumber(fromToken.size).toNumber(),
+        Bignumber(toToken.price).multipliedBy(!data.is_long ? 1.01 : 0.99).multipliedBy(10 ** 9).toNumber(),
+        account,
+        config.TimeOracleObjectId
+      ];
+
+      let typeArgumentsVal: string[] = [
+        toSymbolConfig.Type,
+        fromSymbolConfig.Type
+      ];
+
+      try {
+        let executeTransactionTnx = await adapter.executeMoveCall({
+          packageObjectId: config.ExchangePackageId,
+          module: 'exchange',
+          function: 'decrease_position',
+          typeArguments: typeArgumentsVal,
+          arguments: argumentsVal,
+          gasBudget: 10000
+        });
+
+        if (executeTransactionTnx.error) {
+          toastify(executeTransactionTnx.error.msg, 'error');
+        } else {
+          if (executeTransactionTnx.data) {
+            executeTransactionTnx = executeTransactionTnx.data;
+          }
+
+          const effects = getTransactionEffects(executeTransactionTnx);
+          const digest = getTransactionDigest(executeTransactionTnx);
+
+          if (effects?.status.status === 'success') {
+            toastify(<Explorer message={`Request decrease of ${fromToken.symbol} ${data.is_long ? 'Long' : 'Short'} by ${toToken.value} ${toToken.symbol}.`} type="transaction" digest={digest} />);
+            changeClose();
+            changeRefreshTime(); // reload data
+          } else {
+            toastify(<Explorer message={'Execute Transaction error!'} type="transaction" digest={digest} />, 'error');
+          }
+        }
+      } catch (err: any) {
+        toastify(err.message || err, 'error');
+      }
+
+      setLoading(false);
     }
   }
 
-  const coin = contractConfig[network as NetworkType].Coin;
-  const symbol = Object.keys(coin).find((k: string) => data.index_pool_address === coin[k as SymbolType].PoolObjectId);
-  const supplyTradeToken = supplyTradeTokens.find((item: SupplyTokenType) => item.symbol === symbol);
+  const supplyTradeToken = findSupplyTradeTokeSymbol(fromToken.symbol);
+  const symbolPrice = allSymbolPrice[fromToken.symbol as SymbolType] || {};
 
-  const symbolPrice = allSymbolPrice[symbol as SymbolType] || {};
+  const leverage = Bignumber(data.size).div(data.collateral);
+  const differencePrice = Bignumber(data.average_price).div(leverage);
+  const liqPirce = data.is_long ?
+    Bignumber(data.average_price).minus(differencePrice)
+    :
+    Bignumber(data.average_price).plus(differencePrice);
 
-  const pnlPrice = Bignumber(symbolPrice.originalPrice).minus(data.average_price).multipliedBy(data.reserve_amount).div(data.collateral);
+  const pnlPrice = Bignumber(symbolPrice.originalPrice)
+    .minus(data.average_price)
+    .div(Bignumber(data.average_price)
+      .div(leverage))
+    .multipliedBy(data.collateral);
   const pnl = pnlPrice.div(data.collateral).multipliedBy(100).toFixed(2);
 
   return (
-    <TurbosDialog open={open} title={`Close ${data.is_long ? 'Long' : 'Short'} ${symbol}`} onClose={onClose}>
+    <TurbosDialog open={open} title={`Close ${data.is_long ? 'Long' : 'Short'} ${fromToken.symbol}`} onClose={changeClose}>
       <div className="section section-marbottom">
         <div className="sectiontop">
           <span>Pay</span>
           <div>
-            <span className="section-balance">Balance: {Bignumber(data.size).div(data.average_price).toString()}</span>
+            <span className="section-balance">Balance: {fromToken.balance}</span>
             <span> | </span><span className='section-max' onClick={changeMax}>MAX</span>
           </div>
         </div>
         <div className="sectionbottom">
           <div className="sectioninputcon" >
-            <input type="text" className="sectioninput" value={value} placeholder="0.0" onChange={changeValue} />
+            <input type="number" className="sectioninput" value={fromToken.value} placeholder="0.0" onChange={changeValue} />
           </div>
           <div className="sectiontokens">
             <img src={supplyTradeToken?.icon} alt="" />
-            <span>{symbol}</span>
+            <span>{fromToken.symbol}</span>
           </div>
         </div>
       </div>
@@ -543,16 +540,16 @@ function ClosePositionTurbosDialog(props: TurbosDialogProps) {
       </div>
       <div className="line">
         <p className="ll">Liq. Price</p>
-        <p className="lr">-</p>
+        <p className="lr">${numberWithCommas(liqPirce.div(10 ** 9).toFixed(2))}</p>
       </div>
       <div className="line-hr"></div>
       <div className="line">
         <p className="ll">Size</p>
-        <p className="lr">-</p>
+        <p className="lr">{fromToken.size ? `\$${numberWithCommas(Bignumber(fromToken.size).div(10 ** 9).toFixed(2))}` : '-'}</p>
       </div>
       <div className="line">
-        <p className="ll">Collaterlal({symbol})</p>
-        <p className="lr">{value ? `\$${numberWithCommas(Bignumber(value).multipliedBy(symbolPrice.price).toFixed(2))}` : '-'}</p>
+        <p className="ll">Collaterlal({fromToken.symbol})</p>
+        <p className="lr">{fromToken.value ? `\$${numberWithCommas(Bignumber(fromToken.value).multipliedBy(symbolPrice.price).toFixed(2))}` : '-'}</p>
       </div>
       <div className="line">
         <p className="ll">PnL</p>
@@ -560,12 +557,15 @@ function ClosePositionTurbosDialog(props: TurbosDialogProps) {
       </div>
       <div className="line">
         <p className="ll">Fees</p>
-        <p className="lr">{value ? `\$${Bignumber(value).multipliedBy(symbolPrice.price).multipliedBy(0.001).toFixed(2)}` : '-'}</p>
+        <p className="lr">{fromToken.value ? `\$${Bignumber(fromToken.value).multipliedBy(symbolPrice.price).multipliedBy(0.001).toFixed(2)}` : '-'}</p>
       </div>
       <div className="line-hr"></div>
       <div className="line">
         <p className="ll">Receive</p>
-        <p className="lr">0.00 BTC($0.00)</p>
+        <p className="lr">
+          {toToken.value} {toToken.symbol}
+          (${Bignumber(toToken.price).multipliedBy(toToken.value).toFixed(2)})
+        </p>
       </div>
 
       <div>
@@ -581,86 +581,181 @@ function AddAndRemoveMarginTurbosDialog(props: TurbosDialogProps) {
   const { open, onClose, data } = props;
 
   const {
-    connecting,
-    connected,
     account,
     network,
     adapter
   } = useSuiWallet();
 
   const { allSymbolPrice } = useAllSymbolPrice();
+  const { allPool } = useAllPool();
+  const { allSymbolBalance } = useAllSymbolBalance(account);
+
   const [loading, setLoading] = useState(false);
+  const [tabActive, setTabActive] = useState(0);
+  const [btnInfo, setBtnInfo] = useState({ state: 1, text: 'Enter a amount' });
+
+  const [fromToken, setFromToken] = useState({ symbol: '', value: '', price: '0', size: '', balance: '' });
+  const [toToken, setToToken] = useState({ symbol: '', value: '0.00', price: '0', size: '', balance: '' });
+
+  const [afterData, setAfterData] = useState({})
+
+  useEffect(() => {
+    if (network && data && open) {
+      if (!fromToken.value) {
+        setBtnInfo({ state: 1, text: 'Enter a amount' })
+      } else if (Bignumber(fromToken.value).minus(fromToken.balance).isGreaterThan(0)) {
+        setBtnInfo({ state: 2, text: `Insufficient ${fromToken.symbol} balance` });
+      } else {
+        setBtnInfo({ state: 0, text: 'Approve' });
+      }
+    }
+  }, [fromToken, network, data, open]);
+
+  useEffect(() => {
+    if (data && network && open) {
+      if (data.collateral_pool_address) {
+        const symbol = findContractConfigCoinSymbol(network, data.collateral_pool_address, 'PoolObjectId');
+        setFromToken({
+          ...fromToken,
+          symbol: symbol || '',
+          price: allSymbolPrice[symbol as SymbolType].originalPrice || '0',
+          balance: allSymbolBalance[symbol as SymbolType].balance
+        })
+      }
+
+    }
+  }, [data, allSymbolPrice, network, open, allSymbolBalance]);
+
+  useEffect(() => {
+    if (fromToken.value) {
+
+    } else {
+      setAfterData({})
+    }
+  }, [fromToken, data, tabActive])
+
 
   if (!network || !account || !open || !data) {
     return null;
+  }
+
+  const changeTabActive = (value: number) => {
+    setTabActive(value);
+    setFromToken({
+      ...fromToken,
+      value: '',
+    });
+  }
+
+  const changeClose = () => {
+    onClose();
+    setFromToken({
+      ...fromToken,
+      value: '',
+    });
+  }
+
+  const changeMax = () => {
+    setFromToken({
+      ...fromToken,
+      value: fromToken.balance,
+    });
+  }
+
+  const changeValue = (e: any) => {
+    setFromToken({
+      ...fromToken,
+      value: e.target.value,
+    });
+  }
+
+  const increase_position = async () => {
+
   }
 
   const decrease_position = async () => {
 
   }
 
-  const coin = contractConfig[network as NetworkType].Coin;
-  const symbol = Object.keys(coin).find((k: string) => data.index_pool_address === coin[k as SymbolType].PoolObjectId);
-  const supplyTradeToken = supplyTradeTokens.find((item: SupplyTokenType) => item.symbol === symbol);
+  const supplyTradeToken = findsupplyTokenSymbol(fromToken.symbol);
+  const symbolPrice = allSymbolPrice[fromToken.symbol as SymbolType] || {};
 
-  const symbolPrice = allSymbolPrice[symbol as SymbolType] || {};
+  const leverage = Bignumber(data.size).div(data.collateral)
+  const differencePrice = Bignumber(data.average_price).div(leverage);
+  const liqPirce = data.is_long ?
+    Bignumber(data.average_price).minus(differencePrice)
+    :
+    Bignumber(data.average_price).plus(differencePrice);
+
 
   return (
-    <TurbosDialog open={open} title={`Edit ${data.is_long ? 'Long' : 'Short'} ${symbol}`} onClose={onClose}>
+    <TurbosDialog open={open} title={`Edit ${data.is_long ? 'Long' : 'Short'} ${fromToken.symbol}`} onClose={changeClose}>
       <div className='tabs'>
-        <div onClick={() => { }}>
+        <div className={tabActive === 0 ? 'active' : ''} onClick={() => { changeTabActive(0) }}>
           <span>Add Margin</span>
         </div>
-        <div onClick={() => { }}>
+        <div className={tabActive === 1 ? 'active' : ''} onClick={() => { changeTabActive(1) }}>
           <span>Remove Margin</span>
         </div>
-      </div>
+      </div >
 
       <div className="section section-marbottom">
         <div className="sectiontop">
           <span>Pay</span>
           <div>
-            <span className="section-balance">Balance: { }</span>
-            <span> | </span><span className='section-max'>MAX</span>
+            <span className="section-balance">Balance: {fromToken.balance}</span>
+            <span> | </span><span className='section-max' onClick={changeMax}>MAX</span>
           </div>
         </div>
         <div className="sectionbottom">
           <div className="sectioninputcon" >
-            <input type="text" className="sectioninput" placeholder="0.0" />
+            <input type="number" value={fromToken.value} className="sectioninput" placeholder="0.0" onChange={changeValue} />
           </div>
           <div className="sectiontokens">
-            <img src={ethereumIcon} alt="" />
-            <span>SUI</span>
+            <img src={supplyTradeToken?.icon} alt="" />
+            <span>{fromToken.symbol}</span>
           </div>
         </div>
       </div>
+
       <div className="line line-top-16">
         <p className="ll">Total</p>
-        <p className="lr">$</p>
+        <p className="lr">
+          ${numberWithCommas(Bignumber(data.size).div(10 ** 9).toFixed(2))}
+        </p>
       </div>
       <div className="line">
         <p className="ll">Margin</p>
-        <p className="lr">${numberWithCommas(Bignumber(data.average_price).div(10 ** 9).toFixed(2))}</p>
+        <p className="lr">
+          ${numberWithCommas(Bignumber(data.collateral).div(10 ** 9).toFixed(2))}
+          {fromToken.value ? ` → \$${Bignumber(fromToken.value).multipliedBy(fromToken.price).plus(data.collateral).div(10 ** 9).toFixed(2)}` : ''}
+        </p>
       </div>
       <div className="line">
         <p className="ll">Leverage</p>
-        <p className="lr">$</p>
+        <p className="lr">
+          {Bignumber(data.size).div(data.collateral).toFixed(1)}x
+          {fromToken.value ? ` → ${Bignumber(data.size).div(Bignumber(fromToken.value).multipliedBy(fromToken.price).plus(data.collateral)).toFixed(2)}x` : ''}
+        </p>
       </div>
       <div className="line">
         <p className="ll">Mark Price</p>
-        <p className="lr"></p>
+        <p className="lr"> ${numberWithCommas(Bignumber(data.average_price).div(10 ** 9).toFixed(2))}</p>
       </div>
       <div className="line">
         <p className="ll">Liq. Price</p>
-        <p className="lr">$</p>
+        <p className="lr">
+          ${numberWithCommas(liqPirce.div(10 ** 9).toFixed(2))}
+          {fromToken.value ? ` → \$${Bignumber(data.size).div(Bignumber(fromToken.value).multipliedBy(fromToken.price).plus(data.collateral)).toFixed(2)}` : ''}
+        </p>
       </div>
       <div className="line">
         <p className="ll">Execution Fees</p>
-        <p className="lr">$</p>
+        <p className="lr">-</p>
       </div>
       <div>
-        <button className='btn' onClick={decrease_position} disabled={loading}>
-          {loading ? <Loading /> : 'Colse'}
+        <button className='btn' onClick={decrease_position} disabled={btnInfo.state > 0 || loading}>
+          {loading ? <Loading /> : btnInfo.text}
         </button>
       </div>
     </TurbosDialog >
