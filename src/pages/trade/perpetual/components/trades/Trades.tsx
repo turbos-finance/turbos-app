@@ -13,7 +13,7 @@ function Trades(props: TradesProps) {
   const { options } = props;
 
   const getTrades = async () => {
-    
+
     // const result = await provider.getEvents({ MoveEvent: `${}::exchange::SwapEvent` }, null, 10);
     // console.log(result);
 

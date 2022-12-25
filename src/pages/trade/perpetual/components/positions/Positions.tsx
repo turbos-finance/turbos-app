@@ -2,7 +2,6 @@ import Bignumber from 'bignumber.js';
 
 import styles from '../../Perpetual.module.css';
 import Empty from "../../../../../components/empty/Empty";
-import ethereumIcon from '../../../../../assets/images/ethereum.png';
 import addIcon from '../../../../../assets/images/add.png';
 import shareIcon from '../../../../../assets/images/share.png';
 import { useEffect, useState } from 'react';
@@ -22,6 +21,7 @@ import { SupplyTokenType, supplyTradeTokens } from '../../../../../config/tokens
 import { findContractConfigCoinSymbol, findsupplyTokenSymbol, findSupplyTradeTokeSymbol } from '../../../../../lib';
 import { useAllPool } from '../../../../../hooks/usePool';
 import { useAllSymbolBalance } from '../../../../../hooks/useSymbolBalance';
+import { bignumberDivDecimalFixed } from '../../../../../utils/tools';
 
 type PositionsProps = {
   options: any[]
@@ -29,17 +29,12 @@ type PositionsProps = {
 
 function Positions(props: PositionsProps) {
   const { options } = props;
-
   const {
-    connecting,
-    connected,
     account,
     network,
-    adapter
   } = useSuiWallet();
 
-  const { changeRefreshTime, refreshTime } = useRefresh();
-  const { toastify } = useToastify();
+  const { refreshTime } = useRefresh();
   const { allSymbolPrice } = useAllSymbolPrice();
 
   const [data, setData] = useState<any[]>([]);
@@ -312,6 +307,7 @@ function Positions(props: PositionsProps) {
 
       <ClosePositionTurbosDialog open={check} onClose={toggleCheck} data={option} />
       <AddAndRemoveMarginTurbosDialog open={edit} onClose={toggleEdit} data={option} />
+      <ShareTurbosDialog></ShareTurbosDialog>
 
     </>
   )
@@ -586,6 +582,9 @@ function AddAndRemoveMarginTurbosDialog(props: TurbosDialogProps) {
     adapter
   } = useSuiWallet();
 
+  const { changeRefreshTime, refreshTime } = useRefresh();
+  const { toastify } = useToastify();
+
   const { allSymbolPrice } = useAllSymbolPrice();
   const { allPool } = useAllPool();
   const { allSymbolBalance } = useAllSymbolBalance(account);
@@ -597,7 +596,7 @@ function AddAndRemoveMarginTurbosDialog(props: TurbosDialogProps) {
   const [fromToken, setFromToken] = useState({ symbol: '', value: '', price: '0', size: '', balance: '' });
   const [toToken, setToToken] = useState({ symbol: '', value: '0.00', price: '0', size: '', balance: '' });
 
-  const [afterData, setAfterData] = useState({})
+  const [afterData, setAfterData] = useState({ margin: '', leverage: '', liqPrice: '' })
 
   useEffect(() => {
     if (network && data && open) {
@@ -605,34 +604,51 @@ function AddAndRemoveMarginTurbosDialog(props: TurbosDialogProps) {
         setBtnInfo({ state: 1, text: 'Enter a amount' })
       } else if (Bignumber(fromToken.value).minus(fromToken.balance).isGreaterThan(0)) {
         setBtnInfo({ state: 2, text: `Insufficient ${fromToken.symbol} balance` });
+      } else if (Bignumber(afterData.leverage).minus(1.1).isLessThan(0)) {
+        setBtnInfo({ state: 3, text: `Min leverage :  1.1x` });
+      } else if (Bignumber(afterData.leverage).minus(30).isGreaterThan(0)) {
+        setBtnInfo({ state: 3, text: `Max leverage :  30.0x` });
       } else {
         setBtnInfo({ state: 0, text: 'Approve' });
       }
     }
-  }, [fromToken, network, data, open]);
+  }, [fromToken, network, data, open, allPool, afterData]);
 
   useEffect(() => {
     if (data && network && open) {
       if (data.collateral_pool_address) {
         const symbol = findContractConfigCoinSymbol(network, data.collateral_pool_address, 'PoolObjectId');
+        const _allSymbolBalance = allSymbolBalance[symbol as SymbolType];
+        const _allSymbolPrice = allSymbolPrice[symbol as SymbolType];
+        const price = _allSymbolPrice.originalPrice;
+        const balance = _allSymbolBalance.balance;
+
         setFromToken({
           ...fromToken,
           symbol: symbol || '',
-          price: allSymbolPrice[symbol as SymbolType].originalPrice || '0',
-          balance: allSymbolBalance[symbol as SymbolType].balance
+          price: price || '0',
+          balance: !tabActive ? balance : Bignumber(data.collateral).div(price).toFixed()
         })
       }
-
     }
-  }, [data, allSymbolPrice, network, open, allSymbolBalance]);
+  }, [data, allSymbolPrice, network, open, allSymbolBalance, tabActive]);
 
   useEffect(() => {
-    if (fromToken.value) {
+    if (fromToken.value && data) {
+      const size = Bignumber(fromToken.value).multipliedBy(fromToken.price);
+      const afterMargin = !tabActive ? size.plus(data.collateral) : Bignumber(data.collateral).minus(size);
+      const afterLeveage = Bignumber(data.size).div(afterMargin);
+      const afterLiqPrice = Bignumber(data.average_price).minus(Bignumber(data.average_price).div(afterLeveage));
 
+      setAfterData({
+        margin: afterMargin.div(10 ** 9).toFixed(2),
+        leverage: afterLeveage.isGreaterThan(0) ? afterLeveage.toFixed(1) : '0',
+        liqPrice: afterLiqPrice.isGreaterThan(0) ? afterLiqPrice.div(10 ** 9).toFixed(2) : '0.00'
+      });
     } else {
-      setAfterData({})
+      setAfterData({ margin: '', leverage: '', liqPrice: '' })
     }
-  }, [fromToken, data, tabActive])
+  }, [fromToken, data, tabActive]);
 
 
   if (!network || !account || !open || !data) {
@@ -670,15 +686,143 @@ function AddAndRemoveMarginTurbosDialog(props: TurbosDialogProps) {
   }
 
   const increase_position = async () => {
+    if (network && account) {
+      setLoading(true);
 
+      const config = contractConfig[network as NetworkType];
+      const toSymbolConfig = config.Coin[(toToken.symbol) as SymbolType];
+      const fromSymbolConfig = config.Coin[(fromToken.symbol) as SymbolType];
+
+      const fromType = fromSymbolConfig.Type === '0x0000000000000000000000000000000000000002::sui::SUI' ? '0x2::sui::SUI' : fromSymbolConfig.Type;
+
+      const coinBalance = await provider.getCoinBalancesOwnedByAddress(account, fromType);
+      const amount = Bignumber(fromToken.value).multipliedBy(10 ** 9).toNumber();
+      const balanceResponse = Coin.selectCoinSetWithCombinedBalanceGreaterThanOrEqual(coinBalance, BigInt(amount));
+      const balanceObjects = balanceResponse.map((item) => Coin.getID(item));
+
+      let argumentsVal: (string | number | boolean | string[])[] = [
+        config.VaultObjectId,
+        balanceObjects,
+        Bignumber(fromToken.value).multipliedBy(10 ** 9).toNumber(),
+        fromSymbolConfig.PoolObjectId,
+        toSymbolConfig.PoolObjectId,
+        config.PriceFeedStorageObjectId,
+        config.PositionsObjectId,
+        data.is_long ? true : false,
+        Bignumber(Bignumber(toToken.value).multipliedBy(10 ** 9).multipliedBy(toToken.price).toFixed(0)).toNumber(),
+        Bignumber(toToken.price).multipliedBy(data.is_long ? 1.01 : 0.99).multipliedBy(10 ** 9).toNumber(),
+        config.TimeOracleObjectId
+      ];
+
+      let typeArgumentsVal: string[] = [
+        fromSymbolConfig.Type,
+        toSymbolConfig.Type
+      ];
+
+      try {
+        let executeTransactionTnx = await adapter.executeMoveCall({
+          packageObjectId: config.ExchangePackageId,
+          module: 'exchange',
+          function: 'increase_position',
+          typeArguments: typeArgumentsVal,
+          arguments: argumentsVal,
+          gasBudget: 10000
+        });
+
+        if (executeTransactionTnx.error) {
+          toastify(executeTransactionTnx.error.msg, 'error');
+        } else {
+          if (executeTransactionTnx.data) {
+            executeTransactionTnx = executeTransactionTnx.data;
+          }
+
+          const effects = getTransactionEffects(executeTransactionTnx);
+          const digest = getTransactionDigest(executeTransactionTnx);
+
+          if (effects?.status.status === 'success') {
+            toastify(<Explorer message={`Request increase of ${fromToken.symbol} ${data.is_long ? 'Long' : 'Short'} by ${toToken.value} ${toToken.symbol}.`} type="transaction" digest={digest} />);
+            changeClose();
+            changeRefreshTime(); // reload data
+          } else {
+            toastify(<Explorer message={'Execute Transaction error!'} type="transaction" digest={digest} />, 'error');
+          }
+        }
+      } catch (err: any) {
+        toastify(err.message || err, 'error');
+      }
+
+      setLoading(false);
+    }
   }
 
   const decrease_position = async () => {
+    if (network && account && adapter) {
+      setLoading(true);
 
+      const config = contractConfig[network as NetworkType];
+      const toSymbolConfig = config.Coin[(toToken.symbol) as SymbolType];
+      const fromSymbolConfig = config.Coin[(fromToken.symbol) as SymbolType];
+
+      let argumentsVal: (string | number | boolean | string[])[] = [
+        config.VaultObjectId,
+        data.collateral_pool_address,
+        data.index_pool_address,
+        config.PriceFeedStorageObjectId,
+        config.PositionsObjectId,
+        Bignumber(Bignumber(toToken.value).multipliedBy(10 ** 9).multipliedBy(toToken.price).toFixed(0)).toNumber(),
+        data.is_long,
+        Bignumber(fromToken.size).toNumber(),
+        Bignumber(toToken.price).multipliedBy(!data.is_long ? 1.01 : 0.99).multipliedBy(10 ** 9).toNumber(),
+        account,
+        config.TimeOracleObjectId
+      ];
+
+      let typeArgumentsVal: string[] = [
+        toSymbolConfig.Type,
+        fromSymbolConfig.Type
+      ];
+
+      try {
+        let executeTransactionTnx = await adapter.executeMoveCall({
+          packageObjectId: config.ExchangePackageId,
+          module: 'exchange',
+          function: 'decrease_position',
+          typeArguments: typeArgumentsVal,
+          arguments: argumentsVal,
+          gasBudget: 10000
+        });
+
+        if (executeTransactionTnx.error) {
+          toastify(executeTransactionTnx.error.msg, 'error');
+        } else {
+          if (executeTransactionTnx.data) {
+            executeTransactionTnx = executeTransactionTnx.data;
+          }
+
+          const effects = getTransactionEffects(executeTransactionTnx);
+          const digest = getTransactionDigest(executeTransactionTnx);
+
+          if (effects?.status.status === 'success') {
+            toastify(<Explorer message={`Request decrease of ${fromToken.symbol} ${data.is_long ? 'Long' : 'Short'} by ${toToken.value} ${toToken.symbol}.`} type="transaction" digest={digest} />);
+            changeClose();
+            changeRefreshTime(); // reload data
+          } else {
+            toastify(<Explorer message={'Execute Transaction error!'} type="transaction" digest={digest} />, 'error');
+          }
+        }
+      } catch (err: any) {
+        toastify(err.message || err, 'error');
+      }
+
+      setLoading(false);
+    }
+  }
+
+  const approve = () => {
+    !tabActive ? increase_position() : decrease_position();
   }
 
   const supplyTradeToken = findsupplyTokenSymbol(fromToken.symbol);
-  const symbolPrice = allSymbolPrice[fromToken.symbol as SymbolType] || {};
 
   const leverage = Bignumber(data.size).div(data.collateral)
   const differencePrice = Bignumber(data.average_price).div(leverage);
@@ -721,21 +865,21 @@ function AddAndRemoveMarginTurbosDialog(props: TurbosDialogProps) {
       <div className="line line-top-16">
         <p className="ll">Total</p>
         <p className="lr">
-          ${numberWithCommas(Bignumber(data.size).div(10 ** 9).toFixed(2))}
+          ${numberWithCommas(bignumberDivDecimalFixed(Bignumber(data.size)))}
         </p>
       </div>
       <div className="line">
         <p className="ll">Margin</p>
         <p className="lr">
-          ${numberWithCommas(Bignumber(data.collateral).div(10 ** 9).toFixed(2))}
-          {fromToken.value ? ` → \$${Bignumber(fromToken.value).multipliedBy(fromToken.price).plus(data.collateral).div(10 ** 9).toFixed(2)}` : ''}
+          ${numberWithCommas(bignumberDivDecimalFixed(Bignumber(data.collateral)))}
+          {afterData.margin && ` → \$${afterData.margin}`}
         </p>
       </div>
       <div className="line">
         <p className="ll">Leverage</p>
         <p className="lr">
           {Bignumber(data.size).div(data.collateral).toFixed(1)}x
-          {fromToken.value ? ` → ${Bignumber(data.size).div(Bignumber(fromToken.value).multipliedBy(fromToken.price).plus(data.collateral)).toFixed(2)}x` : ''}
+          {afterData.leverage && ` → ${afterData.leverage}x`}
         </p>
       </div>
       <div className="line">
@@ -746,7 +890,7 @@ function AddAndRemoveMarginTurbosDialog(props: TurbosDialogProps) {
         <p className="ll">Liq. Price</p>
         <p className="lr">
           ${numberWithCommas(liqPirce.div(10 ** 9).toFixed(2))}
-          {fromToken.value ? ` → \$${Bignumber(data.size).div(Bignumber(fromToken.value).multipliedBy(fromToken.price).plus(data.collateral)).toFixed(2)}` : ''}
+          {afterData.liqPrice && ` → \$${afterData.liqPrice}`}
         </p>
       </div>
       <div className="line">
@@ -754,11 +898,45 @@ function AddAndRemoveMarginTurbosDialog(props: TurbosDialogProps) {
         <p className="lr">-</p>
       </div>
       <div>
-        <button className='btn' onClick={decrease_position} disabled={btnInfo.state > 0 || loading}>
+        <button className='btn' onClick={approve} disabled={btnInfo.state > 0 || loading}>
           {loading ? <Loading /> : btnInfo.text}
         </button>
       </div>
     </TurbosDialog >
+  )
+}
+
+function ShareTurbosDialog() {
+  return (
+    <TurbosDialog open={true} title={`Share Position`}>
+      <div className='share-logo'>
+        <img src="" height={32} />
+      </div>
+      <div className='share-position'>
+        LONG | 4.60x AVAX USD
+      </div>
+      <div className='share-price'>
+        <div>
+          <p>Entry Price</p>
+          <p>$11.11</p>
+        </div>
+        <div>
+          <p>Entry Price</p>
+          <p>$11.11</p>
+        </div>
+      </div>
+      <div className='share-url'>
+        <div></div>
+        <div>https://turbos.finance/</div>
+      </div>
+      <div className='share-btn'>
+        <div className='share-btn-copy'>
+          <span>copy</span>
+        </div>
+        <div className='share-btn-download'>download</div>
+        <div className='share-btn-twitter'>twitter</div>
+      </div>
+    </TurbosDialog>
   )
 }
 
