@@ -1,6 +1,6 @@
-import { CoinConfigObjectType, NetworkType, SymbolType } from "../config/config.type";
-import { contractConfig } from "../config/contract.config";
-import { supplyTokens, SupplyTokenType, supplyTradeTokens } from "../config/tokens";
+import { CoinConfigObjectType, NetworkType, SymbolType } from "./config.type";
+import { contractConfig } from "./contract.config";
+import { supplyTokens, SupplyTokenType, supplyTradeTokens } from "./tokens";
 
 export const getContractConfigCoinSymbol = (network: string | undefined, symbol: string) => {
   if (!network) {

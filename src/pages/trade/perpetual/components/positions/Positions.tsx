@@ -18,7 +18,7 @@ import { useToastify } from '../../../../../contexts/toastify';
 import { Explorer } from '../../../../../components/explorer/Explorer';
 import { useAllSymbolPrice } from '../../../../../hooks/useSymbolPrice';
 import { SupplyTokenType, supplyTradeTokens } from '../../../../../config/tokens';
-import { findContractConfigCoinSymbol, findsupplyTokenSymbol, findSupplyTradeTokeSymbol } from '../../../../../lib';
+import { findContractConfigCoinSymbol, findsupplyTokenSymbol, findSupplyTradeTokeSymbol, getContractConfigCoinSymbol } from '../../../../../lib';
 import { useAllPool } from '../../../../../hooks/usePool';
 import { useAllSymbolBalance } from '../../../../../hooks/useSymbolBalance';
 import { bignumberDivDecimalFixed } from '../../../../../utils/tools';
@@ -681,14 +681,12 @@ function AddAndRemoveMarginTurbosDialog(props: TurbosDialogProps) {
     if (network && account) {
       setLoading(true);
 
-      const symbol = findContractConfigCoinSymbol(network, data.index_pool_address, 'PoolObjectId') as SymbolType;
-
+      const symbol = findContractConfigCoinSymbol(network, data.index_pool_address, 'PoolObjectId');
       const config = contractConfig[network as NetworkType];
-      const toSymbolConfig = config.Coin[symbol];
-      const fromSymbolConfig = config.Coin[(fromToken.symbol) as SymbolType];
+      const toSymbolConfig = getContractConfigCoinSymbol(network, symbol);
+      const fromSymbolConfig = getContractConfigCoinSymbol(network, fromToken.symbol);
 
-      const fromType = fromSymbolConfig.Type === '0x0000000000000000000000000000000000000002::sui::SUI' ? '0x2::sui::SUI' : fromSymbolConfig.Type;
-
+      const fromType = fromSymbolConfig?.Type === '0x0000000000000000000000000000000000000002::sui::SUI' ? '0x2::sui::SUI' : fromSymbolConfig?.Type;
       const coinBalance = await provider.getCoinBalancesOwnedByAddress(account, fromType);
       const amount = Bignumber(fromToken.value).multipliedBy(10 ** 9).toNumber();
       const balanceResponse = Coin.selectCoinSetWithCombinedBalanceGreaterThanOrEqual(coinBalance, BigInt(amount));
@@ -708,9 +706,9 @@ function AddAndRemoveMarginTurbosDialog(props: TurbosDialogProps) {
         config.TimeOracleObjectId
       ];
 
-      let typeArgumentsVal: string[] = [
-        fromSymbolConfig.Type,
-        toSymbolConfig.Type
+      let typeArgumentsVal: (string | undefined)[] = [
+        fromSymbolConfig?.Type,
+        toSymbolConfig?.Type
       ];
 
       try {
