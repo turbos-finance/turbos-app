@@ -27,7 +27,6 @@ import { Coin, GetObjectDataResponse, getObjectId, getTransactionDigest, getTran
 import Loading from "../../../components/loading/Loading";
 import { Explorer } from "../../../components/explorer/Explorer";
 import { useRefresh } from "../../../contexts/refresh";
-import { ContactSupportRounded } from "@mui/icons-material";
 
 type FromToTokenType = {
   balance: string,
@@ -215,7 +214,7 @@ function BuySell() {
         : fromSymbolConfig.Type === '0x0000000000000000000000000000000000000002::sui::SUI' ? '0x2::sui::SUI' : fromSymbolConfig.Type;
 
       const coinBalance = await provider.getCoinBalancesOwnedByAddress(account, fromType);
-      const amount = Bignumber(fromToken.value).multipliedBy(10 ** 9).toNumber();
+      const amount = Bignumber(Bignumber(fromToken.value).multipliedBy(10 ** 9).toFixed(0)).toNumber();
       const balanceResponse = Coin.selectCoinSetWithCombinedBalanceGreaterThanOrEqual(coinBalance, BigInt(amount));
       const balanceObjects = balanceResponse.map((item) => Coin.getID(item));
 
@@ -227,7 +226,7 @@ function BuySell() {
           config.VaultObjectId,
           fromSymbolConfig.PoolObjectId,
           balanceObjects,
-          Bignumber(fromToken.value).multipliedBy(10 ** 9).toNumber(),
+          Bignumber(Bignumber(fromToken.value).multipliedBy(10 ** 9).toFixed(0)).toNumber(),
           config.PriceFeedStorageObjectId,
           0,
           config.TimeOracleObjectId
@@ -238,7 +237,7 @@ function BuySell() {
           config.VaultObjectId,
           toSymbolConfig.PoolObjectId,
           balanceObjects,
-          Bignumber(fromToken.value).multipliedBy(10 ** 9).toNumber(),
+          Bignumber(Bignumber(fromToken.value).multipliedBy(10 ** 9).toFixed(0)).toNumber(),
           config.PriceFeedStorageObjectId,
           0,
           account,
@@ -482,7 +481,7 @@ function BuySellRight() {
   const { vault } = useVault();
   const { coinBalance } = useSymbolBalance(account, 'TLP');
   const { symbolPrice } = useSymbolPrice('TLP');
-  
+
   return (
     <div className="main-right">
       <div className="container">

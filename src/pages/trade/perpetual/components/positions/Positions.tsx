@@ -432,10 +432,10 @@ function ClosePositionTurbosDialog(props: TurbosDialogProps) {
         data.index_pool_address,
         config.PriceFeedStorageObjectId,
         config.PositionsObjectId,
-        Bignumber(Bignumber(toToken.value).multipliedBy(10 ** 9).multipliedBy(toToken.price).toFixed(0)).toNumber(),
-        data.is_long,
+        Bignumber(Bignumber(fromToken.value).multipliedBy(10 ** 9).multipliedBy(fromToken.price).toFixed(0)).toNumber(),
+        data.is_long ? true : false,
         Bignumber(fromToken.size).toNumber(),
-        Bignumber(toToken.price).multipliedBy(!data.is_long ? 1.01 : 0.99).multipliedBy(10 ** 9).toNumber(),
+        Bignumber(fromToken.price).multipliedBy(!data.is_long ? 1.01 : 0.99).multipliedBy(10 ** 9).toNumber(),
         account,
         config.TimeOracleObjectId
       ];
@@ -455,6 +455,7 @@ function ClosePositionTurbosDialog(props: TurbosDialogProps) {
           gasBudget: 10000
         });
 
+        console.log(executeTransactionTnx);
         if (executeTransactionTnx.error) {
           toastify(executeTransactionTnx.error.msg, 'error');
         } else {
@@ -701,7 +702,7 @@ function AddAndRemoveMarginTurbosDialog(props: TurbosDialogProps) {
         config.PriceFeedStorageObjectId,
         config.PositionsObjectId,
         data.is_long ? true : false,
-        data.size,
+        0,
         Bignumber(Bignumber(allSymbolPrice[symbol].originalPrice).multipliedBy(data.is_long ? 1.01 : 0.99).toFixed(0)).toNumber(),
         config.TimeOracleObjectId
       ];
@@ -751,11 +752,12 @@ function AddAndRemoveMarginTurbosDialog(props: TurbosDialogProps) {
     if (network && account && adapter) {
       setLoading(true);
 
-      const symbol = findContractConfigCoinSymbol(network, data.index_pool_address, 'PoolObjectId') as SymbolType;
+      const symbol = findContractConfigCoinSymbol(network, data.index_pool_address, 'PoolObjectId');
 
       const config = contractConfig[network as NetworkType];
-      const toSymbolConfig = config.Coin[symbol];
-      const fromSymbolConfig = config.Coin[(fromToken.symbol) as SymbolType];
+
+      const toSymbolConfig = getContractConfigCoinSymbol(network, symbol);
+      const fromSymbolConfig = getContractConfigCoinSymbol(network, fromToken.symbol);
 
       let argumentsVal: (string | number | boolean | string[])[] = [
         config.VaultObjectId,
@@ -765,15 +767,15 @@ function AddAndRemoveMarginTurbosDialog(props: TurbosDialogProps) {
         config.PositionsObjectId,
         Bignumber(Bignumber(fromToken.value).multipliedBy(fromToken.price).toFixed(0)).toNumber(),
         data.is_long ? true : false,
-        data.size,
-        Bignumber(Bignumber(allSymbolPrice[symbol].originalPrice).multipliedBy(data.is_long ? 1.01 : 0.99).toFixed(0)).toNumber(),
+        Bignumber(fromToken.size).toNumber(),
+        Bignumber(Bignumber(allSymbolPrice[symbol].originalPrice).multipliedBy(!tabActive ? 1.01 : 0.99).toFixed(0)).toNumber(),
         account,
         config.TimeOracleObjectId
       ];
 
-      let typeArgumentsVal: string[] = [
-        fromSymbolConfig.Type,
-        toSymbolConfig.Type
+      let typeArgumentsVal: (string | undefined)[] = [
+        fromSymbolConfig?.Type,
+        toSymbolConfig?.Type
       ];
 
       try {
