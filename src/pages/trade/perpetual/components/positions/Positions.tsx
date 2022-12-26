@@ -908,7 +908,7 @@ function AddAndRemoveMarginTurbosDialog(props: TurbosDialogProps) {
 
 function ShareTurbosDialog() {
   return (
-    <TurbosDialog open={true} title={`Share Position`}>
+    <TurbosDialog open={false} title={`Share Position`}>
       <div className='share-logo'>
         <img src="" height={32} />
       </div>

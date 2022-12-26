@@ -64,7 +64,8 @@ export const UseSuiWalletProvider: React.FC<SuiWalletProvider> = ({ children }) 
           console.log(err);
         }
       } else {
-        window.open('https://chrome.google.com/webstore/detail/ethos-sui-wallet/mcbigmjiafegjnnogedioegffbooigli?hl=en&authuser=1', '_blank')
+        window.open('https://chrome.google.com/webstore/detail/ethos-sui-wallet/mcbigmjiafegjnnogedioegffbooigli?hl=en&authuser=1', '_blank');
+        disconnect();
       }
       return;
     }
@@ -81,7 +82,8 @@ export const UseSuiWalletProvider: React.FC<SuiWalletProvider> = ({ children }) 
           console.log(err);
         }
       } else {
-        window.open('https://chrome.google.com/webstore/detail/martian-wallet-aptos-sui/efbglgofoippbgcjepnhiblaibcnclgk', '_blank')
+        window.open('https://chrome.google.com/webstore/detail/martian-wallet-aptos-sui/efbglgofoippbgcjepnhiblaibcnclgk', '_blank');
+        disconnect();
       }
 
       return;
@@ -101,7 +103,8 @@ export const UseSuiWalletProvider: React.FC<SuiWalletProvider> = ({ children }) 
           console.log(err);
         }
       } else {
-        window.open('https://chrome.google.com/webstore/detail/suiet-sui-wallet/khpkpbbcccdmmclmpigdgddabeilkdpd', '_blank')
+        window.open('https://chrome.google.com/webstore/detail/suiet-sui-wallet/khpkpbbcccdmmclmpigdgddabeilkdpd', '_blank');
+        disconnect();
       }
 
       return;
@@ -122,7 +125,8 @@ export const UseSuiWalletProvider: React.FC<SuiWalletProvider> = ({ children }) 
         console.log(err);
       }
     } else {
-      window.open('https://chrome.google.com/webstore/detail/sui-wallet/opcgpfmipidbgpenhmajoajpbobppdil', '_blank')
+      window.open('https://chrome.google.com/webstore/detail/sui-wallet/opcgpfmipidbgpenhmajoajpbobppdil', '_blank');
+      disconnect();
     }
 
   }, []);
@@ -174,7 +178,7 @@ export const UseSuiWalletProvider: React.FC<SuiWalletProvider> = ({ children }) 
       } else if (type === 'suietWallet') {
         setTimeout(() => {
           connect('suietWallet');
-        }, 1000)
+        }, 1000);
       } else if (type === 'martianSuiWallet') {
         connect('martianSuiWallet');
       } else if (type === 'ethosWallet') {

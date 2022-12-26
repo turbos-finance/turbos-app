@@ -611,6 +611,7 @@
 
 .toast-error .MuiSnackbarContent-message {
   padding: 0;
+  word-break: break-all;
 }
 
 .toast-error .MuiSnackbarContent-action {

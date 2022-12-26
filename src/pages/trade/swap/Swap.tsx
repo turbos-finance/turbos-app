@@ -80,21 +80,25 @@ function Perpetual() {
       ...toToken,
     });
 
-    const isSymbole = supplyTradeTokens.find((item: SupplyTokenType) => fromToken.symbol == item.symbol);
-    if (isSymbole) {
-      setToToken({
-        ...fromToken,
-      });
-    } else {
-      const symbol = supplyTradeTokens[0].symbol;
-      setToToken({
-        ...fromToken,
-        symbol,
-        balance: allSymbolBalance[symbol] ? allSymbolBalance[symbol].balance : '0',
-        price: allSymbolPrice[symbol] ? allSymbolPrice[symbol].price : '0',
-        icon: supplyTradeTokens[0].icon
-      });
-    }
+    setToToken({
+      ...fromToken,
+    });
+
+    // const isSymbole = supplyTradeTokens.find((item: SupplyTokenType) => fromToken.symbol == item.symbol);
+    // if (isSymbole) {
+    //   setToToken({
+    //     ...fromToken,
+    //   });
+    // } else {
+    //   const symbol = supplyTradeTokens[0].symbol;
+    //   setToToken({
+    //     ...fromToken,
+    //     symbol,
+    //     balance: allSymbolBalance[symbol] ? allSymbolBalance[symbol].balance : '0',
+    //     price: allSymbolPrice[symbol] ? allSymbolPrice[symbol].price : '0',
+    //     icon: supplyTradeTokens[0].icon
+    //   });
+    // }
   }
 
   const toggleSelectToken = (source: number) => {
@@ -319,14 +323,14 @@ function Perpetual() {
       const fromType = fromSymbolConfig.Type === '0x0000000000000000000000000000000000000002::sui::SUI' ? '0x2::sui::SUI' : fromSymbolConfig.Type;
 
       const coinBalance = await provider.getCoinBalancesOwnedByAddress(account, fromType);
-      const amount = Bignumber(fromToken.value).multipliedBy(10 ** 9).toNumber();
+      const amount = Bignumber(Bignumber(fromToken.value).multipliedBy(10 ** 9).toFixed(0)).toNumber();
       const balanceResponse = Coin.selectCoinSetWithCombinedBalanceGreaterThanOrEqual(coinBalance, BigInt(amount));
       const balanceObjects = balanceResponse.map((item) => Coin.getID(item));
 
-      let argumentsVal: (string | number | string[])[] = [
+      let argumentsVal: (string | number | BigInt | string[])[] = [
         config.VaultObjectId,
         balanceObjects,
-        Bignumber(fromToken.value).multipliedBy(10 ** 9).toNumber(),
+        Bignumber(Bignumber(fromToken.value).multipliedBy(10 ** 9).toFixed(0)).toNumber(),
         fromSymbolConfig.PoolObjectId,
         toSymbolConfig.PoolObjectId,
         config.PriceFeedStorageObjectId,
@@ -473,7 +477,7 @@ function Perpetual() {
                 <SuiWalletButton isButton={true} /> :
                 <div>
                   <button className='btn' disabled={btnInfo.state > 0} onClick={toggleCheck}>
-                    {loading ? <Loading /> : btnInfo.text}
+                    {btnInfo.text}
                   </button>
                 </div>
             }
