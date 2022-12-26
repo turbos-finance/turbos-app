@@ -18,8 +18,8 @@ const timezoneOffset = -new Date().getTimezoneOffset() * 60;
 const FEED_ID_MAP: any = {
     BTC_USD: "0xae74faa92cb67a95ebcab07358bc222e33a34da7",
     ETH_USD: "0x37bc7498f4ff12c19678ee8fe19d713b87f6a9e6",
-    USDC_USD: "0x37bc7498f4ff12c19678ee8fe19d713b87f6a9e6",
-    SUI_USD: "0x37bc7498f4ff12c19678ee8fe19d713b87f6a9e6",
+    USDC_USD: "0x68577f915131087199fe48913d8b416b3984fd38",
+    SUI_USD: "0x0fc3657899693648bba4dbd2d8b33b82e875105d",
 };
 function getCandlesFromPrices(prices: string | any[], period: string) {
     const periodTime = CHART_PERIODS[period];

@@ -59,19 +59,11 @@ function Positions(props: PositionsProps) {
       const config = contractConfig[network as NetworkType];
       const objects = await provider.getObject(config.PositionsObjectId);
       const filed = getObjectFields(objects);
-      const reuslt = filed?.user_position.fields.contents.find((item: any) => account === item.fields.key);
-      // reuslt.fields.value
-      // const objectOwneByObjects = await provider.getObjectsOwnedByObject(config.PositionsObjectId);
-      // const objectIds = objectOwneByObjects.map((item: SuiObjectInfo) => item.objectId);
-      // const objectBatch = await provider.getObjectBatch(objectIds);
-      // const objIds: string[] = [];
-      // objectBatch.forEach((item: GetObjectDataResponse) => {
-      //   const field = getObjectFields(item);
-      //   if (field && field.name?.fields?.name) {
-      //     objIds.push(field.value);
-      //   }
-      // });
-      const resultObjects = await provider.getObjectBatch(reuslt.fields.value);
+      const result = filed?.user_position.fields.contents.find((item: any) => account === item.fields.key);
+      if (!result) {
+        return;
+      }
+      const resultObjects = await provider.getObjectBatch(result.fields.value);
       const options: any[] = []
       resultObjects.forEach((item: GetObjectDataResponse) => {
         const field = getObjectFields(item);
@@ -106,11 +98,7 @@ function Positions(props: PositionsProps) {
         </thead>
         <tbody>
           {
-            data.length <= 0 ?
-              <tr>
-                <td colSpan={8}><Empty /></td>
-              </tr>
-              :
+            data.length > 0 && account && network ?
               data.map((item: any, index: number) => {
 
                 const coin = contractConfig[network as NetworkType].Coin;
@@ -183,15 +171,17 @@ function Positions(props: PositionsProps) {
                   </td>
                 </tr>)
               })
+              :
+              <tr>
+                <td colSpan={8}><Empty /></td>
+              </tr>
           }
         </tbody>
       </table>
 
       <div className='container mobile-container'>
         {
-          data.length <= 0 ?
-            <Empty />
-            :
+          data.length > 0 && account && network ?
             data.map((item: any, index: number) => {
               const coin = contractConfig[network as NetworkType].Coin;
               const symbol = Object.keys(coin).find((k: string) => item.index_pool_address === coin[k as SymbolType].PoolObjectId);
@@ -301,6 +291,8 @@ function Positions(props: PositionsProps) {
                 </div>
               )
             })
+            :
+            <Empty />
         }
 
       </div>
@@ -689,8 +681,10 @@ function AddAndRemoveMarginTurbosDialog(props: TurbosDialogProps) {
     if (network && account) {
       setLoading(true);
 
+      const symbol = findContractConfigCoinSymbol(network, data.index_pool_address, 'PoolObjectId') as SymbolType;
+
       const config = contractConfig[network as NetworkType];
-      const toSymbolConfig = config.Coin[(toToken.symbol) as SymbolType];
+      const toSymbolConfig = config.Coin[symbol];
       const fromSymbolConfig = config.Coin[(fromToken.symbol) as SymbolType];
 
       const fromType = fromSymbolConfig.Type === '0x0000000000000000000000000000000000000002::sui::SUI' ? '0x2::sui::SUI' : fromSymbolConfig.Type;
@@ -700,17 +694,17 @@ function AddAndRemoveMarginTurbosDialog(props: TurbosDialogProps) {
       const balanceResponse = Coin.selectCoinSetWithCombinedBalanceGreaterThanOrEqual(coinBalance, BigInt(amount));
       const balanceObjects = balanceResponse.map((item) => Coin.getID(item));
 
-      let argumentsVal: (string | number | boolean | string[])[] = [
+      let argumentsVal: (string | number | boolean | BigInt | string[])[] = [
         config.VaultObjectId,
         balanceObjects,
         Bignumber(fromToken.value).multipliedBy(10 ** 9).toNumber(),
-        fromSymbolConfig.PoolObjectId,
-        toSymbolConfig.PoolObjectId,
+        data.collateral_pool_address,
+        data.index_pool_address,
         config.PriceFeedStorageObjectId,
         config.PositionsObjectId,
         data.is_long ? true : false,
-        Bignumber(Bignumber(toToken.value).multipliedBy(10 ** 9).multipliedBy(toToken.price).toFixed(0)).toNumber(),
-        Bignumber(toToken.price).multipliedBy(data.is_long ? 1.01 : 0.99).multipliedBy(10 ** 9).toNumber(),
+        data.size,
+        Bignumber(Bignumber(allSymbolPrice[symbol].originalPrice).multipliedBy(data.is_long ? 1.01 : 0.99).toFixed(0)).toNumber(),
         config.TimeOracleObjectId
       ];
 
@@ -759,8 +753,10 @@ function AddAndRemoveMarginTurbosDialog(props: TurbosDialogProps) {
     if (network && account && adapter) {
       setLoading(true);
 
+      const symbol = findContractConfigCoinSymbol(network, data.index_pool_address, 'PoolObjectId') as SymbolType;
+
       const config = contractConfig[network as NetworkType];
-      const toSymbolConfig = config.Coin[(toToken.symbol) as SymbolType];
+      const toSymbolConfig = config.Coin[symbol];
       const fromSymbolConfig = config.Coin[(fromToken.symbol) as SymbolType];
 
       let argumentsVal: (string | number | boolean | string[])[] = [
@@ -769,17 +765,17 @@ function AddAndRemoveMarginTurbosDialog(props: TurbosDialogProps) {
         data.index_pool_address,
         config.PriceFeedStorageObjectId,
         config.PositionsObjectId,
-        Bignumber(Bignumber(toToken.value).multipliedBy(10 ** 9).multipliedBy(toToken.price).toFixed(0)).toNumber(),
-        data.is_long,
-        Bignumber(fromToken.size).toNumber(),
-        Bignumber(toToken.price).multipliedBy(!data.is_long ? 1.01 : 0.99).multipliedBy(10 ** 9).toNumber(),
+        Bignumber(Bignumber(fromToken.value).multipliedBy(fromToken.price).toFixed(0)).toNumber(),
+        data.is_long ? true : false,
+        data.size,
+        Bignumber(Bignumber(allSymbolPrice[symbol].originalPrice).multipliedBy(data.is_long ? 1.01 : 0.99).toFixed(0)).toNumber(),
         account,
         config.TimeOracleObjectId
       ];
 
       let typeArgumentsVal: string[] = [
-        toSymbolConfig.Type,
-        fromSymbolConfig.Type
+        fromSymbolConfig.Type,
+        toSymbolConfig.Type
       ];
 
       try {

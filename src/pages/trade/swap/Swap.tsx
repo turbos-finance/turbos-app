@@ -319,7 +319,7 @@ function Perpetual() {
       const config = contractConfig[network as NetworkType];
       const toSymbolConfig = config.Coin[(toToken.symbol) as SymbolType];
       const fromSymbolConfig = config.Coin[(fromToken.symbol) as SymbolType];
-
+      console.log(toSymbolConfig, fromSymbolConfig)
       const fromType = fromSymbolConfig.Type === '0x0000000000000000000000000000000000000002::sui::SUI' ? '0x2::sui::SUI' : fromSymbolConfig.Type;
 
       const coinBalance = await provider.getCoinBalancesOwnedByAddress(account, fromType);
