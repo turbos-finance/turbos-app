@@ -343,7 +343,7 @@ function ClosePositionTurbosDialog(props: TurbosDialogProps) {
         setBtnInfo({ state: 0, text: 'Approve' });
       }
     }
-  }, [fromToken, network, data, open]);
+  }, [fromToken, network, data, open, allPool]);
 
   useEffect(() => {
     if (data && network && open) {
@@ -434,7 +434,7 @@ function ClosePositionTurbosDialog(props: TurbosDialogProps) {
         config.PositionsObjectId,
         Bignumber(Bignumber(fromToken.value).multipliedBy(10 ** 9).multipliedBy(fromToken.price).toFixed(0)).toNumber(),
         data.is_long ? true : false,
-        Bignumber(fromToken.size).toNumber(),
+        Bignumber(Bignumber(fromToken.size).toFixed(0)).toNumber(),
         Bignumber(fromToken.price).multipliedBy(!data.is_long ? 1.01 : 0.99).multipliedBy(10 ** 9).toNumber(),
         account,
         config.TimeOracleObjectId
@@ -611,10 +611,11 @@ function AddAndRemoveMarginTurbosDialog(props: TurbosDialogProps) {
     if (data && network && open) {
       if (data.collateral_pool_address) {
         const symbol = findContractConfigCoinSymbol(network, data.collateral_pool_address, 'PoolObjectId');
-        const _allSymbolBalance = allSymbolBalance[symbol as SymbolType];
-        const _allSymbolPrice = allSymbolPrice[symbol as SymbolType];
-        const price = _allSymbolPrice.originalPrice;
-        const balance = _allSymbolBalance.balance;
+        const _allSymbolBalance = allSymbolBalance[symbol];
+        const _allSymbolPrice = allSymbolPrice[symbol];
+
+        const price = _allSymbolPrice?.originalPrice || '0';
+        const balance = _allSymbolBalance?.balance || '0.00';
 
         setFromToken({
           ...fromToken,
@@ -767,7 +768,7 @@ function AddAndRemoveMarginTurbosDialog(props: TurbosDialogProps) {
         config.PositionsObjectId,
         Bignumber(Bignumber(fromToken.value).multipliedBy(fromToken.price).toFixed(0)).toNumber(),
         data.is_long ? true : false,
-        Bignumber(fromToken.size).toNumber(),
+        Bignumber(Bignumber(data.size).toFixed(0)).toNumber(),
         Bignumber(Bignumber(allSymbolPrice[symbol].originalPrice).multipliedBy(!tabActive ? 1.01 : 0.99).toFixed(0)).toNumber(),
         account,
         config.TimeOracleObjectId
