@@ -47,6 +47,13 @@ type FromToTokenType = {
 }
 
 function BuySell() {
+
+  const turbos_buy_sell_supplytoken = getLocalStorageSupplyToken(TurbosBuySell);
+  const current_active = getLocalStorage(TurbosBuySellActive);
+  const initActive = current_active === '1' ? 1 : 0;
+  const ininFrom = !initActive ? turbos_buy_sell_supplytoken : supplyTLPToken;
+  const ininTo = initActive ? turbos_buy_sell_supplytoken : supplyTLPToken;
+
   const {
     connecting,
     connected,
@@ -58,12 +65,6 @@ function BuySell() {
   const { changeRefreshTime } = useRefresh();
   const { toastify } = useToastify();
 
-  const turbos_buy_sell_supplytoken = getLocalStorageSupplyToken(TurbosBuySell);
-  const current_active = getLocalStorage(TurbosBuySellActive);
-  const initActive = current_active === '1' ? 1 : 0;
-  const ininFrom = !initActive ? turbos_buy_sell_supplytoken : supplyTLPToken;
-  const ininTo = initActive ? turbos_buy_sell_supplytoken : supplyTLPToken;
-
   const [active, setActive] = useState(initActive); // 0:buy; 1:sell;
   const [fromToken, setFromToken] = useState<FromToTokenType>({ balance: '0.00', icon: ininFrom.icon, symbol: ininFrom.symbol, value: '', price: '0' });
   const [toToken, setToToken] = useState<FromToTokenType>({ balance: '0.00', icon: ininTo.icon, symbol: ininTo.symbol, value: '', price: '0' });
@@ -74,7 +75,7 @@ function BuySell() {
 
   const poolArg = active ? toToken.symbol as TLPAndSymbolType : fromToken.symbol as TLPAndSymbolType;
 
-  const { vault } = useVault();
+  // const { vault } = useVault();
   const { pool } = usePool(poolArg === 'TLP' ? undefined : poolArg);
   const { allSymbolPrice } = useAllSymbolPrice();
   const { allSymbolBalance } = useAllSymbolBalance(account);

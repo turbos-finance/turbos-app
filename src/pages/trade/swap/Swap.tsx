@@ -1,17 +1,10 @@
 import Bignumber from 'bignumber.js';
 import { useEffect, useState } from 'react';
-
 import styles from './Swap.module.css';
 import Trades from './components/trades/Trades';
 import downIcon from '../../../assets/images/down.png';
-import ethereumIcon from '../../../assets/images/ethereum.png';
-import suiIcon from '../../../assets/images/ic_sui_40.svg';
-import btcIcon from '../../../assets/images/ic_btc_40.svg';
 import toIcon from '../../../assets/images/to.png';
 import swapvertIcon from '../../../assets/images/swapvert.png';
-import addIcon from '../../../assets/images/add.png';
-import shareIcon from '../../../assets/images/share.png';
-import Empty from '../../../components/empty/Empty';
 import SelectToken, { SelectTokenOption } from '../../../components/selectToken/SelectToken';
 import { supplyTokens, SupplyTokenType, supplyTradeTokens } from '../../../config/tokens';
 import TurbosDialog from '../../../components/UI/Dialog/Dialog';
@@ -32,6 +25,7 @@ import { Coin, getTransactionDigest, getTransactionEffects } from '@mysten/sui.j
 import { useRefresh } from '../../../contexts/refresh';
 import { Explorer } from '../../../components/explorer/Explorer';
 import Loading from '../../../components/loading/Loading';
+import { getLocalStorageSupplyToken, setLocalStorage, TurbosSwapFrom, TurbosSwapTo } from '../../../lib';
 
 type FromToTokenType = {
   balance: string,
@@ -43,7 +37,10 @@ type FromToTokenType = {
   isInput?: boolean,
 }
 
-function Perpetual() {
+function Swap() {
+  const turbos_swap_from = getLocalStorageSupplyToken(TurbosSwapFrom);
+  const turbos_swap_to = getLocalStorageSupplyToken(TurbosSwapTo, 1);
+
   const {
     connecting,
     connected,
@@ -60,8 +57,20 @@ function Perpetual() {
   const [selectTokenSource, setSelectTokenSource] = useState(0); // 0: from token; 1: to token
   const [check, setCheck] = useState(false);
 
-  const [fromToken, setFromToken] = useState<FromToTokenType>({ balance: '0.00', icon: suiIcon, symbol: 'SUI', value: '', price: '0' });
-  const [toToken, setToToken] = useState<FromToTokenType>({ balance: '0.00', icon: btcIcon, symbol: 'BTC', value: '', price: '0' });
+  const [fromToken, setFromToken] = useState<FromToTokenType>({
+    balance: '0.00',
+    icon: turbos_swap_from.icon,
+    symbol: turbos_swap_from.symbol,
+    value: '',
+    price: '0'
+  });
+  const [toToken, setToToken] = useState<FromToTokenType>({
+    balance: '0.00',
+    icon: turbos_swap_to.icon,
+    symbol: turbos_swap_to.symbol,
+    value: '',
+    price: '0'
+  });
 
   const [btnInfo, setBtnInfo] = useState({ state: 0, text: 'Connect Wallet' });
   const [loading, setLoading] = useState(false);
@@ -118,7 +127,7 @@ function Perpetual() {
     });
 
     const newBalance = Bignumber(fromToken.balance).multipliedBy(allSymbolPrice[fromToken.symbol].price).div(allSymbolPrice[toToken.symbol].price);
-    // // const decimalValue = balance.toString().replace(/^\d+\.?/, '');
+
     setToToken({
       ...toToken,
       value: newBalance.toString(),
@@ -133,8 +142,12 @@ function Perpetual() {
       isInput: true
     });
 
-    const newBalance = e.target.value ? Bignumber(e.target.value).multipliedBy(allSymbolPrice[fromToken.symbol].price).div(allSymbolPrice[toToken.symbol].price).toString() : '';
-    // // const decimalValue = balance.toString().replace(/^\d+\.?/, '');
+    const newBalance = e.target.value ?
+      Bignumber(e.target.value)
+        .multipliedBy(allSymbolPrice[fromToken.symbol].price)
+        .div(allSymbolPrice[toToken.symbol].price)
+        .toString()
+      : '';
     setToToken({
       ...toToken,
       value: newBalance,
@@ -149,8 +162,11 @@ function Perpetual() {
       value: e.target.value,
       isInput: true
     });
-    const newBalance = e.target.value ? Bignumber(e.target.value).multipliedBy(allSymbolPrice[toToken.symbol].price).div(allSymbolPrice[fromToken.symbol].price) : '';
-    // // const decimalValue = balance.toString().replace(/^\d+\.?/, '');
+    const newBalance = e.target.value ?
+      Bignumber(e.target.value)
+        .multipliedBy(allSymbolPrice[toToken.symbol].price)
+        .div(allSymbolPrice[fromToken.symbol].price)
+      : '';
     setFromToken({
       ...fromToken,
       value: newBalance.toString(),
@@ -311,6 +327,14 @@ function Perpetual() {
     }
 
   }, [allSymbolPrice]);
+
+  useEffect(() => {
+    setLocalStorage(TurbosSwapFrom, fromToken.symbol);
+  }, [fromToken.symbol]);
+
+  useEffect(() => {
+    setLocalStorage(TurbosSwapTo, toToken.symbol);
+  }, [toToken.symbol]);
 
   const swap = async () => {
     if (network && account) {
@@ -566,4 +590,4 @@ function Perpetual() {
   )
 }
 
-export default Perpetual;
+export default Swap;
