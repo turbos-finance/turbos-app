@@ -36,6 +36,15 @@ import { useRefresh } from '../../../contexts/refresh';
 import { useToastify } from '../../../contexts/toastify';
 import Positions from './components/positions/Positions';
 import Orders from './components/orders/Orders';
+import {
+  getLocalStorage,
+  getLocalStorageSupplyToken,
+  getLocalStorageSupplyTradeToken,
+  setLocalStorage,
+  TurbosPerpetualFrom,
+  TurbosPerpetualTo,
+  TurbosPerpetualTrade
+} from '../../../lib';
 
 const tradeType = ['Long', 'Short'];
 
@@ -65,6 +74,11 @@ type FromToTokenType = {
 
 function Perpetual() {
 
+  const turbos_perpetual_from = getLocalStorageSupplyToken(TurbosPerpetualFrom);
+  const turbos_perpetual_to = getLocalStorageSupplyTradeToken(TurbosPerpetualTo);
+  const current_trade = getLocalStorage(TurbosPerpetualTrade);
+  const init_trade = current_trade === '1' ? 1 : 0;
+
   const {
     connecting,
     connected,
@@ -75,7 +89,7 @@ function Perpetual() {
   const { changeRefreshTime } = useRefresh();
   const { toastify } = useToastify();
 
-  const [trade, setTrade] = useState(0); // 0: long; 1: short
+  const [trade, setTrade] = useState(init_trade); // 0: long; 1: short
   const [type, setType] = useState(0); // 0: market; 1: limit; 2: Trigger
   const [record, setRecord] = useState(0); // 0: posotion ; 1: orders ; 2: trades
   const [selectToken, setSelectToken] = useState(false);
@@ -86,8 +100,20 @@ function Perpetual() {
   const [showLeverage, setShowLeverage] = useState(true);
   const [check, setCheck] = useState(false);
 
-  const [fromToken, setFromToken] = useState<FromToTokenType>({ balance: '0.00', icon: suiIcon, symbol: 'SUI', value: '', price: '0' });
-  const [toToken, setToToken] = useState<FromToTokenType>({ balance: '0.00', icon: btcIcon, symbol: 'BTC', value: '', price: '0' });
+  const [fromToken, setFromToken] = useState<FromToTokenType>({
+    balance: '0.00',
+    icon: turbos_perpetual_from.icon,
+    symbol: turbos_perpetual_from.symbol,
+    value: '',
+    price: '0'
+  });
+  const [toToken, setToToken] = useState<FromToTokenType>({
+    balance: '0.00',
+    icon: turbos_perpetual_to.icon,
+    symbol: turbos_perpetual_to.symbol,
+    value: '',
+    price: '0'
+  });
 
   const [btnInfo, setBtnInfo] = useState({ state: 0, text: 'Connect Wallet' });
   const [loading, setLoading] = useState(false);
@@ -135,6 +161,7 @@ function Perpetual() {
 
   const handleTrade = (type: number) => {
     setTrade(type);
+    setLocalStorage(TurbosPerpetualTrade, type.toString());
   }
 
   const handlePercent = (percent: number) => {
@@ -426,7 +453,6 @@ function Perpetual() {
     }
   }, [allSymbolBalance]);
 
-
   useEffect(() => {
     if (!showLeverage) {
       return;
@@ -488,7 +514,15 @@ function Perpetual() {
         value: '',
       });
     }
-  }, [showLeverage])
+  }, [showLeverage]);
+
+  useEffect(() => {
+    setLocalStorage(TurbosPerpetualFrom, fromToken.symbol);
+  }, [fromToken.symbol]);
+
+  useEffect(() => {
+    setLocalStorage(TurbosPerpetualTo, toToken.symbol);
+  }, [toToken.symbol]);
 
   const recordTitle = ['Positions', 'Trades'];
   const recordContent = [<Positions options={[]} />, <Trades options={[]} />];

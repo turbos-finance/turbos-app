@@ -4,6 +4,9 @@ export const TurbosBuySell = 'Turbos_Buy_Sell';
 export const TurbosBuySellActive = 'Turbos_Buy_Sell_Active';
 export const TurbosSwapFrom = 'Turbos_Swap_From';
 export const TurbosSwapTo = 'Turbos_Swap_To';
+export const TurbosPerpetualFrom = 'Turbos_Perpetual_From';
+export const TurbosPerpetualTo = 'Turbos_Perpetual_To';
+export const TurbosPerpetualTrade = 'Turbos_Perpetual_Trade';
 
 export const setLocalStorage = (k: string, value: string) => {
   localStorage.setItem(k, value);

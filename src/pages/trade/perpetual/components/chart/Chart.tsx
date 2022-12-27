@@ -192,6 +192,7 @@ function Chart(props: ChartProps) {
   useEffect(() => {
     if (chartToken) {
       (async () => {
+        console.log(chartToken);
         setPricedata(await getChainlinkChartPricesFromGraph(chartToken, chartTime) || []);
       })();
     }
