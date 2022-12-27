@@ -21,7 +21,7 @@ import { SupplyTokenType, supplyTradeTokens } from '../../../../../config/tokens
 import { findContractConfigCoinSymbol, findsupplyTokenSymbol, findSupplyTradeTokeSymbol, getContractConfigCoinSymbol } from '../../../../../config';
 import { useAllPool } from '../../../../../hooks/usePool';
 import { useAllSymbolBalance } from '../../../../../hooks/useSymbolBalance';
-import { bignumberDivDecimalFixed } from '../../../../../utils/tools';
+import { bignumberDivDecimalFixed, bignumberWithCommas } from '../../../../../utils/tools';
 
 type PositionsProps = {
   options: any[]
@@ -254,7 +254,7 @@ function Positions(props: PositionsProps) {
                   <div className='line'>
                     <div className='ll'>Mark Price</div>
                     <div className='lr'>
-                      ${numberWithCommas(Bignumber(item.average_price).div(10 ** 9).toFixed(2))}
+                      ${bignumberWithCommas(item.average_price)}
                     </div>
                   </div>
 

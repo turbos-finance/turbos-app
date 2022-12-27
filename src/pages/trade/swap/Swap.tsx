@@ -78,7 +78,6 @@ function Swap() {
   const { pool } = usePool(toToken.symbol as SymbolType);
   const { allSymbolPrice } = useAllSymbolPrice();
   const { allSymbolBalance } = useAllSymbolBalance(account);
-  const { availableLiquidity } = useAvailableLiquidity();
 
   const toggleCheck = () => {
     setCheck(!check);
@@ -524,7 +523,7 @@ function Swap() {
             </div>
             <div className="line">
               <p className="ll">Available Liquidity</p>
-              <p className="lr">${availableLiquidity}</p>
+              <p className="lr">{pool.turbos_tusd_amounts ? `\$${pool.turbos_tusd_amounts}` : '-'}</p>
             </div>
           </div>
         </div>

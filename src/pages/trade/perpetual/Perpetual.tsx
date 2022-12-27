@@ -1,6 +1,5 @@
 import Bignumber from 'bignumber.js';
 import { useEffect, useState } from 'react';
-
 import styles from './Perpetual.module.css';
 import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
@@ -8,8 +7,6 @@ import Trades from './components/trades/Trades';
 import longIcon from '../../../assets/images/long.png';
 import shortIcon from '../../../assets/images/short.png';
 import downIcon from '../../../assets/images/down.png';
-import suiIcon from '../../../assets/images/ic_sui_40.svg';
-import btcIcon from '../../../assets/images/ic_btc_40.svg';
 import toIcon from '../../../assets/images/to.png';
 import swapvertIcon from '../../../assets/images/swapvert.png';
 import SelectToken, { SelectTokenOption } from '../../../components/selectToken/SelectToken';
@@ -45,6 +42,7 @@ import {
   TurbosPerpetualTo,
   TurbosPerpetualTrade
 } from '../../../lib';
+import { bignumberWithCommas } from '../../../utils/tools';
 
 const tradeType = ['Long', 'Short'];
 
@@ -96,7 +94,7 @@ function Perpetual() {
   const [selectTokenSource, setSelectTokenSource] = useState(0); // 0: from token; 1: to token
 
   const [percent, setPercent] = useState(0);
-  const [leverage, setLeverage] = useState(1.5);
+  const [leverage, setLeverage] = useState(1.1);
   const [showLeverage, setShowLeverage] = useState(true);
   const [check, setCheck] = useState(false);
 
@@ -122,7 +120,6 @@ function Perpetual() {
   const fromTokenPool = usePool(fromToken.symbol as SymbolType);
   const { allSymbolPrice } = useAllSymbolPrice();
   const { allSymbolBalance } = useAllSymbolBalance(account);
-  const { availableLiquidity } = useAvailableLiquidity();
 
   const toggleCheck = () => {
     setCheck(!check);
@@ -162,6 +159,16 @@ function Perpetual() {
   const handleTrade = (type: number) => {
     setTrade(type);
     setLocalStorage(TurbosPerpetualTrade, type.toString());
+
+    setFromToken({
+      ...fromToken,
+      value: ''
+    });
+
+    setToToken({
+      ...toToken,
+      value: ''
+    })
   }
 
   const handlePercent = (percent: number) => {
@@ -528,11 +535,14 @@ function Perpetual() {
   const recordContent = [<Positions options={[]} />, <Trades options={[]} />];
   const typeList = ['Market']; // ['Market', 'Limit', 'Trigger'];
 
-  const liqPrice = !trade ?
+  const _liq = !trade ?
     Bignumber(toToken.price).minus(Bignumber(toToken.price).div(leverage)).toFixed(2) :
-    Bignumber(toToken.price).plus(Bignumber(toToken.price).div(leverage)).toFixed(2);
+    Bignumber(toToken.price).plus(Bignumber(toToken.price).div(leverage)).toFixed(2)
+  const liqPrice = fromToken.value && toToken.value ? `\$${numberWithCommas(_liq)}` : '-';
 
-  const fees = Bignumber(toToken.value).multipliedBy(toToken.price).multipliedBy(0.001).toFixed(2);
+  const fees = fromToken.value && toToken.value ?
+    `\$${numberWithCommas(Bignumber(toToken.value).multipliedBy(toToken.price).multipliedBy(0.001).toFixed(2))}`
+    : '-';
 
   const lever = showLeverage ? `${leverage}x` :
     fromToken.value && toToken.value ?
@@ -585,7 +595,7 @@ function Perpetual() {
                       </div>
                       <div className="sectionbottom">
                         <div className="sectioninputcon" >
-                          <input type="text"
+                          <input type="number"
                             value={fromToken.value}
                             onChange={changeFrom}
                             className="sectioninput"
@@ -613,7 +623,7 @@ function Perpetual() {
                       </div>
                       <div className="sectionbottom">
                         <div className="sectioninputcon" >
-                          <input type="text" value={toToken.value} className="sectioninput" placeholder="0.0" onChange={changeTo} />
+                          <input type="number" value={toToken.value} className="sectioninput" placeholder="0.0" onChange={changeTo} />
                         </div>
                         <div className="sectiontokens" onClick={() => { toggleSelectToken(1) }}>
                           <img src={toToken.icon} alt="" />
@@ -634,7 +644,7 @@ function Perpetual() {
                           </div>
                           <div className="sectionbottom">
                             <div className="sectioninputcon" >
-                              <input type="text" className="sectioninput" placeholder="0.0" />
+                              <input type="number" className="sectioninput" placeholder="0.0" />
                             </div>
                             <div className="sectiontokens">
                               <span>USDC</span>
@@ -687,14 +697,11 @@ function Perpetual() {
                   </div>
                   <div className="line">
                     <p className="ll">Liq. Price</p>
-                    <p className="lr">{toToken.value ?
-                      `\$${numberWithCommas(liqPrice)}`
-                      : '-'}
-                    </p>
+                    <p className="lr">{liqPrice}</p>
                   </div>
                   <div className="line">
                     <p className="ll">Fees</p>
-                    <p className="lr">{toToken.value ? `\$${fees}` : '-'}</p>
+                    <p className="lr">{fees}</p>
                   </div>
                 </>
                 : null
@@ -721,19 +728,19 @@ function Perpetual() {
           <div className="line-con1">
             <div className="line">
               <p className="ll">Entry Price</p>
-              <p className="lr">{toToken.price ? `\$${numberWithCommas(toToken.price)}` : '-'}</p>
+              <p className="lr">{bignumberWithCommas(allSymbolPrice[toToken.symbol as SymbolType]?.originalPrice)}</p>
             </div>
             <div className="line">
               <p className="ll">Exit Price</p>
-              <p className="lr">{toToken.price ? `\$${numberWithCommas(toToken.price)}` : '-'}</p>
+              <p className="lr">{bignumberWithCommas(allSymbolPrice[toToken.symbol as SymbolType]?.originalPrice)}</p>
             </div>
             <div className="line">
               <p className="ll">Borrow Fee</p>
-              <p className="lr">-</p>
+              <p className="lr">0.0053% / 1h</p>
             </div>
             <div className="line">
               <p className="ll">Available Liquidity</p>
-              <p className="lr">{availableLiquidity ? `\$${availableLiquidity}` : '-'}</p>
+              <p className="lr">{pool.turbos_tusd_amounts ? `\$${pool.turbos_tusd_amounts}` : '-'}</p>
             </div>
           </div>
         </div>

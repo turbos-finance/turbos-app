@@ -15,9 +15,13 @@ export const bignumberMulDecimalString = (value: Bignumber) => {
   return value.multipliedBy(10 ** decimal).toString();
 }
 
-export const bignumberWithCommas = (x: string | undefined, fixed: number = 2) => {
+export const bignumberWithCommas = (x: string | undefined, fixed: number = 2, unit = '$') => {
   if (!x) {
     return '-';
   }
-  return numberWithCommas(Bignumber(x).div(10 ** decimal).toFixed(fixed));
+  const value = Bignumber(x).div(10 ** decimal);
+  if (!value.toNumber()) {
+    return '-';
+  }
+  return `${unit}${numberWithCommas(value.toFixed(fixed))}`;
 }
