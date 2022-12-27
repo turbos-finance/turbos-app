@@ -18,7 +18,7 @@ import { useToastify } from '../../../../../contexts/toastify';
 import { Explorer } from '../../../../../components/explorer/Explorer';
 import { useAllSymbolPrice } from '../../../../../hooks/useSymbolPrice';
 import { SupplyTokenType, supplyTradeTokens } from '../../../../../config/tokens';
-import { findContractConfigCoinSymbol, findsupplyTokenSymbol, findSupplyTradeTokeSymbol, getContractConfigCoinSymbol } from '../../../../../lib';
+import { findContractConfigCoinSymbol, findsupplyTokenSymbol, findSupplyTradeTokeSymbol, getContractConfigCoinSymbol } from '../../../../../config';
 import { useAllPool } from '../../../../../hooks/usePool';
 import { useAllSymbolBalance } from '../../../../../hooks/useSymbolBalance';
 import { bignumberDivDecimalFixed } from '../../../../../utils/tools';

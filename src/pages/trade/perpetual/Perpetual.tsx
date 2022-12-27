@@ -428,6 +428,10 @@ function Perpetual() {
 
 
   useEffect(() => {
+    if (!showLeverage) {
+      return;
+    }
+
     if (allSymbolPrice[fromToken.symbol]) {
       setFromToken({
         ...fromToken,
@@ -473,6 +477,15 @@ function Perpetual() {
           .div(toToken.price)
           .multipliedBy(leverage)
           .toString(),
+      });
+    } else if (showLeverage && (!fromToken.value || !toToken.value)) {
+      setToToken({
+        ...toToken,
+        value: '',
+      });
+      setFromToken({
+        ...fromToken,
+        value: '',
       });
     }
   }, [showLeverage])

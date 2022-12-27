@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import TlpText from "../../../components/tlpText/TlpText";
 import styles from './Liquidity.module.css';
 
@@ -17,16 +17,9 @@ import { useSuiWallet } from "../../../contexts/useSuiWallet";
 import { useSymbolBalance } from "../../../hooks/useSymbolBalance";
 import Bignumber from 'bignumber.js';
 import { numberWithCommas } from "../../../utils";
+import { setLocalStorage, TurbosBuySell, TurbosBuySellActive } from "../../../lib";
 
 function Liquidity() {
-  const [visible, setVisible] = useState<Boolean[]>([]);
-
-  const visibleChange = (index: number, value: boolean) => {
-    const newVisible = [...visible]
-    newVisible[index] = value;
-    setVisible(newVisible)
-  }
-
   return (
     <>
       <table width='100%' className={styles.table}>
@@ -73,6 +66,11 @@ function TrLiquidity(props: TrLiquidityProps) {
   const { pool } = usePool(item.symbol);
   const { symbolPrice } = useSymbolPrice(item.symbol);
   const { coinBalance } = useSymbolBalance(account, item.symbol);
+
+  const linkTo = (symbol: string) => {
+    setLocalStorage(TurbosBuySellActive, '0');
+    setLocalStorage(TurbosBuySell, symbol);
+  }
 
   const menu = (
     <Menu className="overlay-dropdown-ul">
@@ -125,7 +123,7 @@ function TrLiquidity(props: TrLiquidityProps) {
       <td align="right">${pool.turbos_fee_reserves || '0.00'}</td>
       <td align="right">
         <div className={styles['liquidity-btn']}>
-          <Link to="/earn/buy-sell">Buy with {item.symbol}</Link>
+          <Link to="/earn/buy-sell" onClick={() => { linkTo(item.symbol) }}>Buy with {item.symbol}</Link>
         </div>
       </td>
     </tr>
@@ -143,6 +141,10 @@ function MobileTrLiquidity(props: TrLiquidityProps) {
   const { symbolPrice } = useSymbolPrice(item.symbol);
   const { coinBalance } = useSymbolBalance(account, item.symbol);
 
+  const linkTo = (symbol: string) => {
+    setLocalStorage(TurbosBuySellActive, '0');
+    setLocalStorage(TurbosBuySell, symbol);
+  }
 
   const menu = (
     <Menu className="overlay-dropdown-ul">
@@ -211,7 +213,7 @@ function MobileTrLiquidity(props: TrLiquidityProps) {
           <div className="ll"></div>
           <div className="lr">
             <div className={styles['liquidity-btn']}>
-              <Link to="/earn/buy-sell">Buy with {item.symbol}</Link>
+              <Link to="/earn/buy-sell" onClick={() => { linkTo(item.symbol) }}>Buy with {item.symbol}</Link>
             </div>
           </div>
         </div>

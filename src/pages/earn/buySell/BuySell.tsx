@@ -7,9 +7,8 @@ import styles from './BuySell.module.css';
 import suiIcon from '../../../assets/images/ic_sui_40.svg';
 import buysellIcon from '../../../assets/images/buysellicon.png';
 import downIcon from '../../../assets/images/down.png';
-import tlpIcon from '../../../assets/images/tlp.png';
 
-import { supplyTokens } from '../../../config/tokens';
+import { supplyTLPToken, supplyTokens } from '../../../config/tokens';
 import SelectToken, { SelectTokenOption } from "../../../components/selectToken/SelectToken";
 import { useSuiWallet } from "../../../contexts/useSuiWallet";
 import SuiWalletButton from "../../../components/walletButton/WalletButton";
@@ -27,6 +26,15 @@ import { Coin, GetObjectDataResponse, getObjectId, getTransactionDigest, getTran
 import Loading from "../../../components/loading/Loading";
 import { Explorer } from "../../../components/explorer/Explorer";
 import { useRefresh } from "../../../contexts/refresh";
+import { getLocalStorage, getLocalStorageSupplyToken, setLocalStorage, TurbosBuySell, TurbosBuySellActive } from "../../../lib";
+
+// const turbos_buy_sell_supplytoken = getLocalStorageSupplyToken(TurbosBuySell);
+// const current_active = getLocalStorage(TurbosBuySellActive);
+// console.log(turbos_buy_sell_supplytoken);
+// console.log(current_active);
+// const initActive = current_active === '1' ? 1 : 0;
+// const ininFrom = !current_active ? turbos_buy_sell_supplytoken : supplyTLPToken;
+// const ininTo = current_active ? turbos_buy_sell_supplytoken : supplyTLPToken;
 
 type FromToTokenType = {
   balance: string,
@@ -39,7 +47,6 @@ type FromToTokenType = {
 }
 
 function BuySell() {
-
   const {
     connecting,
     connected,
@@ -47,13 +54,19 @@ function BuySell() {
     network,
     adapter
   } = useSuiWallet();
-  const { changeRefreshTime } = useRefresh();
 
+  const { changeRefreshTime } = useRefresh();
   const { toastify } = useToastify();
 
-  const [active, setActive] = useState(0); // 0:buy; 1:sell;
-  const [fromToken, setFromToken] = useState<FromToTokenType>({ balance: '0.00', icon: suiIcon, symbol: 'SUI', value: '', price: '0' });
-  const [toToken, setToToken] = useState<FromToTokenType>({ balance: '0.00', icon: tlpIcon, symbol: 'TLP', value: '', price: '0' });
+  const turbos_buy_sell_supplytoken = getLocalStorageSupplyToken(TurbosBuySell);
+  const current_active = getLocalStorage(TurbosBuySellActive);
+  const initActive = current_active === '1' ? 1 : 0;
+  const ininFrom = !initActive ? turbos_buy_sell_supplytoken : supplyTLPToken;
+  const ininTo = initActive ? turbos_buy_sell_supplytoken : supplyTLPToken;
+
+  const [active, setActive] = useState(initActive); // 0:buy; 1:sell;
+  const [fromToken, setFromToken] = useState<FromToTokenType>({ balance: '0.00', icon: ininFrom.icon, symbol: ininFrom.symbol, value: '', price: '0' });
+  const [toToken, setToToken] = useState<FromToTokenType>({ balance: '0.00', icon: ininTo.icon, symbol: ininTo.symbol, value: '', price: '0' });
 
   const [selectToken, setSelectToken] = useState(false);
   const [btnInfo, setBtnInfo] = useState({ state: 0, text: 'Connect Wallet' });
@@ -136,8 +149,9 @@ function BuySell() {
       isInput: true
     });
 
-    const newBalance = Bignumber(fromToken.balance).multipliedBy(allSymbolPrice[fromToken.symbol].price).div(allSymbolPrice[toToken.symbol].price);
-    // // const decimalValue = balance.toString().replace(/^\d+\.?/, '');
+    const newBalance = Bignumber(fromToken.balance)
+      .multipliedBy(allSymbolPrice[fromToken.symbol].price)
+      .div(allSymbolPrice[toToken.symbol].price);
     setToToken({
       ...toToken,
       value: newBalance.toString(),
@@ -173,8 +187,11 @@ function BuySell() {
       isInput: true
     });
 
-    const newBalance = e.target.value ? Bignumber(e.target.value).multipliedBy(allSymbolPrice[fromToken.symbol].price).div(allSymbolPrice[toToken.symbol].price).toString() : '';
-    // // const decimalValue = balance.toString().replace(/^\d+\.?/, '');
+    const newBalance = e.target.value ?
+      Bignumber(e.target.value)
+        .multipliedBy(allSymbolPrice[fromToken.symbol].price)
+        .div(allSymbolPrice[toToken.symbol].price)
+        .toString() : '';
     setToToken({
       ...toToken,
       value: newBalance,
@@ -188,8 +205,11 @@ function BuySell() {
       value: e.target.value,
       isInput: true
     });
-    const newBalance = e.target.value ? Bignumber(e.target.value).multipliedBy(allSymbolPrice[toToken.symbol].price).div(allSymbolPrice[fromToken.symbol].price) : '';
-    // // const decimalValue = balance.toString().replace(/^\d+\.?/, '');
+
+    const newBalance = e.target.value ?
+      Bignumber(e.target.value)
+        .multipliedBy(allSymbolPrice[toToken.symbol].price)
+        .div(allSymbolPrice[fromToken.symbol].price) : '';
     setFromToken({
       ...fromToken,
       value: newBalance.toString(),
@@ -373,6 +393,14 @@ function BuySell() {
 
   }, [allSymbolPrice]);
 
+  useEffect(() => {
+    setLocalStorage(TurbosBuySellActive, active.toString());
+  }, [active]);
+
+  useEffect(() => {
+    setLocalStorage(TurbosBuySell, active ? toToken.symbol : fromToken.symbol);
+  }, [active, toToken, fromToken]);
+
   return (
     <div className="main">
 
@@ -432,7 +460,7 @@ function BuySell() {
             <div className="line">
               <p className="ll">Fees</p>
               <p className="lr">
-                {active ? vault.mint_burn_fee_basis_points + '%' : pool?.turbos_fee_reserves ? pool.turbos_fee_reserves + '%' : '-'}
+                {'-'}
               </p>
             </div>
 
@@ -479,17 +507,17 @@ function SectionTokens(props: SectionTokensProps) {
 function BuySellRight() {
   const { account } = useSuiWallet();
   const { vault } = useVault();
-  const { coinBalance } = useSymbolBalance(account, 'TLP');
-  const { symbolPrice } = useSymbolPrice('TLP');
+  const { coinBalance } = useSymbolBalance(account, supplyTLPToken.symbol as TLPAndSymbolType);
+  const { symbolPrice } = useSymbolPrice(supplyTLPToken.symbol as TLPAndSymbolType);
 
   return (
     <div className="main-right">
       <div className="container">
         <div className={styles.title}>
-          <img src={tlpIcon} />
+          <img src={supplyTLPToken.icon} />
           <div className={styles.tlpname}>
-            <p>TLP</p>
-            <p>TLP</p>
+            <p>{supplyTLPToken.symbol}</p>
+            <p>{supplyTLPToken.name}</p>
           </div>
         </div>
 
@@ -500,7 +528,7 @@ function BuySellRight() {
           </div>
           <div className="line">
             <p className="ll">Wallet</p>
-            <p className="lr">{numberWithCommas(coinBalance)} TLP (${numberWithCommas(Bignumber(coinBalance).multipliedBy(symbolPrice.price).toFixed(2))})</p>
+            <p className="lr">{numberWithCommas(coinBalance)} {supplyTLPToken.symbol} (${numberWithCommas(Bignumber(coinBalance).multipliedBy(symbolPrice.price).toFixed(2))})</p>
           </div>
           {/* <div className="line">
           <p className="ll">Staked</p>
@@ -515,7 +543,7 @@ function BuySellRight() {
           <div className="line">
             <p className="ll">Totol Supply</p>
             <p className="lr">
-              {numberWithCommas(vault.tlp_supply.fields.value)} TLP
+              {numberWithCommas(vault.tlp_supply.fields.value)} {supplyTLPToken.symbol}
               (${numberWithCommas(Bignumber(vault.tlp_supply.fields.value).multipliedBy(symbolPrice.price).toFixed(2))})
             </p>
           </div>
