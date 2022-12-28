@@ -695,7 +695,9 @@ function AddAndRemoveMarginTurbosDialog(props: TurbosDialogProps) {
       const size = Bignumber(fromToken.value).multipliedBy(fromToken.price);
       const afterMargin = !tabActive ? size.plus(data.collateral) : Bignumber(data.collateral).minus(size);
       const afterLeveage = Bignumber(data.size).div(afterMargin);
-      const afterLiqPrice = Bignumber(data.average_price).minus(Bignumber(data.average_price).div(afterLeveage));
+
+      const lenPrice = Bignumber(data.average_price).div(afterLeveage);
+      const afterLiqPrice = data.is_long ? Bignumber(data.average_price).minus(lenPrice) : Bignumber(data.average_price).plus(lenPrice);
 
       setAfterData({
         margin: bignumberDivDecimalFixed(afterMargin),
@@ -757,17 +759,19 @@ function AddAndRemoveMarginTurbosDialog(props: TurbosDialogProps) {
       const balanceResponse = Coin.selectCoinSetWithCombinedBalanceGreaterThanOrEqual(coinBalance, BigInt(amount));
       const balanceObjects = balanceResponse.map((item) => Coin.getID(item));
 
+      const price = Bignumber(allSymbolPrice[symbol].originalPrice).multipliedBy(data.is_long ? 1.01 : 0.99);
+
       let argumentsVal: (string | number | boolean | BigInt | string[])[] = [
         config.VaultObjectId,
         balanceObjects,
-        Bignumber(fromToken.value).multipliedBy(10 ** 9).toNumber(),
+        bignumberRemoveDecimal(Bignumber(fromToken.value).multipliedBy(10 ** 9)),
         data.collateral_pool_address,
         data.index_pool_address,
         config.PriceFeedStorageObjectId,
         config.PositionsObjectId,
         data.is_long ? true : false,
         0,
-        Bignumber(Bignumber(allSymbolPrice[symbol].originalPrice).multipliedBy(data.is_long ? 1.01 : 0.99).toFixed(0)).toNumber(),
+        bignumberRemoveDecimal(price),
         config.TimeOracleObjectId
       ];
 
@@ -822,7 +826,7 @@ function AddAndRemoveMarginTurbosDialog(props: TurbosDialogProps) {
       const fromSymbolConfig = getContractConfigCoinSymbol(network, fromToken.symbol);
 
       const collateral_delta = Bignumber(fromToken.value).multipliedBy(fromToken.price);
-      const price = Bignumber(allSymbolPrice[symbol].originalPrice).multipliedBy(!tabActive ? 1.01 : 0.99);
+      const price = Bignumber(allSymbolPrice[symbol].originalPrice).multipliedBy(!data.is_long ? 1.01 : 0.99);
 
       let argumentsVal: (string | number | boolean | string[])[] = [
         config.VaultObjectId,
