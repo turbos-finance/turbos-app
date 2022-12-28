@@ -1,21 +1,21 @@
 import Bignumber from 'bignumber.js';
 import { numberWithCommas } from '.';
 
-const decimal = 9;
+export const decimal = 9;
 
-export const bignumberDivDecimalFixed = (value: Bignumber, fixed: number = 2) => {
-  return value.div(10 ** decimal).toFixed(fixed);
+export const bignumberDivDecimalFixed = (value: Bignumber | string | number, fixed: number = 2) => {
+  return Bignumber(value).div(10 ** decimal).toFixed(fixed);
 }
 
-export const bignumberDivDecimalString = (value: Bignumber) => {
-  return value.div(10 ** decimal).toString();
+export const bignumberDivDecimalString = (value: Bignumber | string | number) => {
+  return Bignumber(value).div(10 ** decimal).toString();
 }
 
-export const bignumberMulDecimalString = (value: Bignumber) => {
-  return value.multipliedBy(10 ** decimal).toString();
+export const bignumberMulDecimalString = (value: Bignumber | string | number) => {
+  return Bignumber(value).multipliedBy(10 ** decimal).toString();
 }
 
-export const bignumberWithCommas = (x: string | undefined, fixed: number = 2, unit = '$') => {
+export const bignumberWithCommas = (x: string | undefined | number | Bignumber, fixed: number = 2, unit = '$') => {
   if (!x) {
     return '-';
   }
@@ -24,4 +24,17 @@ export const bignumberWithCommas = (x: string | undefined, fixed: number = 2, un
     return '-';
   }
   return `${unit}${numberWithCommas(value.toFixed(fixed))}`;
+}
+
+export const bignumberWithPercent = (x: string | undefined | number | Bignumber, fixed: number = 2, unit = '%') => {
+  if (!x) {
+    return '-';
+  }
+  const value = Bignumber(x).multipliedBy(100);
+  return `${value.toFixed(fixed)}${unit}`;
+}
+
+export const bignumberRemoveDecimal = (value: Bignumber | string | number) => {
+  const val = Bignumber(value).toFixed(0);
+  return Bignumber(val).toNumber()
 }

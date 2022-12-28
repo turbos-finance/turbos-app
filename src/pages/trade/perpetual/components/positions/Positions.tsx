@@ -21,7 +21,7 @@ import { SupplyTokenType, supplyTradeTokens } from '../../../../../config/tokens
 import { findContractConfigCoinSymbol, findsupplyTokenSymbol, findSupplyTradeTokeSymbol, getContractConfigCoinSymbol } from '../../../../../config';
 import { useAllPool } from '../../../../../hooks/usePool';
 import { useAllSymbolBalance } from '../../../../../hooks/useSymbolBalance';
-import { bignumberDivDecimalFixed, bignumberWithCommas } from '../../../../../utils/tools';
+import { bignumberDivDecimalFixed, bignumberDivDecimalString, bignumberRemoveDecimal, bignumberWithCommas, bignumberWithPercent, decimal } from '../../../../../utils/tools';
 
 type PositionsProps = {
   options: any[]
@@ -101,29 +101,39 @@ function Positions(props: PositionsProps) {
             data.length > 0 && account && network ?
               data.map((item: any, index: number) => {
 
-                const coin = contractConfig[network as NetworkType].Coin;
-                const symbol = Object.keys(coin).find((k: string) => item.index_pool_address === coin[k as SymbolType].PoolObjectId);
-                const symbolPrice = allSymbolPrice[symbol as SymbolType];
+                const symbol = findContractConfigCoinSymbol(network, item.index_pool_address, 'PoolObjectId');
+                const supplyTradeToken = findSupplyTradeTokeSymbol(symbol);
 
-                const supplyTradeToken = supplyTradeTokens.find((item: SupplyTokenType) => item.symbol === symbol);
+                const symbolPrice = allSymbolPrice[symbol].originalPrice;
 
-                const leverage = Bignumber(item.size).div(item.collateral)
+                const leverage = Bignumber(item.size).div(item.collateral);
+
                 const differencePrice = Bignumber(item.average_price).div(leverage);
-                const liqPirce = item.is_long ?
-                  Bignumber(item.average_price).minus(differencePrice)
-                  :
-                  Bignumber(item.average_price).plus(differencePrice);
+                const liqPirce = item.is_long ? Bignumber(item.average_price).minus(differencePrice) : Bignumber(item.average_price).plus(differencePrice);
 
-                const isGreaterThanOrEqual = Bignumber(symbolPrice.originalPrice).minus(item.average_price).isGreaterThanOrEqualTo(0);
-                const isLessThanOrEqual = Bignumber(symbolPrice.originalPrice).minus(item.average_price).isLessThanOrEqualTo(0)
-                const isGreen = (item.is_long && isGreaterThanOrEqual) || (!item.is_long && !isLessThanOrEqual) ? true : false;
+                let isGreen: boolean;
+                let pnlPrice: Bignumber | string;
+                if (item.is_long) {
+                  // long
+                  const isGreaterThanOrEqual = Bignumber(symbolPrice).minus(item.average_price).isGreaterThanOrEqualTo(0);
+                  isGreen = isGreaterThanOrEqual ? true : false;
+                  pnlPrice = Bignumber(symbolPrice)
+                    .minus(item.average_price)
+                    .div(differencePrice)
+                    .multipliedBy(item.collateral)
 
-                const pnlPrice = Bignumber(symbolPrice.originalPrice)
-                  .minus(item.average_price)
-                  .div(Bignumber(item.average_price)
-                    .div(leverage))
-                  .multipliedBy(item.collateral);
-                const pnl = pnlPrice.div(item.collateral).multipliedBy(100).toFixed(2);
+                } else {
+                  // short
+                  const isLessThanOrEqual = Bignumber(symbolPrice).minus(item.average_price).isLessThanOrEqualTo(0);
+                  isGreen = isLessThanOrEqual ? true : false;
+                  pnlPrice = Bignumber(item.average_price)
+                    .minus(symbolPrice)
+                    .div(differencePrice)
+                    .multipliedBy(item.collateral);
+                }
+
+                const pnl = bignumberWithPercent(pnlPrice.div(item.collateral));
+                pnlPrice = bignumberDivDecimalFixed(pnlPrice);
 
                 return (<tr key={index}>
                   <td align='left'>
@@ -132,36 +142,36 @@ function Positions(props: PositionsProps) {
                       <span>{symbol}</span>
                     </div>
                     <div className={styles['table-position']}>
-                      {Bignumber(item.size).div(item.collateral).toFixed(1)}x&nbsp;&nbsp;
+                      {leverage.toFixed(1)}x&nbsp;&nbsp;
                       <span className={item.is_long ? styles.green : styles.red}>
                         {item.is_long ? 'Long' : 'Short'}
                       </span>
                     </div>
                   </td>
                   <td align='left'>
-                    ${numberWithCommas(Bignumber(item.size).div(10 ** 9).toFixed(2))}
+                    {bignumberWithCommas(item.size)}
                   </td>
                   <td align='left'>
                     <div className={styles['table-position']}>
-                      <span>${numberWithCommas(Bignumber(item.collateral).div(10 ** 9).toFixed(2))}</span>
+                      <span>{bignumberWithCommas(item.collateral)}</span>
                       <img src={addIcon} alt="" height="24" className={styles.icon} onClick={() => toggleEdit(item)} />
                     </div>
                   </td>
                   <td align='left'>
-                    ${numberWithCommas(symbolPrice.price)}
+                    {bignumberWithCommas(symbolPrice)}
                   </td>
                   <td align='left'>
-                    ${numberWithCommas(Bignumber(item.average_price).div(10 ** 9).toFixed(2))}
+                    {bignumberWithCommas(item.average_price)}
                   </td>
                   <td align='left'>
-                    ${numberWithCommas(liqPirce.div(10 ** 9).toFixed(2))}
+                    {bignumberWithCommas(liqPirce)}
                   </td>
                   <td align='left'>
                     <span className={isGreen ? styles.green : styles.red}>
-                      {pnlPrice.div(10 ** 9).toFixed(2).indexOf('-') > -1 ? pnlPrice.div(10 ** 9).toFixed(2).replace('-', '-$') : `\$${pnlPrice.div(10 ** 9).toFixed(2)}`}
+                      {pnlPrice.indexOf('-') > -1 ? pnlPrice.replace('-', '-$') : `\$${pnlPrice}`}
                     </span>
                     <div className={styles['table-position']}>
-                      <span className={isGreen ? styles.green : styles.red}>{pnl}%</span>
+                      <span className={isGreen ? styles.green : styles.red}>{pnl}</span>
                       {/* <img src={shareIcon} alt="" height="24" className={styles.icon} /> */}
                     </div>
                   </td>
@@ -183,29 +193,39 @@ function Positions(props: PositionsProps) {
         {
           data.length > 0 && account && network ?
             data.map((item: any, index: number) => {
-              const coin = contractConfig[network as NetworkType].Coin;
-              const symbol = Object.keys(coin).find((k: string) => item.index_pool_address === coin[k as SymbolType].PoolObjectId);
-              const symbolPrice = allSymbolPrice[symbol as SymbolType];
+              const symbol = findContractConfigCoinSymbol(network, item.index_pool_address, 'PoolObjectId');
+              const supplyTradeToken = findSupplyTradeTokeSymbol(symbol);
 
-              const supplyTradeToken = supplyTradeTokens.find((item: SupplyTokenType) => item.symbol === symbol);
+              const symbolPrice = allSymbolPrice[symbol].originalPrice;
 
-              const leverage = Bignumber(item.size).div(item.collateral)
+              const leverage = Bignumber(item.size).div(item.collateral);
+
               const differencePrice = Bignumber(item.average_price).div(leverage);
-              const liqPirce = item.is_long ?
-                Bignumber(item.average_price).minus(differencePrice)
-                :
-                Bignumber(item.average_price).plus(differencePrice);
+              const liqPirce = item.is_long ? Bignumber(item.average_price).minus(differencePrice) : Bignumber(item.average_price).plus(differencePrice);
 
-              const isGreaterThanOrEqual = Bignumber(symbolPrice.originalPrice).minus(item.average_price).isGreaterThanOrEqualTo(0);
-              const isLessThanOrEqual = Bignumber(symbolPrice.originalPrice).minus(item.average_price).isLessThanOrEqualTo(0)
-              const isGreen = (item.is_long && isGreaterThanOrEqual) || (!item.is_long && !isLessThanOrEqual) ? true : false;
+              let isGreen: boolean;
+              let pnlPrice: Bignumber | string;
+              if (item.is_long) {
+                // long
+                const isGreaterThanOrEqual = Bignumber(symbolPrice).minus(item.average_price).isGreaterThanOrEqualTo(0);
+                isGreen = isGreaterThanOrEqual ? true : false;
+                pnlPrice = Bignumber(symbolPrice)
+                  .minus(item.average_price)
+                  .div(differencePrice)
+                  .multipliedBy(item.collateral)
 
-              const pnlPrice = Bignumber(symbolPrice.originalPrice)
-                .minus(item.average_price)
-                .div(Bignumber(item.average_price)
-                  .div(leverage))
-                .multipliedBy(item.collateral);
-              const pnl = pnlPrice.div(item.collateral).multipliedBy(100).toFixed(2);
+              } else {
+                // short
+                const isLessThanOrEqual = Bignumber(symbolPrice).minus(item.average_price).isLessThanOrEqualTo(0);
+                isGreen = isLessThanOrEqual ? true : false;
+                pnlPrice = Bignumber(item.average_price)
+                  .minus(symbolPrice)
+                  .div(differencePrice)
+                  .multipliedBy(item.collateral);
+              }
+
+              const pnl = bignumberWithPercent(pnlPrice.div(item.collateral));
+              pnlPrice = bignumberDivDecimalFixed(pnlPrice);
 
               return (
                 <div className='line-con' key={index}>
@@ -218,7 +238,7 @@ function Positions(props: PositionsProps) {
                           <span>{symbol}</span>
                         </div>
                         <div className={styles['table-position']}>
-                          {Bignumber(item.size).div(item.collateral).toFixed(1)}x&nbsp;&nbsp;
+                          {leverage.toFixed(1)}x&nbsp;&nbsp;
                           <span className={styles.red}>
                             {item.is_long ? 'Long' : 'Short'}
                           </span>
@@ -230,7 +250,7 @@ function Positions(props: PositionsProps) {
                   <div className='line'>
                     <div className='ll'>Total</div>
                     <div className='lr'>
-                      ${numberWithCommas(Bignumber(item.size).div(10 ** 9).toFixed(2))}
+                      {bignumberWithCommas(item.size)}
                     </div>
                   </div>
 
@@ -238,7 +258,7 @@ function Positions(props: PositionsProps) {
                     <div className='ll'>Margin</div>
                     <div className='lr'>
                       <div className={styles['table-position']}>
-                        <span>${numberWithCommas(Bignumber(item.collateral).div(10 ** 9).toFixed(2))}</span>
+                        <span>{bignumberWithCommas(item.collateral)}</span>
                         <img src={addIcon} alt="" height="24" className={styles.icon} onClick={() => toggleEdit(item)} />
                       </div>
                     </div>
@@ -247,21 +267,21 @@ function Positions(props: PositionsProps) {
                   <div className='line'>
                     <div className='ll'>Entry Price</div>
                     <div className='lr'>
-                      ${numberWithCommas(allSymbolPrice[symbol as SymbolType].price)}
+                      {bignumberWithCommas(symbolPrice)}
                     </div>
                   </div>
 
                   <div className='line'>
                     <div className='ll'>Mark Price</div>
                     <div className='lr'>
-                      ${bignumberWithCommas(item.average_price)}
+                      {bignumberWithCommas(item.average_price)}
                     </div>
                   </div>
 
                   <div className='line'>
                     <div className='ll'>Liq. Price</div>
                     <div className='lr'>
-                      ${numberWithCommas(liqPirce.div(10 ** 9).toFixed(2))}
+                      {bignumberWithCommas(liqPirce)}
                     </div>
                   </div>
 
@@ -270,7 +290,7 @@ function Positions(props: PositionsProps) {
                     <div className='lr'>
                       <div>
                         <span className={isGreen ? styles.green : styles.red}>
-                          {pnlPrice.div(10 ** 9).toFixed(2).indexOf('-') > -1 ? pnlPrice.div(10 ** 9).toFixed(2).replace('-', '-$') : `\$${pnlPrice.div(10 ** 9).toFixed(2)}`}
+                          {pnlPrice.indexOf('-') > -1 ? pnlPrice.replace('-', '-$') : `\$${pnlPrice}`}
                         </span>
                         <div className={styles['table-position']}>
                           <span className={isGreen ? styles.green : styles.red}>{pnl}%</span>
@@ -313,7 +333,6 @@ type TurbosDialogProps = {
 
 function ClosePositionTurbosDialog(props: TurbosDialogProps) {
   const { open, onClose, data } = props;
-
   const {
     account,
     network,
@@ -332,6 +351,7 @@ function ClosePositionTurbosDialog(props: TurbosDialogProps) {
   const { allSymbolPrice } = useAllSymbolPrice();
   const { allPool } = useAllPool();
 
+  // button active info
   useEffect(() => {
     if (network && data && open) {
       if (!fromToken.value) {
@@ -345,33 +365,34 @@ function ClosePositionTurbosDialog(props: TurbosDialogProps) {
     }
   }, [fromToken, network, data, open, allPool]);
 
+  // init fromtoken data
   useEffect(() => {
-    if (data && network && open) {
-      if (data.index_pool_address) {
-        const symbol = findContractConfigCoinSymbol(network, data.index_pool_address, 'PoolObjectId');
-        setFromToken({
-          ...fromToken,
-          symbol: symbol || '',
-          price: allSymbolPrice[symbol as SymbolType].price || '0',
-          balance: Bignumber(data.size).div(data.average_price).toString()
-        })
-      }
+    if (data && network && open && data.index_pool_address) {
+      const symbol = findContractConfigCoinSymbol(network, data.index_pool_address, 'PoolObjectId');
+      setFromToken({
+        ...fromToken,
+        symbol: symbol || '',
+        price: allSymbolPrice[symbol].originalPrice || '0',
+        balance: Bignumber(data.size).div(data.average_price).toString()
+      })
     }
   }, [data, allSymbolPrice, network, open]);
 
+  // update totoken data
   useEffect(() => {
-    if (data && network && open) {
-      if (data.collateral_pool_address && fromToken.symbol) {
-        const symbol = findContractConfigCoinSymbol(network, data.collateral_pool_address, 'PoolObjectId');
-        setToToken({
-          ...toToken,
-          symbol: symbol || '',
-          price: allSymbolPrice[symbol as SymbolType].price || '0',
-          value: fromToken.value ? Bignumber(fromToken.value)
-            .multipliedBy(allSymbolPrice[fromToken.symbol as SymbolType].originalPrice)
-            .div(allSymbolPrice[symbol as SymbolType].originalPrice).toFixed(2) : '0.00'
-        })
-      }
+    if (data && network && open && data.collateral_pool_address && fromToken.symbol) {
+      const symbol = findContractConfigCoinSymbol(network, data.collateral_pool_address, 'PoolObjectId');
+      setToToken({
+        ...toToken,
+        symbol: symbol || '',
+        price: allSymbolPrice[symbol].originalPrice || '0',
+        value: fromToken.value ?
+          Bignumber(fromToken.value)
+            .multipliedBy(allSymbolPrice[fromToken.symbol].originalPrice)
+            .div(allSymbolPrice[symbol].originalPrice)
+            .toFixed(2)
+          : ''
+      })
     }
   }, [data, allSymbolPrice, network, open, fromToken])
 
@@ -412,9 +433,12 @@ function ClosePositionTurbosDialog(props: TurbosDialogProps) {
 
     setToToken({
       ...toToken,
-      value: e.target.value ? Bignumber(e.target.value)
-        .multipliedBy(allSymbolPrice[fromToken.symbol as SymbolType].originalPrice)
-        .div(allSymbolPrice[toToken.symbol as SymbolType].originalPrice).toFixed(2) : '0.00',
+      value: e.target.value ?
+        Bignumber(e.target.value)
+          .multipliedBy(allSymbolPrice[fromToken.symbol as SymbolType].originalPrice)
+          .div(allSymbolPrice[toToken.symbol as SymbolType].originalPrice)
+          .toFixed(2)
+        : '0.00',
     })
   }
 
@@ -426,16 +450,20 @@ function ClosePositionTurbosDialog(props: TurbosDialogProps) {
       const toSymbolConfig = config.Coin[(toToken.symbol) as SymbolType];
       const fromSymbolConfig = config.Coin[(fromToken.symbol) as SymbolType];
 
+      const collateral_delta = Bignumber(fromToken.value).multipliedBy(fromToken.price);
+      const price = Bignumber(fromToken.price).multipliedBy(!data.is_long ? 1.01 : 0.99);
+      const position_size_delta = fromToken.value === fromToken.balance ? Bignumber(data.size) : Bignumber(data.size).minus(collateral_delta);
+
       let argumentsVal: (string | number | boolean | string[])[] = [
         config.VaultObjectId,
         data.collateral_pool_address,
         data.index_pool_address,
         config.PriceFeedStorageObjectId,
         config.PositionsObjectId,
-        Bignumber(Bignumber(fromToken.value).multipliedBy(10 ** 9).multipliedBy(fromToken.price).toFixed(0)).toNumber(),
+        bignumberRemoveDecimal(collateral_delta),
         data.is_long ? true : false,
-        Bignumber(Bignumber(fromToken.size).toFixed(0)).toNumber(),
-        Bignumber(fromToken.price).multipliedBy(!data.is_long ? 1.01 : 0.99).multipliedBy(10 ** 9).toNumber(),
+        bignumberRemoveDecimal(position_size_delta),
+        bignumberRemoveDecimal(price),
         account,
         config.TimeOracleObjectId
       ];
@@ -482,8 +510,8 @@ function ClosePositionTurbosDialog(props: TurbosDialogProps) {
     }
   }
 
+  const symbol = findContractConfigCoinSymbol(network, data.index_pool_address, 'PoolObjectId');
   const supplyTradeToken = findSupplyTradeTokeSymbol(fromToken.symbol);
-  const symbolPrice = allSymbolPrice[fromToken.symbol as SymbolType] || {};
 
   const leverage = Bignumber(data.size).div(data.collateral);
   const differencePrice = Bignumber(data.average_price).div(leverage);
@@ -492,12 +520,40 @@ function ClosePositionTurbosDialog(props: TurbosDialogProps) {
     :
     Bignumber(data.average_price).plus(differencePrice);
 
-  const pnlPrice = Bignumber(symbolPrice.originalPrice)
-    .minus(data.average_price)
-    .div(Bignumber(data.average_price)
-      .div(leverage))
-    .multipliedBy(data.collateral);
-  const pnl = pnlPrice.div(data.collateral).multipliedBy(100).toFixed(2);
+
+  const symbolPrice = allSymbolPrice[symbol].originalPrice;
+
+  let isGreen: boolean = true;
+  let pnlPrice: Bignumber | string = '-';
+  let pnl = '-'
+  let receive = Bignumber(0);
+
+  if (fromToken.value && Number(fromToken.value)) {
+    if (data.is_long) {
+      const isGreaterThanOrEqual = Bignumber(fromToken.price).minus(data.average_price).isGreaterThanOrEqualTo(0);
+      isGreen = isGreaterThanOrEqual ? true : false;
+      pnlPrice = Bignumber(symbolPrice)
+        .minus(data.average_price)
+        .div(differencePrice)
+        .multipliedBy(data.collateral)
+        .multipliedBy(fromToken.value)
+        .div(fromToken.balance)
+    } else {
+      const isLessThanOrEqual = Bignumber(fromToken.price).minus(data.average_price).isLessThanOrEqualTo(0);
+      isGreen = isLessThanOrEqual ? true : false;
+      pnlPrice = Bignumber(data.average_price)
+        .minus(symbolPrice)
+        .div(differencePrice)
+        .multipliedBy(data.collateral)
+        .multipliedBy(fromToken.value)
+        .div(fromToken.balance);
+    }
+
+    receive = Bignumber(fromToken.size).div(leverage).plus(pnlPrice);
+    pnl = bignumberWithPercent(pnlPrice.div(data.collateral).div(fromToken.value).multipliedBy(fromToken.balance));
+    const newPnlPrice = bignumberDivDecimalFixed(pnlPrice);
+    pnlPrice = newPnlPrice.indexOf('-') > -1 ? newPnlPrice.replace('-', '-$') : `\$${newPnlPrice}`;
+  }
 
   return (
     <TurbosDialog open={open} title={`Close ${data.is_long ? 'Long' : 'Short'} ${fromToken.symbol}`} onClose={changeClose}>
@@ -521,44 +577,50 @@ function ClosePositionTurbosDialog(props: TurbosDialogProps) {
       </div>
       <div className="line line-top-16">
         <p className="ll">Mark Price</p>
-        <p className="lr">${numberWithCommas(Bignumber(data.average_price).div(10 ** 9).toFixed(2))}</p>
+        <p className="lr">{bignumberWithCommas(data.average_price)}</p>
       </div>
       <div className="line">
         <p className="ll">Entry Price</p>
-        <p className="lr">${numberWithCommas(symbolPrice.price)}</p>
+        <p className="lr">{bignumberWithCommas(fromToken.price)}</p>
       </div>
       <div className="line">
         <p className="ll">Liq. Price</p>
-        <p className="lr">${numberWithCommas(liqPirce.div(10 ** 9).toFixed(2))}</p>
+        <p className="lr">{bignumberWithCommas(liqPirce)}</p>
       </div>
+
       <div className="line-hr"></div>
       <div className="line">
         <p className="ll">Size</p>
-        <p className="lr">{fromToken.size ? `\$${numberWithCommas(Bignumber(fromToken.size).div(10 ** 9).toFixed(2))}` : '-'}</p>
+        <p className="lr">{bignumberWithCommas(fromToken.size)}</p>
       </div>
       <div className="line">
         <p className="ll">Collaterlal({fromToken.symbol})</p>
-        <p className="lr">{fromToken.value ? `\$${numberWithCommas(Bignumber(fromToken.value).multipliedBy(symbolPrice.price).toFixed(2))}` : '-'}</p>
+        <p className="lr">{bignumberWithCommas(Bignumber(fromToken.value).multipliedBy(fromToken.price))}
+        </p>
       </div>
       <div className="line">
         <p className="ll">PnL</p>
-        <p className="lr">{pnlPrice.div(10 ** 9).toFixed(2).indexOf('-') > -1 ? pnlPrice.div(10 ** 9).toFixed(2).replace('-', '-$') : `\$${pnlPrice.div(10 ** 9).toFixed(2)}`}({pnl}%)</p>
+        <p className={isGreen ? 'lr green' : 'lr red'}>
+          {pnlPrice}({pnl})
+        </p>
       </div>
       <div className="line">
         <p className="ll">Fees</p>
-        <p className="lr">{fromToken.value ? `\$${Bignumber(fromToken.value).multipliedBy(symbolPrice.price).multipliedBy(0.001).toFixed(2)}` : '-'}</p>
+        <p className="lr">
+          {bignumberWithCommas(fromToken.value && Bignumber(fromToken.value).multipliedBy(fromToken.price).multipliedBy(0.001))}
+        </p>
       </div>
       <div className="line-hr"></div>
       <div className="line">
         <p className="ll">Receive</p>
         <p className="lr">
-          {toToken.value} {toToken.symbol}
-          (${Bignumber(toToken.price).multipliedBy(toToken.value).toFixed(2)})
+          {bignumberWithCommas(receive.div(bignumberDivDecimalString(toToken.price)), 2, '')} {toToken.symbol}
+          ({bignumberWithCommas(receive)})
         </p>
       </div>
 
       <div>
-        <button className='btn' onClick={decrease_position} disabled={btnInfo.state > 0 || loading}>
+        <button className={!data.is_long ? 'btn btn-red' : 'btn'} onClick={decrease_position} disabled={btnInfo.state > 0 || loading}>
           {loading ? <Loading /> : btnInfo.text}
         </button>
       </div>
@@ -587,10 +649,11 @@ function AddAndRemoveMarginTurbosDialog(props: TurbosDialogProps) {
   const [btnInfo, setBtnInfo] = useState({ state: 1, text: 'Enter a amount' });
 
   const [fromToken, setFromToken] = useState({ symbol: '', value: '', price: '0', size: '', balance: '' });
-  const [toToken, setToToken] = useState({ symbol: '', value: '0.00', price: '0', size: '', balance: '' });
+  const [toToken, setToToken] = useState({ symbol: '', value: '', price: '0', size: '', balance: '' });
 
   const [afterData, setAfterData] = useState({ margin: '', leverage: '', liqPrice: '' })
 
+  // button active
   useEffect(() => {
     if (network && data && open) {
       if (!fromToken.value) {
@@ -600,32 +663,32 @@ function AddAndRemoveMarginTurbosDialog(props: TurbosDialogProps) {
       } else if (Bignumber(afterData.leverage).minus(1.1).isLessThan(0)) {
         setBtnInfo({ state: 3, text: `Min leverage :  1.1x` });
       } else if (Bignumber(afterData.leverage).minus(30).isGreaterThan(0)) {
-        setBtnInfo({ state: 3, text: `Max leverage :  30.0x` });
+        setBtnInfo({ state: 4, text: `Max leverage :  30.0x` });
       } else {
         setBtnInfo({ state: 0, text: 'Approve' });
       }
     }
   }, [fromToken, network, data, open, allPool, afterData]);
 
+  // init fromtoken
   useEffect(() => {
-    if (data && network && open) {
-      if (data.collateral_pool_address) {
-        const symbol = findContractConfigCoinSymbol(network, data.collateral_pool_address, 'PoolObjectId');
-        const _allSymbolBalance = allSymbolBalance[symbol];
-        const _allSymbolPrice = allSymbolPrice[symbol];
+    if (data && network && open && data.collateral_pool_address) {
+      const symbol = findContractConfigCoinSymbol(network, data.collateral_pool_address, 'PoolObjectId');
+      const _allSymbolBalance = allSymbolBalance[symbol];
+      const _allSymbolPrice = allSymbolPrice[symbol];
 
-        const price = _allSymbolPrice?.originalPrice || '0';
-        const balance = _allSymbolBalance?.balance || '0.00';
+      const price = _allSymbolPrice.originalPrice || '0';
+      const balance = _allSymbolBalance.balance || '0.00';
 
-        setFromToken({
-          ...fromToken,
-          symbol: symbol || '',
-          price: price || '0',
-          balance: !tabActive ? balance : Bignumber(data.collateral).div(price).toFixed()
-        })
-      }
+      setFromToken({
+        ...fromToken,
+        symbol: symbol || '',
+        price: price || '0',
+        balance: !tabActive ? balance : Bignumber(data.collateral).div(price).toString()
+      })
     }
   }, [data, allSymbolPrice, network, open, allSymbolBalance, tabActive]);
+
 
   useEffect(() => {
     if (fromToken.value && data) {
@@ -635,9 +698,9 @@ function AddAndRemoveMarginTurbosDialog(props: TurbosDialogProps) {
       const afterLiqPrice = Bignumber(data.average_price).minus(Bignumber(data.average_price).div(afterLeveage));
 
       setAfterData({
-        margin: afterMargin.div(10 ** 9).toFixed(2),
+        margin: bignumberDivDecimalFixed(afterMargin),
         leverage: afterLeveage.isGreaterThan(0) ? afterLeveage.toFixed(1) : '0',
-        liqPrice: afterLiqPrice.isGreaterThan(0) ? afterLiqPrice.div(10 ** 9).toFixed(2) : '0.00'
+        liqPrice: afterLiqPrice.isGreaterThan(0) ? numberWithCommas(bignumberDivDecimalFixed(afterLiqPrice)) : '0.00'
       });
     } else {
       setAfterData({ margin: '', leverage: '', liqPrice: '' })
@@ -754,11 +817,12 @@ function AddAndRemoveMarginTurbosDialog(props: TurbosDialogProps) {
       setLoading(true);
 
       const symbol = findContractConfigCoinSymbol(network, data.index_pool_address, 'PoolObjectId');
-
       const config = contractConfig[network as NetworkType];
-
       const toSymbolConfig = getContractConfigCoinSymbol(network, symbol);
       const fromSymbolConfig = getContractConfigCoinSymbol(network, fromToken.symbol);
+
+      const collateral_delta = Bignumber(fromToken.value).multipliedBy(fromToken.price);
+      const price = Bignumber(allSymbolPrice[symbol].originalPrice).multipliedBy(!tabActive ? 1.01 : 0.99);
 
       let argumentsVal: (string | number | boolean | string[])[] = [
         config.VaultObjectId,
@@ -766,10 +830,10 @@ function AddAndRemoveMarginTurbosDialog(props: TurbosDialogProps) {
         data.index_pool_address,
         config.PriceFeedStorageObjectId,
         config.PositionsObjectId,
-        Bignumber(Bignumber(fromToken.value).multipliedBy(fromToken.price).toFixed(0)).toNumber(),
+        bignumberRemoveDecimal(collateral_delta),
         data.is_long ? true : false,
-        Bignumber(Bignumber(data.size).toFixed(0)).toNumber(),
-        Bignumber(Bignumber(allSymbolPrice[symbol].originalPrice).multipliedBy(!tabActive ? 1.01 : 0.99).toFixed(0)).toNumber(),
+        0,
+        bignumberRemoveDecimal(price),
         account,
         config.TimeOracleObjectId
       ];

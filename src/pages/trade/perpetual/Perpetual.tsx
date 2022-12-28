@@ -277,6 +277,7 @@ function Perpetual() {
   }
 
   const changeFrom = (e: any) => {
+    setPercent(0);
     setFromToken({
       ...fromToken,
       value: e.target.value,
@@ -284,6 +285,10 @@ function Perpetual() {
     });
 
     if (!showLeverage) {
+      setToToken({
+        ...toToken,
+        isInput: false
+      });
       return;
     }
 
@@ -294,13 +299,11 @@ function Perpetual() {
         .multipliedBy(leverage)
         .toString()
       : '';
-    // // const decimalValue = balance.toString().replace(/^\d+\.?/, '');
     setToToken({
       ...toToken,
       value: newBalance,
       isInput: false
     });
-    setPercent(0);
   }
 
   const changeTo = (e: any) => {
@@ -311,6 +314,10 @@ function Perpetual() {
     });
 
     if (!showLeverage) {
+      setFromToken({
+        ...fromToken,
+        isInput: false
+      });
       return;
     }
 
@@ -351,6 +358,19 @@ function Perpetual() {
         state: 4,
         text: `Insufficient ${toToken.symbol} liquidity`
       });
+    } else if (!showLeverage) {
+      const leverage = Bignumber(toToken.value).multipliedBy(toToken.price).div(fromToken.price).div(fromToken.value);
+      if (leverage.minus(1.1).isLessThan(0)) {
+        setBtnInfo({
+          state: 5,
+          text: `Min leverage :  1.1x`
+        });
+      } else if (leverage.minus(30).isGreaterThan(0)) {
+        setBtnInfo({
+          state: 6,
+          text: `Min leverage :  30.0x`
+        });
+      }
     } else {
       setBtnInfo({
         state: -1,
@@ -431,7 +451,7 @@ function Perpetual() {
 
   useEffect(() => {
     changeBtnText();
-  }, [connecting, connected, account, fromToken, toToken, pool, trade]);
+  }, [connecting, connected, account, fromToken, toToken, pool, trade, showLeverage]);
 
   useEffect(() => {
     if (allSymbolBalance[fromToken.symbol]) {
@@ -544,10 +564,12 @@ function Perpetual() {
     `\$${numberWithCommas(Bignumber(toToken.value).multipliedBy(toToken.price).multipliedBy(0.001).toFixed(2))}`
     : '-';
 
-  const lever = showLeverage ? `${leverage}x` :
-    fromToken.value && toToken.value ?
-      `${Bignumber(toToken.value).multipliedBy(toToken.price).div(fromToken.price).div(fromToken.value).toFixed(1)}x`
-      : '-';
+  let lever = '-';
+  if (fromToken.value && toToken.value && Number(fromToken.value) && Number(toToken.value)) {
+    lever = showLeverage
+      ? `${leverage}x`
+      : `${Bignumber(fromToken.value).multipliedBy(fromToken.price).div(toToken.price).div(toToken.value).toFixed(1)}x`
+  }
 
   return (
     <div className="main">
@@ -689,7 +711,7 @@ function Perpetual() {
                   </div>
                   <div className="line">
                     <p className="ll">Leverage</p>
-                    <p className="lr">{'-'}</p>
+                    <p className="lr">{lever || '-'}</p>
                   </div>
                   <div className="line">
                     <p className="ll">Entry Price</p>
@@ -791,11 +813,11 @@ function Perpetual() {
           </div>
           <div className="line">
             <p className="ll">Liq. Price</p>
-            <p className="lr">${numberWithCommas(liqPrice)}</p>
+            <p className="lr">{liqPrice}</p>
           </div>
           <div className="line">
             <p className="ll">Fees</p>
-            <p className="lr">${fees}</p>
+            <p className="lr">{fees}</p>
           </div>
           <div className="line">
             <p className="ll">Collaterlal</p>

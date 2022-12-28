@@ -116,7 +116,7 @@ function TrLiquidity(props: TrLiquidityProps) {
       <td align="right">${numberWithCommas(symbolPrice.price || '0')}</td>
       <td align="right">
         <TurbosTooltip title={tooltipTitle}>
-          <span className="underline">${pool.turbos_available}</span>
+          <span className="underline">${pool?.turbos_available || '0'}</span>
         </TurbosTooltip>
       </td>
       <td align="right">{numberWithCommas(coinBalance) || 0} {item.symbol} (${numberWithCommas(Bignumber(coinBalance).multipliedBy(Bignumber(symbolPrice.price || 0).toNumber()).toFixed(2)) || 0})</td>
