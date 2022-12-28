@@ -21,11 +21,11 @@ import { usePool } from '../../../hooks/usePool';
 import { useToastify } from '../../../contexts/toastify';
 import { contractConfig } from '../../../config/contract.config';
 import { provider } from '../../../lib/provider';
-import { Coin, getTransactionDigest, getTransactionEffects } from '@mysten/sui.js';
+import { Coin, getTimestampFromTransactionResponse, getTransactionDigest, getTransactionEffects } from '@mysten/sui.js';
 import { useRefresh } from '../../../contexts/refresh';
 import { Explorer } from '../../../components/explorer/Explorer';
 import Loading from '../../../components/loading/Loading';
-import { getLocalStorageSupplyToken, setLocalStorage, TurbosSwapFrom, TurbosSwapTo } from '../../../lib';
+import { getLocalStorage, getLocalStorageSupplyToken, setLocalStorage, TurbosSwapFrom, TurbosSwapTo, TurbosSwapTradeRecord, unshiftLocalStorage } from '../../../lib';
 
 type FromToTokenType = {
   balance: string,
@@ -342,7 +342,6 @@ function Swap() {
       const config = contractConfig[network as NetworkType];
       const toSymbolConfig = config.Coin[(toToken.symbol) as SymbolType];
       const fromSymbolConfig = config.Coin[(fromToken.symbol) as SymbolType];
-      console.log(toSymbolConfig, fromSymbolConfig)
       const fromType = fromSymbolConfig.Type === '0x0000000000000000000000000000000000000002::sui::SUI' ? '0x2::sui::SUI' : fromSymbolConfig.Type;
 
       const coinBalance = await provider.getCoinBalancesOwnedByAddress(account, fromType);
@@ -385,8 +384,14 @@ function Swap() {
 
           const effects = getTransactionEffects(executeTransactionTnx);
           const digest = getTransactionDigest(executeTransactionTnx);
+          const timestamp = getTimestampFromTransactionResponse(executeTransactionTnx);
 
           if (effects?.status.status === 'success') {
+            // const tnx = await provider.getTransactionWithEffects(digest);
+            // const timestamp = getTimestampFromTransactionResponse(tnx) || Date.now();
+            const storege = `${timestamp || Date.now()}<br/>Swap ${fromToken.value} ${fromToken.symbol} to ${toToken.value} ${toToken.symbol}`;
+            unshiftLocalStorage(`${TurbosSwapTradeRecord}_${account}`, storege);
+
             toastify(<Explorer message={'Execute Transaction Successfully!'} type="transaction" digest={digest} />);
             toggleCheck();
             changeRefreshTime(); // reload data

@@ -689,11 +689,11 @@ function Perpetual() {
                   </div>
                   <div className="line">
                     <p className="ll">Leverage</p>
-                    <p className="lr">{lever}</p>
+                    <p className="lr">{'-'}</p>
                   </div>
                   <div className="line">
                     <p className="ll">Entry Price</p>
-                    <p className="lr">{toToken.price ? `\$${numberWithCommas(toToken.price)}` : '-'}</p>
+                    <p className="lr">{bignumberWithCommas(allSymbolPrice[toToken.symbol as SymbolType]?.originalPrice)}</p>
                   </div>
                   <div className="line">
                     <p className="ll">Liq. Price</p>
