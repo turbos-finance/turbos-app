@@ -9,7 +9,7 @@ import { useSuiWallet } from '../../../../../contexts/useSuiWallet';
 import { provider } from '../../../../../lib/provider';
 import { contractConfig } from '../../../../../config/contract.config';
 import { NetworkType, SymbolType } from '../../../../../config/config.type';
-import { Coin, GetObjectDataResponse, getObjectFields, getObjectType, getTransactionDigest, getTransactionEffects, SuiObjectInfo } from '@mysten/sui.js';
+import { Coin, GetObjectDataResponse, getObjectFields, getObjectType, getTimestampFromTransactionResponse, getTransactionDigest, getTransactionEffects, SuiObjectInfo } from '@mysten/sui.js';
 import TurbosDialog from '../../../../../components/UI/Dialog/Dialog';
 import { numberWithCommas } from '../../../../../utils';
 import Loading from '../../../../../components/loading/Loading';
@@ -22,6 +22,7 @@ import { findContractConfigCoinSymbol, findsupplyTokenSymbol, findSupplyTradeTok
 import { useAllPool } from '../../../../../hooks/usePool';
 import { useAllSymbolBalance } from '../../../../../hooks/useSymbolBalance';
 import { bignumberDivDecimalFixed, bignumberDivDecimalString, bignumberRemoveDecimal, bignumberWithCommas, bignumberWithPercent, decimal } from '../../../../../utils/tools';
+import { TurbosPerpetualTradeRecord, unshiftLocalStorage } from '../../../../../lib';
 
 type PositionsProps = {
   options: any[]
@@ -495,9 +496,14 @@ function ClosePositionTurbosDialog(props: TurbosDialogProps) {
 
           const effects = getTransactionEffects(executeTransactionTnx);
           const digest = getTransactionDigest(executeTransactionTnx);
+          const timestamp = getTimestampFromTransactionResponse(executeTransactionTnx);
 
           if (effects?.status.status === 'success') {
-            toastify(<Explorer message={`Request decrease of ${fromToken.symbol} ${data.is_long ? 'Long' : 'Short'} by ${toToken.value} ${toToken.symbol}.`} type="transaction" digest={digest} />);
+            const message = `Request decrease of ${toToken.symbol} ${data.is_long ? 'Long' : 'Short'} by ${fromToken.value} ${fromToken.symbol}.`;
+            const storege = `${timestamp || Date.now()}<br/>${message}`;
+            unshiftLocalStorage(`${TurbosPerpetualTradeRecord}_${account}`, storege);
+
+            toastify(<Explorer message={message} type="transaction" digest={digest} />);
             changeClose();
             changeRefreshTime(); // reload data
           } else {
@@ -776,18 +782,7 @@ function AddAndRemoveMarginTurbosDialog(props: TurbosDialogProps) {
         bignumberRemoveDecimal(price),
         config.TimeOracleObjectId
       ];
-      console.log(config.VaultObjectId,
-        balanceObjects,
-        bignumberRemoveDecimal(Bignumber(fromToken.value).multipliedBy(10 ** 9)),
-        data.collateral_pool_address,
-        data.index_pool_address,
-        config.PriceFeedStorageObjectId,
-        config.PositionsObjectId,
-        data.is_long ? true : false,
-        0,
-        bignumberRemoveDecimal(price),
-        config.TimeOracleObjectId)
-
+      
       let typeArgumentsVal: (string | undefined)[] = [
         fromSymbolConfig?.Type,
         toSymbolConfig?.Type
@@ -812,8 +807,13 @@ function AddAndRemoveMarginTurbosDialog(props: TurbosDialogProps) {
 
           const effects = getTransactionEffects(executeTransactionTnx);
           const digest = getTransactionDigest(executeTransactionTnx);
+          const timestamp = getTimestampFromTransactionResponse(executeTransactionTnx);
 
           if (effects?.status.status === 'success') {
+            const message = `Remove margin of ${toToken.symbol} ${data.is_long ? 'Long' : 'Short'} by ${fromToken.value} ${fromToken.symbol}.`;
+            const storege = `${timestamp || Date.now()}<br/>${message}`;
+            unshiftLocalStorage(`${TurbosPerpetualTradeRecord}_${account}`, storege);
+
             toastify(<Explorer message={`Request increase of ${fromToken.symbol} ${data.is_long ? 'Long' : 'Short'} by ${toToken.value} ${toToken.symbol}.`} type="transaction" digest={digest} />);
             changeClose();
             changeRefreshTime(); // reload data
@@ -879,9 +879,14 @@ function AddAndRemoveMarginTurbosDialog(props: TurbosDialogProps) {
 
           const effects = getTransactionEffects(executeTransactionTnx);
           const digest = getTransactionDigest(executeTransactionTnx);
+          const timestamp = getTimestampFromTransactionResponse(executeTransactionTnx);
 
           if (effects?.status.status === 'success') {
-            toastify(<Explorer message={`Request decrease of ${fromToken.symbol} ${data.is_long ? 'Long' : 'Short'} by ${toToken.value} ${toToken.symbol}.`} type="transaction" digest={digest} />);
+            const message = `Add margin of ${toToken.symbol} ${data.is_long ? 'Long' : 'Short'} by ${fromToken.value} ${fromToken.symbol}.`;
+            const storege = `${timestamp || Date.now()}<br/>${message}`;
+            unshiftLocalStorage(`${TurbosPerpetualTradeRecord}_${account}`, storege);
+
+            toastify(<Explorer message={message} type="transaction" digest={digest} />);
             changeClose();
             changeRefreshTime(); // reload data
           } else {

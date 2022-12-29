@@ -27,7 +27,7 @@ import { useAllSymbolBalance } from '../../../hooks/useSymbolBalance';
 import { useAvailableLiquidity } from '../../../hooks/useAvailableLiquidity';
 import { contractConfig } from '../../../config/contract.config';
 import { provider } from '../../../lib/provider';
-import { Coin, getObjectId, getTransactionDigest, getTransactionEffects } from '@mysten/sui.js';
+import { Coin, getObjectId, getTimestampFromTransactionResponse, getTransactionDigest, getTransactionEffects } from '@mysten/sui.js';
 import { Explorer } from '../../../components/explorer/Explorer';
 import { useRefresh } from '../../../contexts/refresh';
 import { useToastify } from '../../../contexts/toastify';
@@ -40,7 +40,9 @@ import {
   setLocalStorage,
   TurbosPerpetualFrom,
   TurbosPerpetualTo,
-  TurbosPerpetualTrade
+  TurbosPerpetualTrade,
+  TurbosPerpetualTradeRecord,
+  unshiftLocalStorage
 } from '../../../lib';
 import { bignumberWithCommas } from '../../../utils/tools';
 
@@ -430,9 +432,14 @@ function Perpetual() {
 
           const effects = getTransactionEffects(executeTransactionTnx);
           const digest = getTransactionDigest(executeTransactionTnx);
+          const timestamp = getTimestampFromTransactionResponse(executeTransactionTnx);
 
           if (effects?.status.status === 'success') {
-            toastify(<Explorer message={`Request increase of ${fromToken.symbol} ${tradeType[trade]} by ${toToken.value} ${toToken.symbol}.`} type="transaction" digest={digest} />);
+            const message = `Request increase of ${fromToken.symbol} ${tradeType[trade]} by ${toToken.value} ${toToken.symbol}.`;
+            const storege = `${timestamp || Date.now()}<br/>${message}`;
+            unshiftLocalStorage(`${TurbosPerpetualTradeRecord}_${account}`, storege);
+
+            toastify(<Explorer message={message} type="transaction" digest={digest} />);
             toggleCheck();
             changeRefreshTime(); // reload data
           } else {
