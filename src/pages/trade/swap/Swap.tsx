@@ -389,7 +389,7 @@ function Swap() {
           if (effects?.status.status === 'success') {
             // const tnx = await provider.getTransactionWithEffects(digest);
             // const timestamp = getTimestampFromTransactionResponse(tnx) || Date.now();
-            const storege = `${timestamp || Date.now()}<br/>Swap ${fromToken.value} ${fromToken.symbol} to ${toToken.value} ${toToken.symbol}`;
+            const storege = `${timestamp || Date.now()}<br/>Swap ${fromToken.value} ${fromToken.symbol} to ${toToken.symbol}`;
             unshiftLocalStorage(`${TurbosSwapTradeRecord}_${account}`, storege);
 
             toastify(<Explorer message={'Execute Transaction Successfully!'} type="transaction" digest={digest} />);

@@ -450,9 +450,11 @@ function ClosePositionTurbosDialog(props: TurbosDialogProps) {
       const toSymbolConfig = config.Coin[(toToken.symbol) as SymbolType];
       const fromSymbolConfig = config.Coin[(fromToken.symbol) as SymbolType];
 
-      const collateral_delta = Bignumber(fromToken.value).div(fromToken.balance).multipliedBy(data.collateral);
+      const collateral_delta = fromToken.value === fromToken.balance ? 0 : Bignumber(fromToken.value).div(fromToken.balance).multipliedBy(data.collateral);
       const price = Bignumber(fromToken.price).multipliedBy(!data.is_long ? 1.01 : 0.99);
-      const position_size_delta = fromToken.value === fromToken.balance ? Bignumber(data.size) : Bignumber(data.size).minus(collateral_delta);
+      const position_size_delta = fromToken.value === fromToken.balance
+        ? Bignumber(data.size)
+        : Bignumber(fromToken.value).div(fromToken.balance).multipliedBy(data.size);
 
       let argumentsVal: (string | number | boolean | string[])[] = [
         config.VaultObjectId,
@@ -769,7 +771,7 @@ function AddAndRemoveMarginTurbosDialog(props: TurbosDialogProps) {
         data.index_pool_address,
         config.PriceFeedStorageObjectId,
         config.PositionsObjectId,
-        data.is_long ? 1 : 0,
+        data.is_long ? true : false,
         0,
         bignumberRemoveDecimal(price),
         config.TimeOracleObjectId
