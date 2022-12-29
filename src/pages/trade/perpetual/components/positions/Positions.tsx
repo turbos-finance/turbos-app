@@ -767,7 +767,7 @@ function AddAndRemoveMarginTurbosDialog(props: TurbosDialogProps) {
       const balanceResponse = Coin.selectCoinSetWithCombinedBalanceGreaterThanOrEqual(coinBalance, BigInt(amount));
       const balanceObjects = balanceResponse.map((item) => Coin.getID(item));
 
-      const price = Bignumber(allSymbolPrice[symbol].originalPrice).multipliedBy(data.is_long ? 1.01 : 0.99);
+      const price = Bignumber(allSymbolPrice[symbol].originalPrice).multipliedBy(!data.is_long ? 1.01 : 0.99);
 
       let argumentsVal: (string | number | boolean | BigInt | string[])[] = [
         config.VaultObjectId,
@@ -782,7 +782,7 @@ function AddAndRemoveMarginTurbosDialog(props: TurbosDialogProps) {
         bignumberRemoveDecimal(price),
         config.TimeOracleObjectId
       ];
-      
+
       let typeArgumentsVal: (string | undefined)[] = [
         fromSymbolConfig?.Type,
         toSymbolConfig?.Type
@@ -810,7 +810,7 @@ function AddAndRemoveMarginTurbosDialog(props: TurbosDialogProps) {
           const timestamp = getTimestampFromTransactionResponse(executeTransactionTnx);
 
           if (effects?.status.status === 'success') {
-            const message = `Remove margin of ${toToken.symbol} ${data.is_long ? 'Long' : 'Short'} by ${fromToken.value} ${fromToken.symbol}.`;
+            const message = `Add margin of ${toToken.symbol} ${data.is_long ? 'Long' : 'Short'} by ${fromToken.value} ${fromToken.symbol}.`;
             const storege = `${timestamp || Date.now()}<br/>${message}`;
             unshiftLocalStorage(`${TurbosPerpetualTradeRecord}_${account}`, storege);
 
@@ -882,7 +882,7 @@ function AddAndRemoveMarginTurbosDialog(props: TurbosDialogProps) {
           const timestamp = getTimestampFromTransactionResponse(executeTransactionTnx);
 
           if (effects?.status.status === 'success') {
-            const message = `Add margin of ${toToken.symbol} ${data.is_long ? 'Long' : 'Short'} by ${fromToken.value} ${fromToken.symbol}.`;
+            const message = `Remove margin of ${toToken.symbol} ${data.is_long ? 'Long' : 'Short'} by ${fromToken.value} ${fromToken.symbol}.`;
             const storege = `${timestamp || Date.now()}<br/>${message}`;
             unshiftLocalStorage(`${TurbosPerpetualTradeRecord}_${account}`, storege);
 

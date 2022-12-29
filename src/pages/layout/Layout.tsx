@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react';
 import { Outlet } from 'react-router-dom';
+import { useVersion } from '../../hooks/useVersion';
 
 import Header from './components/header/Header';
 import Menus from './components/menus/Menus';
 import styles from './Layout.module.css';
 
 function Layout() {
+  useVersion();
+
   const [show, setShow] = useState(false);
 
   const toggleShow = () => {

@@ -1,5 +1,6 @@
 import { supplyTokens, SupplyTokenType, supplyTradeTokens } from "../config/tokens";
 
+export const TurbosVersion = 'Turbos_Version';
 export const TurbosBuySell = 'Turbos_Buy_Sell';
 export const TurbosBuySellActive = 'Turbos_Buy_Sell_Active';
 export const TurbosSwapFrom = 'Turbos_Swap_From';

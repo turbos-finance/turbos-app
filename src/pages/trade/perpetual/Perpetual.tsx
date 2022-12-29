@@ -435,7 +435,7 @@ function Perpetual() {
           const timestamp = getTimestampFromTransactionResponse(executeTransactionTnx);
 
           if (effects?.status.status === 'success') {
-            const message = `Request increase of ${fromToken.symbol} ${tradeType[trade]} by ${toToken.value} ${toToken.symbol}.`;
+            const message = `Request increase of ${toToken.symbol} ${tradeType[trade]} by ${fromToken.value} ${fromToken.symbol}.`;
             const storege = `${timestamp || Date.now()}<br/>${message}`;
             unshiftLocalStorage(`${TurbosPerpetualTradeRecord}_${account}`, storege);
 
