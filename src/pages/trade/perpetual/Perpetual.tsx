@@ -33,6 +33,7 @@ import { useRefresh } from '../../../contexts/refresh';
 import { useToastify } from '../../../contexts/toastify';
 import Positions from './components/positions/Positions';
 import Orders from './components/orders/Orders';
+
 import {
   getLocalStorage,
   getLocalStorageSupplyToken,
@@ -44,7 +45,7 @@ import {
   TurbosPerpetualTradeRecord,
   unshiftLocalStorage
 } from '../../../lib';
-import { bignumberWithCommas } from '../../../utils/tools';
+import { bignumberDivDecimalString, bignumberMulDecimalString, bignumberRemoveDecimal, bignumberWithCommas } from '../../../utils/tools';
 
 const tradeType = ['Long', 'Short'];
 
@@ -296,8 +297,8 @@ function Perpetual() {
 
     const newBalance = e.target.value ?
       Bignumber(e.target.value)
-        .multipliedBy(allSymbolPrice[fromToken.symbol].price)
-        .div(allSymbolPrice[toToken.symbol].price)
+        .multipliedBy(fromToken.price)
+        .div(toToken.price)
         .multipliedBy(leverage)
         .toString()
       : '';
@@ -325,8 +326,8 @@ function Perpetual() {
 
     const newBalance = e.target.value ?
       Bignumber(e.target.value)
-        .multipliedBy(allSymbolPrice[toToken.symbol].price)
-        .div(allSymbolPrice[fromToken.symbol].price)
+        .multipliedBy(toToken.price)
+        .div(fromToken.price)
         .div(leverage)
         .toString()
       : '';
@@ -339,7 +340,7 @@ function Perpetual() {
   }
 
   const changeBtnText = () => {
-    const leverage = Bignumber(fromToken.value).multipliedBy(fromToken.price).div(toToken.price).div(toToken.value);
+    const leverage = Bignumber(toToken.value).multipliedBy(toToken.price).div(fromToken.price).div(fromToken.value);
     if (!fromToken.value || !Number(fromToken.value)) {
       setBtnInfo({
         state: 1,
@@ -390,21 +391,21 @@ function Perpetual() {
       const fromType = fromSymbolConfig.Type === '0x0000000000000000000000000000000000000002::sui::SUI' ? '0x2::sui::SUI' : fromSymbolConfig.Type;
 
       const coinBalance = await provider.getCoinBalancesOwnedByAddress(account, fromType);
-      const amount = Bignumber(fromToken.value).multipliedBy(10 ** 9).toNumber();
+      const amount = bignumberRemoveDecimal(bignumberMulDecimalString(fromToken.value));
       const balanceResponse = Coin.selectCoinSetWithCombinedBalanceGreaterThanOrEqual(coinBalance, BigInt(amount));
       const balanceObjects = balanceResponse.map((item) => Coin.getID(item));
 
       let argumentsVal: (string | number | boolean | string[])[] = [
         config.VaultObjectId,
         balanceObjects,
-        Bignumber(fromToken.value).multipliedBy(10 ** 9).toNumber(),
+        amount,
         fromSymbolConfig.PoolObjectId,
         toSymbolConfig.PoolObjectId,
         config.PriceFeedStorageObjectId,
         config.PositionsObjectId,
         !trade ? true : false,
-        Bignumber(Bignumber(toToken.value).multipliedBy(10 ** 9).multipliedBy(toToken.price).toFixed(0)).toNumber(),
-        Bignumber(toToken.price).multipliedBy(!trade ? 1.01 : 0.99).multipliedBy(10 ** 9).toNumber(),
+        bignumberRemoveDecimal(bignumberMulDecimalString(Bignumber(toToken.value).multipliedBy(toToken.price))),
+        bignumberRemoveDecimal(bignumberMulDecimalString(Bignumber(toToken.price).multipliedBy(!trade ? 1.01 : 0.99))),
         config.TimeOracleObjectId
       ];
 
@@ -528,14 +529,25 @@ function Perpetual() {
 
   useEffect(() => {
     if (showLeverage && fromToken.price && toToken.price && fromToken.value) {
-      setToToken({
-        ...toToken,
-        value: Bignumber(fromToken.price)
-          .multipliedBy(fromToken.value)
-          .div(toToken.price)
-          .multipliedBy(leverage)
-          .toString(),
-      });
+      if (fromToken.isInput) {
+        setToToken({
+          ...toToken,
+          value: Bignumber(fromToken.price)
+            .multipliedBy(fromToken.value)
+            .div(toToken.price)
+            .multipliedBy(leverage)
+            .toString(),
+        });
+      } else if (toToken.isInput) {
+        setFromToken({
+          ...fromToken,
+          value: Bignumber(toToken.price)
+            .multipliedBy(toToken.value)
+            .div(fromToken.price)
+            .div(leverage)
+            .toString(),
+        });
+      }
     } else if (showLeverage && (!fromToken.value || !toToken.value)) {
       setToToken({
         ...toToken,
@@ -560,20 +572,24 @@ function Perpetual() {
   const recordContent = [<Positions options={[]} />, <Trades options={[]} />];
   const typeList = ['Market']; // ['Market', 'Limit', 'Trigger'];
 
-  const _liq = !trade ?
-    Bignumber(toToken.price).minus(Bignumber(toToken.price).div(leverage)).toFixed(2) :
-    Bignumber(toToken.price).plus(Bignumber(toToken.price).div(leverage)).toFixed(2)
-  const liqPrice = fromToken.value && toToken.value ? `\$${numberWithCommas(_liq)}` : '-';
-
   const fees = fromToken.value && toToken.value ?
     `\$${numberWithCommas(Bignumber(toToken.value).multipliedBy(toToken.price).multipliedBy(0.001).toFixed(2))}`
     : '-';
 
-  let lever = '-';
+  let lever: string | Bignumber = '-';
+  let liqPrice = '-';
   if (fromToken.value && toToken.value && Number(fromToken.value) && Number(toToken.value)) {
     lever = showLeverage
-      ? `${leverage}x`
-      : `${Bignumber(fromToken.value).multipliedBy(fromToken.price).div(toToken.price).div(toToken.value).toFixed(1)}x`
+      ? Bignumber(leverage)
+      : Bignumber(toToken.value).multipliedBy(toToken.price).div(fromToken.price).div(fromToken.value);
+
+    const _liq = !trade ?
+      Bignumber(toToken.price).minus(Bignumber(toToken.price).div(lever)).toFixed(2) :
+      Bignumber(toToken.price).plus(Bignumber(toToken.price).div(lever)).toFixed(2);
+
+    liqPrice = `\$${numberWithCommas(_liq)}`;
+
+    lever = `${lever.toFixed(1)}x`;
   }
 
   return (
@@ -645,7 +661,7 @@ function Perpetual() {
                       <div className="sectiontop">
                         <span>{tradeType[trade]}</span>
                         <div>
-                          {showLeverage ? `Leverage: ${leverage}x` : null}
+                          {showLeverage ? `Leverage: ${leverage} x` : null}
                         </div>
                       </div>
                       <div className="sectionbottom">
@@ -716,7 +732,7 @@ function Perpetual() {
                   </div>
                   <div className="line">
                     <p className="ll">Leverage</p>
-                    <p className="lr">{lever || '-'}</p>
+                    <p className="lr">{lever}</p>
                   </div>
                   <div className="line">
                     <p className="ll">Entry Price</p>
@@ -767,7 +783,7 @@ function Perpetual() {
             </div>
             <div className="line">
               <p className="ll">Available Liquidity</p>
-              <p className="lr">{pool.turbos_tusd_amounts ? `\$${pool.turbos_tusd_amounts}` : '-'}</p>
+              <p className="lr">{pool.turbos_tusd_amounts ? `\$${pool.turbos_tusd_amounts} ` : '-'}</p>
             </div>
           </div>
         </div>
@@ -814,7 +830,7 @@ function Perpetual() {
           </div>
           <div className="line">
             <p className="ll">Leverage</p>
-            <p className="lr">{leverage}x</p>
+            <p className="lr">{lever}</p>
           </div>
           <div className="line">
             <p className="ll">Liq. Price</p>
@@ -851,7 +867,7 @@ function Perpetual() {
           </div>
           <div className="line">
             <p className="ll">Allowed Slippage</p>
-            <p className="lr">0.03%</p>
+            <p className="lr">0.1%</p>
           </div>
           <div className="line">
             <p className="ll">Allow up to 1% slippage</p>

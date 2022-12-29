@@ -28,14 +28,6 @@ import { Explorer } from "../../../components/explorer/Explorer";
 import { useRefresh } from "../../../contexts/refresh";
 import { getLocalStorage, getLocalStorageSupplyToken, setLocalStorage, TurbosBuySell, TurbosBuySellActive } from "../../../lib";
 
-// const turbos_buy_sell_supplytoken = getLocalStorageSupplyToken(TurbosBuySell);
-// const current_active = getLocalStorage(TurbosBuySellActive);
-// console.log(turbos_buy_sell_supplytoken);
-// console.log(current_active);
-// const initActive = current_active === '1' ? 1 : 0;
-// const ininFrom = !current_active ? turbos_buy_sell_supplytoken : supplyTLPToken;
-// const ininTo = current_active ? turbos_buy_sell_supplytoken : supplyTLPToken;
-
 type FromToTokenType = {
   balance: string,
   icon: string,
@@ -47,7 +39,6 @@ type FromToTokenType = {
 }
 
 function BuySell() {
-
   const turbos_buy_sell_supplytoken = getLocalStorageSupplyToken(TurbosBuySell);
   const current_active = getLocalStorage(TurbosBuySellActive);
   const initActive = current_active === '1' ? 1 : 0;
@@ -331,29 +322,15 @@ function BuySell() {
   }, [connecting, connected, account, fromToken, toToken, pool, active]);
 
   useEffect(() => {
-    if (allSymbolBalance[fromToken.symbol]) {
-      setFromToken({
-        ...fromToken,
-        balance: allSymbolBalance[fromToken.symbol].balance
-      })
-    } else {
-      setFromToken({
-        ...fromToken,
-        balance: '0.00'
-      })
-    }
+    setFromToken({
+      ...fromToken,
+      balance: allSymbolBalance[fromToken.symbol] ? allSymbolBalance[fromToken.symbol].balance : '0.00'
+    });
 
-    if (allSymbolBalance[toToken.symbol]) {
-      setToToken({
-        ...toToken,
-        balance: allSymbolBalance[toToken.symbol].balance
-      })
-    } else {
-      setToToken({
-        ...toToken,
-        balance: '0.00'
-      })
-    }
+    setToToken({
+      ...toToken,
+      balance: allSymbolBalance[toToken.symbol] ? allSymbolBalance[toToken.symbol].balance : '0.00'
+    });
   }, [allSymbolBalance]);
 
 

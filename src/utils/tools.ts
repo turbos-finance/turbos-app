@@ -26,12 +26,13 @@ export const bignumberWithCommas = (x: string | undefined | number | Bignumber, 
   return `${unit}${numberWithCommas(value.toFixed(fixed))}`;
 }
 
-export const bignumberWithPercent = (x: string | undefined | number | Bignumber, fixed: number = 2, unit = '%') => {
+export const bignumberWithPercent = (x: string | undefined | number | Bignumber, fixed: number = 2, unit = '%', isPlus: boolean = false) => {
   if (!x) {
     return '-';
   }
   const value = Bignumber(x).multipliedBy(100);
-  return `${value.toFixed(fixed)}${unit}`;
+  const isLessZore = value.isGreaterThan(0);
+  return `${isPlus && isLessZore ? '+' : ''}${value.toFixed(fixed)}${unit}`;
 }
 
 export const bignumberRemoveDecimal = (value: Bignumber | string | number) => {

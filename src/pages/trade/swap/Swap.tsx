@@ -392,7 +392,7 @@ function Swap() {
             const storege = `${timestamp || Date.now()}<br/>Swap ${fromToken.value} ${fromToken.symbol} to ${toToken.symbol}`;
             unshiftLocalStorage(`${TurbosSwapTradeRecord}_${account}`, storege);
 
-            toastify(<Explorer message={'Execute Transaction Successfully!'} type="transaction" digest={digest} />);
+            toastify(<Explorer message={storege} type="transaction" digest={digest} />);
             toggleCheck();
             changeRefreshTime(); // reload data
           } else {

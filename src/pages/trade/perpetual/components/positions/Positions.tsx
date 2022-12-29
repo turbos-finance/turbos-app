@@ -133,7 +133,7 @@ function Positions(props: PositionsProps) {
                     .multipliedBy(item.collateral);
                 }
 
-                const pnl = bignumberWithPercent(pnlPrice.div(item.collateral));
+                const pnl = bignumberWithPercent(pnlPrice.div(item.collateral), 2, '%', true);
                 pnlPrice = bignumberDivDecimalFixed(pnlPrice);
 
                 return (<tr key={index}>
@@ -225,7 +225,7 @@ function Positions(props: PositionsProps) {
                   .multipliedBy(item.collateral);
               }
 
-              const pnl = bignumberWithPercent(pnlPrice.div(item.collateral));
+              const pnl = bignumberWithPercent(pnlPrice.div(item.collateral), 2, '%', true);
               pnlPrice = bignumberDivDecimalFixed(pnlPrice);
 
               return (
@@ -558,7 +558,7 @@ function ClosePositionTurbosDialog(props: TurbosDialogProps) {
     }
 
     receive = Bignumber(fromToken.size).div(leverage).plus(pnlPrice);
-    pnl = bignumberWithPercent(pnlPrice.div(data.collateral).div(fromToken.value).multipliedBy(fromToken.balance));
+    pnl = bignumberWithPercent(pnlPrice.div(data.collateral).div(fromToken.value).multipliedBy(fromToken.balance), 2, '%', true);
     const newPnlPrice = bignumberDivDecimalFixed(pnlPrice);
     pnlPrice = newPnlPrice.indexOf('-') > -1 ? newPnlPrice.replace('-', '-$') : `+\$${newPnlPrice}`;
   }
@@ -767,7 +767,7 @@ function AddAndRemoveMarginTurbosDialog(props: TurbosDialogProps) {
       const balanceResponse = Coin.selectCoinSetWithCombinedBalanceGreaterThanOrEqual(coinBalance, BigInt(amount));
       const balanceObjects = balanceResponse.map((item) => Coin.getID(item));
 
-      const price = Bignumber(allSymbolPrice[symbol].originalPrice).multipliedBy(!data.is_long ? 1.01 : 0.99);
+      const price = Bignumber(allSymbolPrice[symbol].originalPrice).multipliedBy(data.is_long ? 1.01 : 0.99);
 
       let argumentsVal: (string | number | boolean | BigInt | string[])[] = [
         config.VaultObjectId,
@@ -814,7 +814,7 @@ function AddAndRemoveMarginTurbosDialog(props: TurbosDialogProps) {
             const storege = `${timestamp || Date.now()}<br/>${message}`;
             unshiftLocalStorage(`${TurbosPerpetualTradeRecord}_${account}`, storege);
 
-            toastify(<Explorer message={`Request increase of ${fromToken.symbol} ${data.is_long ? 'Long' : 'Short'} by ${toToken.value} ${toToken.symbol}.`} type="transaction" digest={digest} />);
+            toastify(<Explorer message={message} type="transaction" digest={digest} />);
             changeClose();
             changeRefreshTime(); // reload data
           } else {
