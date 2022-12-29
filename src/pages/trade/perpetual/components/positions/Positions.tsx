@@ -168,7 +168,7 @@ function Positions(props: PositionsProps) {
                   </td>
                   <td align='left'>
                     <span className={isGreen ? styles.green : styles.red}>
-                      {pnlPrice.indexOf('-') > -1 ? pnlPrice.replace('-', '-$') : `\$${pnlPrice}`}
+                      {pnlPrice.indexOf('-') > -1 ? pnlPrice.replace('-', '-$') : `+\$${pnlPrice}`}
                     </span>
                     <div className={styles['table-position']}>
                       <span className={isGreen ? styles.green : styles.red}>{pnl}</span>
@@ -290,7 +290,7 @@ function Positions(props: PositionsProps) {
                     <div className='lr'>
                       <div>
                         <span className={isGreen ? styles.green : styles.red}>
-                          {pnlPrice.indexOf('-') > -1 ? pnlPrice.replace('-', '-$') : `\$${pnlPrice}`}
+                          {pnlPrice.indexOf('-') > -1 ? pnlPrice.replace('-', '-$') : `+\$${pnlPrice}`}
                         </span>
                         <div className={styles['table-position']}>
                           <span className={isGreen ? styles.green : styles.red}>{pnl}%</span>
@@ -450,7 +450,7 @@ function ClosePositionTurbosDialog(props: TurbosDialogProps) {
       const toSymbolConfig = config.Coin[(toToken.symbol) as SymbolType];
       const fromSymbolConfig = config.Coin[(fromToken.symbol) as SymbolType];
 
-      const collateral_delta = Bignumber(fromToken.value).multipliedBy(fromToken.price);
+      const collateral_delta = Bignumber(fromToken.value).div(fromToken.balance).multipliedBy(data.collateral);
       const price = Bignumber(fromToken.price).multipliedBy(!data.is_long ? 1.01 : 0.99);
       const position_size_delta = fromToken.value === fromToken.balance ? Bignumber(data.size) : Bignumber(data.size).minus(collateral_delta);
 
@@ -552,7 +552,7 @@ function ClosePositionTurbosDialog(props: TurbosDialogProps) {
     receive = Bignumber(fromToken.size).div(leverage).plus(pnlPrice);
     pnl = bignumberWithPercent(pnlPrice.div(data.collateral).div(fromToken.value).multipliedBy(fromToken.balance));
     const newPnlPrice = bignumberDivDecimalFixed(pnlPrice);
-    pnlPrice = newPnlPrice.indexOf('-') > -1 ? newPnlPrice.replace('-', '-$') : `\$${newPnlPrice}`;
+    pnlPrice = newPnlPrice.indexOf('-') > -1 ? newPnlPrice.replace('-', '-$') : `+\$${newPnlPrice}`;
   }
 
   return (
@@ -769,11 +769,22 @@ function AddAndRemoveMarginTurbosDialog(props: TurbosDialogProps) {
         data.index_pool_address,
         config.PriceFeedStorageObjectId,
         config.PositionsObjectId,
-        data.is_long ? true : false,
+        data.is_long ? 1 : 0,
         0,
         bignumberRemoveDecimal(price),
         config.TimeOracleObjectId
       ];
+      console.log(config.VaultObjectId,
+        balanceObjects,
+        bignumberRemoveDecimal(Bignumber(fromToken.value).multipliedBy(10 ** 9)),
+        data.collateral_pool_address,
+        data.index_pool_address,
+        config.PriceFeedStorageObjectId,
+        config.PositionsObjectId,
+        data.is_long ? true : false,
+        0,
+        bignumberRemoveDecimal(price),
+        config.TimeOracleObjectId)
 
       let typeArgumentsVal: (string | undefined)[] = [
         fromSymbolConfig?.Type,

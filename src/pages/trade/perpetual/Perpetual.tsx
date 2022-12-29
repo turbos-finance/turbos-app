@@ -337,6 +337,7 @@ function Perpetual() {
   }
 
   const changeBtnText = () => {
+    const leverage = Bignumber(fromToken.value).multipliedBy(fromToken.price).div(toToken.price).div(toToken.value);
     if (!fromToken.value || !Number(fromToken.value)) {
       setBtnInfo({
         state: 1,
@@ -358,19 +359,16 @@ function Perpetual() {
         state: 4,
         text: `Insufficient ${toToken.symbol} liquidity`
       });
-    } else if (!showLeverage) {
-      const leverage = Bignumber(toToken.value).multipliedBy(toToken.price).div(fromToken.price).div(fromToken.value);
-      if (leverage.minus(1.1).isLessThan(0)) {
-        setBtnInfo({
-          state: 5,
-          text: `Min leverage :  1.1x`
-        });
-      } else if (leverage.minus(30).isGreaterThan(0)) {
-        setBtnInfo({
-          state: 6,
-          text: `Min leverage :  30.0x`
-        });
-      }
+    } else if (!showLeverage && leverage.minus(1.1).isLessThan(0)) {
+      setBtnInfo({
+        state: 5,
+        text: `Min leverage: 1.1x`
+      });
+    } else if (!showLeverage && leverage.minus(30).isGreaterThan(0)) {
+      setBtnInfo({
+        state: 6,
+        text: `Max leverage: 30.0x`
+      });
     } else {
       setBtnInfo({
         state: -1,
