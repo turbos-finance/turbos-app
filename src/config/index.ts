@@ -2,6 +2,14 @@ import { CoinConfigObjectType, NetworkType, SymbolType } from "./config.type";
 import { contractConfig } from "./contract.config";
 import { supplyTokens, SupplyTokenType, supplyTradeTokens } from "./tokens";
 
+export const getContractConfig = (network: string | undefined) => {
+  if (!network) {
+    return;
+  }
+
+  return contractConfig[network as NetworkType]
+}
+
 export const getContractConfigCoinSymbol = (network: string | undefined, symbol: string) => {
   if (!network) {
     return;
@@ -31,4 +39,8 @@ export const findsupplyTokenSymbol = (symbol: string | undefined) => {
   }
   const supplyToken = supplyTokens.find((item: SupplyTokenType) => item.symbol === symbol);
   return supplyToken;
+}
+
+export const getSuiType = (coinConfigObjectType: string) => {
+  return coinConfigObjectType === '0x0000000000000000000000000000000000000002::sui::SUI' ? '0x2::sui::SUI' : coinConfigObjectType;
 }

@@ -5,6 +5,7 @@ import Bignumber from 'bignumber.js';
 import { NetworkType, SymbolType, TLPAndSymbolType } from '../config/config.type';
 import { contractConfig } from '../config/contract.config';
 import { useRefresh } from '../contexts/refresh';
+import { getSuiType } from '../config';
 
 export const useSymbolBalance = (account: string | undefined, symbol: TLPAndSymbolType | undefined, network: NetworkType = 'DEVNET') => {
   const { refreshTime } = useRefresh();
@@ -24,7 +25,7 @@ export const useSymbolBalance = (account: string | undefined, symbol: TLPAndSymb
         symbolConfig = coin[symbol];
       }
 
-      const responce = await provider.getCoinBalancesOwnedByAddress(account, symbolConfig.Type === '0x0000000000000000000000000000000000000002::sui::SUI' ? '0x2::sui::SUI' : symbolConfig.Type);
+      const responce = await provider.getCoinBalancesOwnedByAddress(account, getSuiType(symbolConfig.Type));
       const balance = Coin.totalBalance(responce);
 
       setCoinBalance(Bignumber(balance.toString()).div(10 ** 9).toFixed(2));

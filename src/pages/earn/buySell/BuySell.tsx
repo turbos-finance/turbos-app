@@ -27,6 +27,8 @@ import Loading from "../../../components/loading/Loading";
 import { Explorer } from "../../../components/explorer/Explorer";
 import { useRefresh } from "../../../contexts/refresh";
 import { getLocalStorage, getLocalStorageSupplyToken, setLocalStorage, TurbosBuySell, TurbosBuySellActive } from "../../../lib";
+import { useFees } from "../../../hooks/useFees";
+import { bignumberMulDecimalString, bignumberRemoveDecimal } from "../../../utils/tools";
 
 type FromToTokenType = {
   balance: string,
@@ -66,7 +68,8 @@ function BuySell() {
 
   const poolArg = active ? toToken.symbol as TLPAndSymbolType : fromToken.symbol as TLPAndSymbolType;
 
-  // const { vault } = useVault();
+  const { vault } = useVault();
+  const { fees } = useFees(fromToken.symbol, fromToken.value, toToken.symbol, toToken.value);
   const { pool } = usePool(poolArg === 'TLP' ? undefined : poolArg);
   const { allSymbolPrice } = useAllSymbolPrice();
   const { allSymbolBalance } = useAllSymbolBalance(account);
@@ -226,7 +229,7 @@ function BuySell() {
         : fromSymbolConfig.Type === '0x0000000000000000000000000000000000000002::sui::SUI' ? '0x2::sui::SUI' : fromSymbolConfig.Type;
 
       const coinBalance = await provider.getCoinBalancesOwnedByAddress(account, fromType);
-      const amount = Bignumber(Bignumber(fromToken.value).multipliedBy(10 ** 9).toFixed(0)).toNumber();
+      const amount = bignumberRemoveDecimal(bignumberMulDecimalString(fromToken.value));
       const balanceResponse = Coin.selectCoinSetWithCombinedBalanceGreaterThanOrEqual(coinBalance, BigInt(amount));
       const balanceObjects = balanceResponse.map((item) => Coin.getID(item));
 
@@ -238,7 +241,7 @@ function BuySell() {
           config.VaultObjectId,
           fromSymbolConfig.PoolObjectId,
           balanceObjects,
-          Bignumber(Bignumber(fromToken.value).multipliedBy(10 ** 9).toFixed(0)).toNumber(),
+          amount,
           config.PriceFeedStorageObjectId,
           0,
           config.TimeOracleObjectId
@@ -249,7 +252,7 @@ function BuySell() {
           config.VaultObjectId,
           toSymbolConfig.PoolObjectId,
           balanceObjects,
-          Bignumber(Bignumber(fromToken.value).multipliedBy(10 ** 9).toFixed(0)).toNumber(),
+          amount,
           config.PriceFeedStorageObjectId,
           0,
           account,
@@ -332,7 +335,6 @@ function BuySell() {
       balance: allSymbolBalance[toToken.symbol] ? allSymbolBalance[toToken.symbol].balance : '0.00'
     });
   }, [allSymbolBalance]);
-
 
   useEffect(() => {
     if (allSymbolPrice[fromToken.symbol]) {
@@ -438,7 +440,7 @@ function BuySell() {
             <div className="line">
               <p className="ll">Fees</p>
               <p className="lr">
-                {'-'}
+                {!!fees.toNumber() ? fees.toString() : '-'}
               </p>
             </div>
 
@@ -502,7 +504,9 @@ function BuySellRight() {
         <div className="line-con">
           <div className="line">
             <p className="ll">Price</p>
-            <p className="lr">${numberWithCommas(symbolPrice.price)}</p>
+            <p className="lr">${
+              numberWithCommas(symbolPrice.price)}
+            </p>
           </div>
           <div className="line">
             <p className="ll">Wallet</p>

@@ -11,7 +11,7 @@ import { useRefresh } from '../contexts/refresh';
 export type VaultType = {
   tlp_supply: { fields: { value: string } },
   mint_burn_fee_basis_points?: string
-
+  [x: string]: any
 }
 
 export const useVault = (network: NetworkType = 'DEVNET') => {
@@ -28,12 +28,16 @@ export const useVault = (network: NetworkType = 'DEVNET') => {
     const vaultResponce = await provider.getObject(vaultObjectId);
     const vaultField = getObjectFields(vaultResponce);
 
+    if (!vaultField) {
+      return;
+    }
+
     setVault({
       ...vaultField,
-      mint_burn_fee_basis_points: Bignumber(vaultField?.mint_burn_fee_basis_points).multipliedBy(100).div(10 ** 9).toFixed(2),
+      mint_burn_fee_basis_points: Bignumber(vaultField.mint_burn_fee_basis_points).multipliedBy(100).div(10 ** 9).toFixed(2),
       tlp_supply: {
         fields: {
-          value: Bignumber(vaultField?.tlp_supply?.fields.value).div(10 ** 9).toFixed(2)
+          value: Bignumber(vaultField.tlp_supply.fields.value).div(10 ** 9).toFixed(2)
         }
       }
     })

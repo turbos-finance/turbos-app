@@ -26,6 +26,8 @@ import { useRefresh } from '../../../contexts/refresh';
 import { Explorer } from '../../../components/explorer/Explorer';
 import Loading from '../../../components/loading/Loading';
 import { getLocalStorage, getLocalStorageSupplyToken, setLocalStorage, TurbosSwapFrom, TurbosSwapTo, TurbosSwapTradeRecord, unshiftLocalStorage } from '../../../lib';
+import { getSuiType } from '../../../config';
+import { bignumberMulDecimalString, bignumberRemoveDecimal } from '../../../utils/tools';
 
 type FromToTokenType = {
   balance: string,
@@ -342,17 +344,17 @@ function Swap() {
       const config = contractConfig[network as NetworkType];
       const toSymbolConfig = config.Coin[(toToken.symbol) as SymbolType];
       const fromSymbolConfig = config.Coin[(fromToken.symbol) as SymbolType];
-      const fromType = fromSymbolConfig.Type === '0x0000000000000000000000000000000000000002::sui::SUI' ? '0x2::sui::SUI' : fromSymbolConfig.Type;
+      const fromType = getSuiType(fromSymbolConfig.Type);
 
       const coinBalance = await provider.getCoinBalancesOwnedByAddress(account, fromType);
-      const amount = Bignumber(Bignumber(fromToken.value).multipliedBy(10 ** 9).toFixed(0)).toNumber();
+      const amount = bignumberRemoveDecimal(bignumberMulDecimalString(fromToken.value));
       const balanceResponse = Coin.selectCoinSetWithCombinedBalanceGreaterThanOrEqual(coinBalance, BigInt(amount));
       const balanceObjects = balanceResponse.map((item) => Coin.getID(item));
 
       let argumentsVal: (string | number | BigInt | string[])[] = [
         config.VaultObjectId,
         balanceObjects,
-        Bignumber(Bignumber(fromToken.value).multipliedBy(10 ** 9).toFixed(0)).toNumber(),
+        amount,
         fromSymbolConfig.PoolObjectId,
         toSymbolConfig.PoolObjectId,
         config.PriceFeedStorageObjectId,
