@@ -10,6 +10,7 @@ import upIcon from '../../../../../assets/images/up.png';
 import { numberWithCommas } from "../../../../../utils";
 import { useRefresh } from "../../../../../contexts/refresh";
 import { useAllSymbolPrice, useSymbolPrice } from "../../../../../hooks/useSymbolPrice";
+import BigNumber from "bignumber.js";
 
 const times = [
   { label: '5m', id: '5' },
@@ -115,7 +116,12 @@ function Chart(props: ChartProps) {
     }
   }, []);
 
-
+  const [prices, setPrices] = useState({
+    high_24: 0,
+    low_24: 0,
+    start_price: 0,
+    current_price: 0
+  })
   const [pricedata, setPricedata] = useState<any[]>([]);
   const [chartTime, setChartTime] = useState('4h');
   const [currentChart, setCurrentChart] = useState<undefined | IChartApi>();
@@ -129,6 +135,7 @@ function Chart(props: ChartProps) {
   const changeChartToken = (value: string) => {
     setChartToken(value);
     changeChartSymbol && changeChartSymbol(value);
+    setVisible(false);
   }
 
   const changeVisible = (visible: boolean) => {
@@ -184,7 +191,6 @@ function Chart(props: ChartProps) {
         scaleChart();
         setChartInited(true);
       }
-
     }
   }, [pricedata, currentSeries]);
 
@@ -192,7 +198,20 @@ function Chart(props: ChartProps) {
   useEffect(() => {
     if (chartToken) {
       (async () => {
-        setPricedata(await getChainlinkChartPricesFromGraph(chartToken, chartTime) || []);
+        const {
+          prices,
+          high_24,
+          low_24,
+          start_price,
+          current_price
+        } = await getChainlinkChartPricesFromGraph(chartToken, chartTime) || { prices: [] }
+        setPricedata(prices);
+        setPrices({
+          high_24,
+          low_24,
+          start_price,
+          current_price
+        })
       })();
     }
   }, [chartToken, chartTime, refreshTime])
@@ -235,48 +254,23 @@ function Chart(props: ChartProps) {
     </Menu>
   );
 
+  let price = prices.current_price;
+  let ema_price = prices.current_price;
+  let low = prices.low_24;
+  let high = prices.high_24;
+  let percent = BigNumber(prices.current_price).minus(prices.start_price).div(prices.start_price).multipliedBy(100).toNumber();
 
-  let high;
-  let low;
-  let deltaPrice;
-  let delta;
-  let deltaPercentage;
-  let deltaPercentageStr;
+  // sui token price
+  if (allSymbolPrice[chartToken]) {
+    const symbolPrice = Number(allSymbolPrice[chartToken].price);
+    const ema_symbolPrice = Number(allSymbolPrice[chartToken].emaPrice);
+    
+    price = symbolPrice;
+    ema_price = ema_symbolPrice;
+    low = low > symbolPrice ? symbolPrice : low;
+    high = high > symbolPrice ? high : symbolPrice;
 
-  const now = Date.now() / 1000;
-  const timeThreshold = now - 24 * 60 * 60;
-  // console.log(pricedata);
-  // console.log(pricedata[pricedata.length - 1])
-  if (pricedata) {
-    if (chartTime === '1d') {
-      const price = pricedata[pricedata.length - 1];
-      high = price.high;
-      low = price.low;
-      deltaPrice = price.close;
-    } else {
-      for (let i = pricedata.length - 1; i > 0; i--) {
-        const price = pricedata[i];
-        if (price.time < timeThreshold) {
-          break;
-        }
-
-        if (!low) {
-          low = price.low;
-        }
-        if (!high) {
-          high = price.high;
-        }
-
-        if (price.high > high) {
-          high = price.high;
-        }
-        if (price.low < low) {
-          low = price.low;
-        }
-
-        deltaPrice = price.open;
-      }
-    }
+    percent = BigNumber(price).minus(prices.start_price).div(prices.start_price).multipliedBy(100).toNumber();
   }
 
   return (
@@ -298,25 +292,23 @@ function Chart(props: ChartProps) {
         <div className={styles.pricelistcon}>
           <div className={styles.pricelist}>
             <div className={styles.value1}>
-              {allSymbolPrice[chartToken] ? `\$${numberWithCommas(allSymbolPrice[chartToken].price)}` : '-'}
-              {/* {deltaPrice && numberWithCommas(deltaPrice.toFixed(2)) || '-'} */}
+              {price && `\$${numberWithCommas(price.toFixed(2))}` || '-'}
             </div>
             <div className={styles.value2}>
-              {allSymbolPrice[chartToken] ? `\$${numberWithCommas(allSymbolPrice[chartToken].emaPrice)}` : '-'}
-              {/* ${deltaPrice && numberWithCommas(deltaPrice.toFixed(2)) || '-'} */}
+              {ema_price && `\$${numberWithCommas(ema_price.toFixed(2))}` || '-'}
             </div>
           </div>
           <div className={styles.pricelist}>
             <div className={styles.value2}>24h Change</div>
-            <div className={styles.value1} style={{ color: '#0ecc83' }}>+6.9%</div>
+            <div className={styles.value1} style={{ color: percent >= 0 ? '#0ecc83' : '#F04438' }}>{`${percent >= 0 ? '+' : ''}${percent.toFixed(2)}%`}</div>
           </div>
           <div className={styles.pricelist}>
             <div className={styles.value2}>24h High</div>
-            <div className={styles.value1}>{high && numberWithCommas(high.toFixed(2)) || '-'}</div>
+            <div className={styles.value1}>{prices.high_24 && numberWithCommas(prices.high_24.toFixed(2)) || '-'}</div>
           </div>
           <div className={styles.pricelist}>
             <div className={styles.value2}>24h Low</div>
-            <div className={styles.value1}>{low && numberWithCommas(low.toFixed(2)) || '-'}</div>
+            <div className={styles.value1}>{prices.low_24 && numberWithCommas(prices.low_24.toFixed(2)) || '-'}</div>
           </div>
         </div>
       </div>

@@ -1,4 +1,6 @@
 import { ApolloClient, gql, InMemoryCache } from "@apollo/client";
+import { DoNotStepOutlined } from "@mui/icons-material";
+import BigNumber from "bignumber.js";
 export const CHART_PERIODS: { [x: string]: number } = {
     "5m": 60 * 5,
     "15m": 60 * 15,
@@ -23,14 +25,13 @@ const FEED_ID_MAP: any = {
 };
 function getCandlesFromPrices(prices: string | any[], period: string) {
     const periodTime = CHART_PERIODS[period];
-
     if (prices.length < 2) {
         return [];
     }
 
     const candles = [];
     const first = prices[0];
-    let prevTsGroup = Math.floor(first[0] / periodTime) * periodTime;
+    let prevTsGroup = Math.ceil(first[0] / periodTime) * periodTime;
     let prevPrice = first[1];
     let o = prevPrice;
     let h = prevPrice;
@@ -38,7 +39,8 @@ function getCandlesFromPrices(prices: string | any[], period: string) {
     let c = prevPrice;
     for (let i = 1; i < prices.length; i++) {
         const [ts, price] = prices[i];
-        const tsGroup = Math.floor(ts / periodTime) * periodTime;
+        const tsGroup = Math.ceil(ts / periodTime) * periodTime;
+
         if (prevTsGroup !== tsGroup) {
             candles.push({ t: prevTsGroup + timezoneOffset, o, h, l, c });
             o = c;
@@ -49,6 +51,10 @@ function getCandlesFromPrices(prices: string | any[], period: string) {
         h = Math.max(h, price);
         l = Math.min(l, price);
         prevTsGroup = tsGroup;
+
+        if (i === prices.length - 1) {
+            candles.push({ t: ts + timezoneOffset, o, h, l, c });
+        }
     }
 
     return candles.map(({ t: time, o: open, c: close, h: high, l: low }) => ({
@@ -58,6 +64,32 @@ function getCandlesFromPrices(prices: string | any[], period: string) {
         high,
         low,
     }));
+}
+
+const getHighAndlow24 = (prices: any[]) => {
+    let high_24;
+    let low_24;
+    let start_price;
+    const len = prices.length - 1;
+
+    high_24 = prices[len][1];
+    low_24 = prices[len][1];
+
+    const unixTimestamp = Math.floor(Date.now() / 1000) - CHART_PERIODS['1d'];
+    for (let i = len; i > 0; i--) {
+        if (unixTimestamp > prices[i][0]) {
+            break;
+        }
+        start_price = prices[i][1];
+
+        if (high_24 < start_price) {
+            high_24 = start_price;
+        }
+        if (low_24 > start_price) {
+            low_24 = start_price
+        }
+    }
+    return { high_24, low_24, start_price };
 }
 
 export async function getChainlinkChartPricesFromGraph(tokenSymbol = 'ETH', period = '1d') {
@@ -97,13 +129,21 @@ export async function getChainlinkChartPricesFromGraph(tokenSymbol = 'ETH', peri
                 }
 
                 uniqTs.add(item.unixTimestamp);
-                prices.push([item.unixTimestamp, Number(item.value) / 100000000]);
+                prices.push([item.unixTimestamp, Number(item.value) / 1e8]);
             });
         });
-
         prices.sort(([timeA], [timeB]) => timeA - timeB);
+        const current_price = prices[prices.length - 1][1];
+        const { high_24, low_24, start_price } = getHighAndlow24(prices);
         prices = getCandlesFromPrices(prices, period);
-        return prices;
+        console.log(prices)
+        return {
+            prices,
+            high_24,
+            low_24,
+            start_price,
+            current_price
+        };
     } catch (err) {
         console.error(err);
         console.warn("getChainlinkChartPricesFromGraph failed");
