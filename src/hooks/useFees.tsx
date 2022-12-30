@@ -61,10 +61,10 @@ export const useFees = (in_symbol: string, in_symbol_value: string, out_symbol: 
       average_diff = target_amount;
     };
     let tax_bps = BigNumber(tax_basis_points).multipliedBy(average_diff).div(target_amount).toNumber();
-    fee_basis_points + tax_bps
+    return fee_basis_points + tax_bps;
   }
 
-  const get_target_tusd_amount = (pool_data: any) {
+  const get_target_tusd_amount = (pool_data: any) => {
     let supply = vault.tusd_supply_amount;
     if (supply == 0) { return 0 };
     let weight = pool_data.token_weights;
