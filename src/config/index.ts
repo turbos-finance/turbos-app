@@ -2,7 +2,7 @@ import { CoinConfigObjectType, NetworkType, SymbolType } from "./config.type";
 import { contractConfig } from "./contract.config";
 import { supplyTokens, SupplyTokenType, supplyTradeTokens } from "./tokens";
 
-export const getContractConfig = (network: string | undefined) => {
+export const getContractConfig = (network: string | undefined = 'DEVNET') => {
   if (!network) {
     return;
   }

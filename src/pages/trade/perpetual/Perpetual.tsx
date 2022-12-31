@@ -48,6 +48,7 @@ import {
 import { bignumberDivDecimalString, bignumberMulDecimalString, bignumberRemoveDecimal, bignumberWithCommas } from '../../../utils/tools';
 import { useVault } from '../../../hooks/useVault';
 import { getPositionFee } from '../../../lib/getFee';
+import { useFundingRate } from '../../../hooks/useFundingRate';
 
 const tradeType = ['Long', 'Short'];
 
@@ -122,10 +123,12 @@ function Perpetual() {
   const [loading, setLoading] = useState(false);
 
   const { vault } = useVault();
-  const { pool } = usePool(toToken.symbol as SymbolType);
-  const fromTokenPool = usePool(fromToken.symbol as SymbolType);
   const { allSymbolPrice } = useAllSymbolPrice();
   const { allSymbolBalance } = useAllSymbolBalance(account);
+  const { fundingRate } = useFundingRate(toToken.symbol);
+
+  const { pool } = usePool(toToken.symbol as SymbolType);
+  const fromTokenPool = usePool(fromToken.symbol as SymbolType);
 
   const toggleCheck = () => {
     setCheck(!check);
@@ -783,7 +786,7 @@ function Perpetual() {
             </div>
             <div className="line">
               <p className="ll">Borrow Fee</p>
-              <p className="lr">0.0053% / 1h</p>
+              <p className="lr">{fundingRate.toNumber() ? `${fundingRate.toString()}% / 1h` : '-'}</p>
             </div>
             <div className="line">
               <p className="ll">Available Liquidity</p>

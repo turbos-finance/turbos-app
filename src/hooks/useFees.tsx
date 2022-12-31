@@ -1,10 +1,8 @@
 import BigNumber from "bignumber.js";
 import { useEffect, useState } from "react"
-import { getContractConfig } from "../config";
 import { useSuiWallet } from "../contexts/useSuiWallet";
-import { provider } from "../lib/provider";
 import { useAllPool } from "./usePool";
-import { useAllSymbolPrice, useSymbolPrice } from "./useSymbolPrice";
+import { useAllSymbolPrice } from "./useSymbolPrice";
 import { useVault } from "./useVault";
 
 const BASIS_POINTS_DIVISOR = 10000;
@@ -71,7 +69,6 @@ export const useFees = (in_symbol: string, in_symbol_value: string, out_symbol: 
     let target_weight = BigNumber(weight).multipliedBy(supply).div(vault.total_token_weights).toNumber()
     return target_weight;
   }
-
 
   const getFees = async () => {
     let fee_basis_points = get_swap_fee_basis_points();
