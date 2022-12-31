@@ -28,6 +28,7 @@ import Loading from '../../../components/loading/Loading';
 import { getLocalStorage, getLocalStorageSupplyToken, setLocalStorage, TurbosSwapFrom, TurbosSwapTo, TurbosSwapTradeRecord, unshiftLocalStorage } from '../../../lib';
 import { getSuiType } from '../../../config';
 import { bignumberMulDecimalString, bignumberRemoveDecimal } from '../../../utils/tools';
+import { useFees } from '../../../hooks/useFees';
 
 type FromToTokenType = {
   balance: string,
@@ -77,6 +78,7 @@ function Swap() {
   const [btnInfo, setBtnInfo] = useState({ state: 0, text: 'Connect Wallet' });
   const [loading, setLoading] = useState(false);
 
+  const { fees } = useFees(fromToken.symbol, fromToken.value, toToken.symbol, toToken.value);
   const { pool } = usePool(toToken.symbol as SymbolType);
   const { allSymbolPrice } = useAllSymbolPrice();
   const { allSymbolBalance } = useAllSymbolBalance(account);
@@ -496,7 +498,7 @@ function Swap() {
                   </div>
                   <div className="line">
                     <p className="ll">Fees</p>
-                    <p className="lr">-</p>
+                    <p className="lr"> {!!fees.toNumber() ? `\$${fees.toFixed(2)}` : '-'}</p>
                   </div>
                 </>
                 : null

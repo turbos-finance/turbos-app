@@ -68,7 +68,6 @@ function BuySell() {
 
   const poolArg = active ? toToken.symbol as TLPAndSymbolType : fromToken.symbol as TLPAndSymbolType;
 
-  const { vault } = useVault();
   const { fees } = useFees(fromToken.symbol, fromToken.value, toToken.symbol, toToken.value);
   const { pool } = usePool(poolArg === 'TLP' ? undefined : poolArg);
   const { allSymbolPrice } = useAllSymbolPrice();
@@ -440,7 +439,7 @@ function BuySell() {
             <div className="line">
               <p className="ll">Fees</p>
               <p className="lr">
-                {!!fees.toNumber() ? fees.toString() : '-'}
+                {!!fees.toNumber() ? `\$${fees.toFixed(2)}` : '-'}
               </p>
             </div>
 

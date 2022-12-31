@@ -205,6 +205,12 @@ function Chart(props: ChartProps) {
           start_price,
           current_price
         } = await getChainlinkChartPricesFromGraph(chartToken, chartTime) || { prices: [] }
+        // sui token price
+        if (allSymbolPrice[chartToken] && prices.length > 0) {
+          const symbolPrice = Number(allSymbolPrice[chartToken].price);
+          prices[prices.length -1].close = symbolPrice;
+        }
+        
         setPricedata(prices);
         setPrices({
           high_24,

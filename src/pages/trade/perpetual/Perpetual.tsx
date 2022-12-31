@@ -46,6 +46,8 @@ import {
   unshiftLocalStorage
 } from '../../../lib';
 import { bignumberDivDecimalString, bignumberMulDecimalString, bignumberRemoveDecimal, bignumberWithCommas } from '../../../utils/tools';
+import { useVault } from '../../../hooks/useVault';
+import { getPositionFee } from '../../../lib/getFee';
 
 const tradeType = ['Long', 'Short'];
 
@@ -119,6 +121,7 @@ function Perpetual() {
   const [btnInfo, setBtnInfo] = useState({ state: 0, text: 'Connect Wallet' });
   const [loading, setLoading] = useState(false);
 
+  const { vault } = useVault();
   const { pool } = usePool(toToken.symbol as SymbolType);
   const fromTokenPool = usePool(fromToken.symbol as SymbolType);
   const { allSymbolPrice } = useAllSymbolPrice();
@@ -572,8 +575,9 @@ function Perpetual() {
   const recordContent = [<Positions options={[]} />, <Trades options={[]} />];
   const typeList = ['Market']; // ['Market', 'Limit', 'Trigger'];
 
+
   const fees = fromToken.value && toToken.value ?
-    `\$${numberWithCommas(Bignumber(toToken.value).multipliedBy(toToken.price).multipliedBy(0.001).toFixed(2))}`
+    `\$${numberWithCommas(getPositionFee(vault, Bignumber(toToken.value).multipliedBy(toToken.price)).toFixed(2))}`
     : '-';
 
   let lever: string | Bignumber = '-';

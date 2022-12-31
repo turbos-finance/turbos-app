@@ -24,8 +24,8 @@ export const useFees = (in_symbol: string, in_symbol_value: string, out_symbol: 
     const tusd_amount = BigNumber(in_symbol_value).multipliedBy(allSymbolPrice[in_symbol].originalPrice);
     let in_pool_data = allPool[in_symbol];
     let out_pool_data = allPool[out_symbol];
-    let is_token_in_stable = in_pool_data.is_stable_token;
-    let is_token_out_stable = out_pool_data.is_stable_token;
+    let is_token_in_stable = in_pool_data?.is_stable_token;
+    let is_token_out_stable = out_pool_data?.is_stable_token;
     let is_stable_swap = is_token_in_stable && is_token_out_stable;
     let base_bps = is_stable_swap ? vault.stable_swap_fee_basis_points : vault.swap_fee_basis_points;
     let tax_bps = is_stable_swap ? vault.stable_tax_basis_points : vault.tax_basis_points;
@@ -82,7 +82,7 @@ export const useFees = (in_symbol: string, in_symbol_value: string, out_symbol: 
   }
 
   useEffect(() => {
-    if (network && in_symbol && in_symbol_value && out_symbol && out_symbol_value && allPool[in_symbol] && allPool[out_symbol]) {
+    if (network && in_symbol && in_symbol_value && out_symbol && out_symbol_value && allPool[in_symbol]) {
       getFees();
     } else {
       setFees(BigNumber(0));

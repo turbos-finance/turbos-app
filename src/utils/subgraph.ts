@@ -1,5 +1,4 @@
 import { ApolloClient, gql, InMemoryCache } from "@apollo/client";
-import { DoNotStepOutlined } from "@mui/icons-material";
 import BigNumber from "bignumber.js";
 export const CHART_PERIODS: { [x: string]: number } = {
     "5m": 60 * 5,
@@ -136,7 +135,6 @@ export async function getChainlinkChartPricesFromGraph(tokenSymbol = 'ETH', peri
         const current_price = prices[prices.length - 1][1];
         const { high_24, low_24, start_price } = getHighAndlow24(prices);
         prices = getCandlesFromPrices(prices, period);
-        console.log(prices)
         return {
             prices,
             high_24,
