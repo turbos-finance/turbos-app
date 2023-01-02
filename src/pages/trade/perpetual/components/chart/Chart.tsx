@@ -264,8 +264,7 @@ function Chart(props: ChartProps) {
   let ema_price = prices.current_price;
   let low = prices.low_24;
   let high = prices.high_24;
-  let percent = prices.start_price && BigNumber(prices.current_price).minus(prices.start_price).div(prices.start_price).multipliedBy(100).toNumber();
-
+  let percent = prices.start_price && prices.current_price && BigNumber(prices.current_price).minus(prices.start_price).div(prices.start_price).multipliedBy(100).toNumber();
   // sui token price
   if (allSymbolPrice[chartToken]) {
     const symbolPrice = Number(allSymbolPrice[chartToken].price);
@@ -275,8 +274,7 @@ function Chart(props: ChartProps) {
     ema_price = ema_symbolPrice;
     low = low > symbolPrice ? symbolPrice : low;
     high = high > symbolPrice ? high : symbolPrice;
-
-    percent = BigNumber(price).minus(prices.start_price).div(prices.start_price).multipliedBy(100).toNumber();
+    percent = prices.start_price && BigNumber(price).minus(prices.start_price).div(prices.start_price).multipliedBy(100).toNumber();
   }
 
   return (
