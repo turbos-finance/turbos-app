@@ -4,9 +4,9 @@ import { useEffect, useState } from 'react';
 import Empty from '../../../../../components/empty/Empty';
 import { useRefresh } from '../../../../../contexts/refresh';
 import { useSuiWallet } from '../../../../../contexts/useSuiWallet';
-import { getLocalStorage, TurbosSwapTradeRecord } from '../../../../../lib';
 import styles from './Trades.module.css';
 import moment from 'moment';
+import { client, GET_TRADES } from '../../../../../http/apolloClient';
 
 function Trades() {
   const {
@@ -18,12 +18,15 @@ function Trades() {
 
   const getTrades = async () => {
     if (account) {
-      const data = getLocalStorage(`${TurbosSwapTradeRecord}_${account}`);
-      if (!data) {
-        return;
-      }
-      const turbosSwapTradeRecord = data.split(',');
-      setOptions(turbosSwapTradeRecord.map((item: string) => item.split('<br/>')));
+      const data = await client.query({
+        query: GET_TRADES, variables: {
+          "sender": account,
+          "skip": 0,
+          "take": 20,
+          "types": ["SwapEvent"]
+        }
+      });
+      setOptions(data.data.events.list);
     } else {
       setOptions([]);
     }
@@ -40,8 +43,8 @@ function Trades() {
           <div className='container'><Empty></Empty></div> :
           options.map((item: any, index: number) => (
             <div className={styles.trades} key={index}>
-              <div className={styles['trades-time']}>{moment(item[0] && Number(item[0])).format('DD MMM YYYY HH:mm:ss A')}</div>
-              <div className={styles['trades-info']}>{item[1]}</div>
+              <div className={styles['trades-time']}>{moment(item.timestamp).format('DD MMM YYYY HH:mm:ss A')}</div>
+              <div className={styles['trades-info']}>{item.description}</div>
             </div>
           ))
 

@@ -25,11 +25,11 @@ import { bignumberDivDecimalFixed, bignumberDivDecimalString, bignumberRemoveDec
 import { TurbosPerpetualTradeRecord, unshiftLocalStorage } from '../../../../../lib';
 
 type PositionsProps = {
-  options: any[]
+  changeLen: (value: number) => void
 }
 
 function Positions(props: PositionsProps) {
-  const { options } = props;
+  const { changeLen } = props;
   const {
     account,
     network,
@@ -73,8 +73,10 @@ function Positions(props: PositionsProps) {
         }
       });
       setData(options);
+      changeLen(options.length);
     } else {
       setData([]);
+      changeLen(0);
     }
   }
 

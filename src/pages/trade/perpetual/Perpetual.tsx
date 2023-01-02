@@ -1,5 +1,5 @@
 import Bignumber from 'bignumber.js';
-import { useEffect, useState } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import styles from './Perpetual.module.css';
 import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
@@ -121,6 +121,7 @@ function Perpetual() {
 
   const [btnInfo, setBtnInfo] = useState({ state: 0, text: 'Connect Wallet' });
   const [loading, setLoading] = useState(false);
+  const [positionDataLen, setPositionDataLen] = useState(0)
 
   const { vault } = useVault();
   const { allSymbolPrice } = useAllSymbolPrice();
@@ -129,6 +130,10 @@ function Perpetual() {
 
   const { pool } = usePool(toToken.symbol as SymbolType);
   const fromTokenPool = usePool(fromToken.symbol as SymbolType);
+  
+  const changePositionDataLen = (value:number)=>{
+    setPositionDataLen(value);
+  }
 
   const toggleCheck = () => {
     setCheck(!check);
@@ -575,7 +580,7 @@ function Perpetual() {
   }, [toToken.symbol]);
 
   const recordTitle = ['Positions', 'Trades'];
-  const recordContent = [<Positions options={[]} />, <Trades options={[]} />];
+  const recordContent = [<Positions changeLen={changePositionDataLen} />, <Trades/>];
   const typeList = ['Market']; // ['Market', 'Limit', 'Trigger'];
 
 
@@ -668,7 +673,7 @@ function Perpetual() {
                       <div className="sectiontop">
                         <span>{tradeType[trade]}</span>
                         <div>
-                          {showLeverage ? `Leverage: ${leverage} x` : null}
+                          {showLeverage ? `Leverage: ${leverage}x` : null}
                         </div>
                       </div>
                       <div className="sectionbottom">
@@ -802,12 +807,19 @@ function Perpetual() {
         <div className={styles.ordertab}>
           {
             recordTitle.map((item: string, index: number) =>
-              <span key={index} className={index === record ? styles.active : ''} onClick={() => setRecord(index)}>{item}</span>
+              <span key={index} className={index === record ? styles.active : ''} onClick={() => setRecord(index)}>
+                {item}
+                {index === 0 && positionDataLen > 0 ? `(${positionDataLen})` : ''}
+              </span>
             )
           }
         </div>
 
-        {recordContent[record]}
+        {
+          recordContent.map((item: React.ReactNode, index: number) =>
+            <div key={index} style={{ display: index === record ? 'block' : 'none' }}>{item}</div>
+          )
+        }
       </div>
 
 
