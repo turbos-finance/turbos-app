@@ -196,7 +196,7 @@ function Chart(props: ChartProps) {
 
   // loading data
   useEffect(() => {
-    if (chartToken) {
+    if (chartToken && allSymbolPrice[chartToken]) {
       (async () => {
         const {
           prices,
@@ -208,9 +208,9 @@ function Chart(props: ChartProps) {
         // sui token price
         if (allSymbolPrice[chartToken] && prices.length > 0) {
           const symbolPrice = Number(allSymbolPrice[chartToken].price);
-          prices[prices.length -1].close = symbolPrice;
+          prices[prices.length - 1].close = symbolPrice;
         }
-        
+
         setPricedata(prices);
         setPrices({
           high_24,
@@ -220,7 +220,7 @@ function Chart(props: ChartProps) {
         })
       })();
     }
-  }, [chartToken, chartTime, refreshTime])
+  }, [chartToken, chartTime, refreshTime, allSymbolPrice])
 
   // create cart
   useEffect(() => {
