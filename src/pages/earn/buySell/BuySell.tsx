@@ -6,7 +6,7 @@ import styles from './BuySell.module.css';
 
 import buysellIcon from '../../../assets/images/buysellicon.png';
 import downIcon from '../../../assets/images/down.png';
-
+import toIcon from '../../../assets/images/to.png';
 import { supplyTLPToken, supplyTokens } from '../../../config/tokens';
 import SelectToken, { SelectTokenOption } from "../../../components/selectToken/SelectToken";
 import { useSuiWallet } from "../../../contexts/useSuiWallet";
@@ -28,6 +28,7 @@ import { useRefresh } from "../../../contexts/refresh";
 import { getLocalStorage, getLocalStorageSupplyToken, setLocalStorage, TurbosBuySell, TurbosBuySellActive } from "../../../lib";
 import { useFees } from "../../../hooks/useFees";
 import { bignumberMulDecimalString, bignumberRemoveDecimal } from "../../../utils/tools";
+import TurbosDialog from "../../../components/UI/Dialog/Dialog";
 
 type FromToTokenType = {
   balance: string,
@@ -64,6 +65,7 @@ function BuySell() {
   const [selectToken, setSelectToken] = useState(false);
   const [btnInfo, setBtnInfo] = useState({ state: 0, text: 'Connect Wallet' });
   const [loading, setLoading] = useState(false);
+  const [check, setCheck] = useState(false);
 
   const poolArg = active ? toToken.symbol as TLPAndSymbolType : fromToken.symbol as TLPAndSymbolType;
 
@@ -71,6 +73,10 @@ function BuySell() {
   const { pool } = usePool(poolArg === 'TLP' ? undefined : poolArg);
   const { allSymbolPrice } = useAllSymbolPrice();
   const { allSymbolBalance } = useAllSymbolBalance(account);
+
+  const toggleCheck = () => {
+    setCheck(!check);
+  }
 
   const changeToken = (result: SelectTokenOption) => {
     let newFromToken = {
@@ -283,6 +289,7 @@ function BuySell() {
             const message = `Request ${!active ? 'add' : 'remove'} liquidity of TLP by ${!active ? fromToken.value : toToken.value} ${!active ? fromToken.symbol : toToken.symbol}.`;
             toastify(<Explorer message={message} type="transaction" digest={digest} />);
             changeRefreshTime(); // reload data
+            toggleCheck();
           } else {
             toastify(<Explorer message={'Execute Transaction error!'} type="transaction" digest={digest} />, 'error');
           }
@@ -447,8 +454,8 @@ function BuySell() {
               !connecting && !connected && !account ?
                 <SuiWalletButton isButton={true} /> :
                 <div>
-                  <button className='btn' disabled={btnInfo.state > 0 || loading} onClick={approve}>
-                    {loading ? <Loading /> : btnInfo.text}
+                  <button className='btn' disabled={btnInfo.state > 0} onClick={toggleCheck}>
+                    {btnInfo.text}
                   </button>
                 </div>
             }
@@ -459,6 +466,49 @@ function BuySell() {
       </div>
 
       <BuySellRight />
+
+      <TurbosDialog open={check} title="Check order" onClose={toggleCheck} >
+        <>
+          <div className='check-con'>
+            <div className='check-list'>
+              <img src={fromToken.icon} alt="" height="24" />
+              <div className='check-info'>
+                <p>Pay {fromToken.symbol}</p>
+                <p>{fromToken.value}</p>
+              </div>
+            </div>
+            <div className='check-to'><img src={toIcon} alt="" height="24" /></div>
+            <div className='check-list'>
+              <img src={toToken.icon} alt="" height="24" />
+              <div className='check-info'>
+                <p>Receive {toToken.symbol}</p>
+                <p>{toToken.value}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="line line-top-16">
+            <p className="ll">Min. Ratio</p>
+            <p className="lr">1 {fromToken.symbol} ≈ {Bignumber(fromToken.price).div(toToken.price).toString()}{toToken.symbol} </p>
+          </div>
+          <div className="line">
+            <p className="ll">Spread</p>
+            <p className="lr">-</p>
+          </div>
+          <div className="line">
+            <p className="ll">Fees</p>
+            <p className="lr">{!!fees.toNumber() ? `\$${fees.toFixed(2)}` : '-'}</p>
+          </div>
+
+          <div>
+            <button className='btn' onClick={approve} disabled={loading}>
+              {loading ? <Loading /> : 'Approve'}
+            </button>
+          </div>
+        </>
+      </TurbosDialog>
+
+
 
     </div>
   )
