@@ -169,7 +169,11 @@ function Chart(props: ChartProps) {
 
   const scaleChart = useCallback(() => {
     if (currentChart) {
-      const from = Date.now() / 1000 - (7 * 24 * CHART_PERIODS[chartTime]) / 2 + timezoneOffset;
+      let periods = CHART_PERIODS[chartTime]
+      if (periods < CHART_PERIODS['1h']) {
+        periods = CHART_PERIODS['1h'];
+      }
+      const from = Date.now() / 1000 - (7 * 24 * periods) / 2 + timezoneOffset;
       const to = Date.now() / 1000 + timezoneOffset;
       currentChart.timeScale().setVisibleRange({ from, to } as TimeRange);
       // currentChart.timeScale().fitContent();
@@ -216,7 +220,17 @@ function Chart(props: ChartProps) {
         // sui token price
         if (allSymbolPrice[chartToken] && prices.length > 0) {
           const symbolPrice = Number(allSymbolPrice[chartToken].price);
-          prices[prices.length - 1].close = symbolPrice;
+          const lastData = prices[prices.length - 1];
+          lastData.close = symbolPrice;
+
+          if (symbolPrice > lastData.high) {
+            lastData.higt = symbolPrice;
+          }
+
+          if (symbolPrice < lastData.low) {
+            lastData.low = symbolPrice
+          }
+
         }
 
         setPricedata(prices);
