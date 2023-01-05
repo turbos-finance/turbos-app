@@ -8,7 +8,7 @@
     "@emotion/styled": "^11.10.5",
     "@mui/icons-material": "^5.10.9",
     "@mui/material": "^5.10.11",
-    "@mysten/sui.js": "0.20",
+    "@mysten/sui.js": "0.21.0",
     "@mysten/wallet-adapter-all-wallets": "^0.3.4",
     "@mysten/wallet-adapter-react": "^9.0.0",
     "@mysten/wallet-adapter-react-ui": "^0.2.6",

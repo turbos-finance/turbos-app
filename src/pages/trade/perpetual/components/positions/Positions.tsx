@@ -296,7 +296,7 @@ function Positions(props: PositionsProps) {
                           {pnlPrice.indexOf('-') > -1 ? pnlPrice.replace('-', '-$') : `+\$${pnlPrice}`}
                         </span>
                         <div className={styles['table-position']}>
-                          <span className={isGreen ? styles.green : styles.red}>{pnl}%</span>
+                          <span className={isGreen ? styles.green : styles.red}>{pnl}</span>
                           {/* <img src={shareIcon} alt="" height="24" className={styles.icon} /> */}
                         </div>
                       </div>
