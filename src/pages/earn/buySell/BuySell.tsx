@@ -280,7 +280,8 @@ function BuySell() {
           const digest = getTransactionDigest(executeTransactionTnx);
 
           if (effects?.status.status === 'success') {
-            toastify(<Explorer message={'Execute Transaction Successfully!'} type="transaction" digest={digest} />);
+            const message = `Request ${!active ? 'add' : 'remove'} liquidity of TLP by ${!active ? fromToken.value : toToken.value} ${!active ? fromToken.symbol : toToken.symbol}.`;
+            toastify(<Explorer message={message} type="transaction" digest={digest} />);
             changeRefreshTime(); // reload data
           } else {
             toastify(<Explorer message={'Execute Transaction error!'} type="transaction" digest={digest} />, 'error');

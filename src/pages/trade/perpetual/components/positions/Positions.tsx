@@ -813,8 +813,8 @@ function AddAndRemoveMarginTurbosDialog(props: TurbosDialogProps) {
 
           if (effects?.status.status === 'success') {
             const message = `Add margin of ${toToken.symbol} ${data.is_long ? 'Long' : 'Short'} by ${fromToken.value} ${fromToken.symbol}.`;
-            const storege = `${timestamp || Date.now()}<br/>${message}`;
-            unshiftLocalStorage(`${TurbosPerpetualTradeRecord}_${account}`, storege);
+            // const storege = `${timestamp || Date.now()}<br/>${message}`;
+            // unshiftLocalStorage(`${TurbosPerpetualTradeRecord}_${account}`, storege);
 
             toastify(<Explorer message={message} type="transaction" digest={digest} />);
             changeClose();
