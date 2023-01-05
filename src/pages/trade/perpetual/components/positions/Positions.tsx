@@ -24,6 +24,8 @@ import { useAllSymbolBalance } from '../../../../../hooks/useSymbolBalance';
 import { bignumberDivDecimalFixed, bignumberDivDecimalString, bignumberRemoveDecimal, bignumberWithCommas, bignumberWithPercent, decimal } from '../../../../../utils/tools';
 import { TurbosPerpetualTradeRecord, unshiftLocalStorage } from '../../../../../lib';
 import { minusSlippage, plusSlippage } from '../../../../../lib/slippage';
+import { getPositionFee } from '../../../../../lib/getFee';
+import { useVault } from '../../../../../hooks/useVault';
 
 type PositionsProps = {
   changeLen: (value: number) => void
@@ -354,6 +356,7 @@ function ClosePositionTurbosDialog(props: TurbosDialogProps) {
 
   const { allSymbolPrice } = useAllSymbolPrice();
   const { allPool } = useAllPool();
+  const { vault } = useVault();
 
   // button active info
   useEffect(() => {
@@ -566,6 +569,10 @@ function ClosePositionTurbosDialog(props: TurbosDialogProps) {
     pnlPrice = newPnlPrice.indexOf('-') > -1 ? newPnlPrice.replace('-', '-$') : `+\$${newPnlPrice}`;
   }
 
+  const fees = fromToken.value ?
+    `\$${numberWithCommas(getPositionFee(vault, Bignumber(toToken.value).multipliedBy(toToken.price).div(10 ** 9)).toFixed(2))}`
+    : '-';
+
   return (
     <TurbosDialog open={open} title={`Close ${data.is_long ? 'Long' : 'Short'} ${fromToken.symbol}`} onClose={changeClose}>
       <div className="section section-marbottom">
@@ -618,7 +625,7 @@ function ClosePositionTurbosDialog(props: TurbosDialogProps) {
       <div className="line">
         <p className="ll">Fees</p>
         <p className="lr">
-          {bignumberWithCommas(fromToken.value && Bignumber(fromToken.value).multipliedBy(fromToken.price).multipliedBy(0.001))}
+          {fees}
         </p>
       </div>
       <div className="line-hr"></div>
@@ -654,6 +661,7 @@ function AddAndRemoveMarginTurbosDialog(props: TurbosDialogProps) {
   const { allSymbolPrice } = useAllSymbolPrice();
   const { allPool } = useAllPool();
   const { allSymbolBalance } = useAllSymbolBalance(account);
+  const { vault } = useVault();
 
   const [loading, setLoading] = useState(false);
   const [tabActive, setTabActive] = useState(0);
@@ -917,6 +925,9 @@ function AddAndRemoveMarginTurbosDialog(props: TurbosDialogProps) {
     :
     Bignumber(data.average_price).plus(differencePrice);
 
+  const executionFee = fromToken.value?
+    `${getPositionFee(vault, Bignumber(fromToken.value).multipliedBy(fromToken.price)).div(fromToken.price).toString()}`
+    : '-'
 
   return (
     <TurbosDialog open={open} title={`Edit ${data.is_long ? 'Long' : 'Short'} ${fromToken.symbol}`} onClose={changeClose}>
@@ -981,7 +992,7 @@ function AddAndRemoveMarginTurbosDialog(props: TurbosDialogProps) {
       </div>
       <div className="line">
         <p className="ll">Execution Fees</p>
-        <p className="lr">-</p>
+        <p className="lr">{executionFee} {fromToken.symbol}</p>
       </div>
       <div>
         <button className='btn' onClick={approve} disabled={btnInfo.state > 0 || loading}>
