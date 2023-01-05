@@ -24,7 +24,6 @@ import { NetworkType, SymbolType } from '../../../config/config.type';
 import { usePool } from '../../../hooks/usePool';
 import { useAllSymbolPrice } from '../../../hooks/useSymbolPrice';
 import { useAllSymbolBalance } from '../../../hooks/useSymbolBalance';
-import { useAvailableLiquidity } from '../../../hooks/useAvailableLiquidity';
 import { contractConfig } from '../../../config/contract.config';
 import { provider } from '../../../lib/provider';
 import { Coin, getObjectId, getTimestampFromTransactionResponse, getTransactionDigest, getTransactionEffects } from '@mysten/sui.js';
@@ -130,8 +129,8 @@ function Perpetual() {
 
   const { pool } = usePool(toToken.symbol as SymbolType);
   const fromTokenPool = usePool(fromToken.symbol as SymbolType);
-  
-  const changePositionDataLen = (value:number)=>{
+
+  const changePositionDataLen = (value: number) => {
     setPositionDataLen(value);
   }
 
@@ -351,7 +350,11 @@ function Perpetual() {
   }
 
   const changeBtnText = () => {
-    const leverage = Bignumber(toToken.value).multipliedBy(toToken.price).div(fromToken.price).div(fromToken.value);
+    let lever = Bignumber(toToken.value).multipliedBy(toToken.price).div(fromToken.price).div(fromToken.value);
+    if (showLeverage) {
+      lever = Bignumber(leverage);
+    }
+    const isLiquidity = Bignumber(fromToken.value).multipliedBy(10 ** 9).multipliedBy(lever).minus(fromTokenPool.pool.pool_amounts).isGreaterThanOrEqualTo(0);
     if (!fromToken.value || !Number(fromToken.value)) {
       setBtnInfo({
         state: 1,
@@ -362,7 +365,7 @@ function Perpetual() {
         state: 2,
         text: `Insufficient ${fromToken.symbol} balance`
       });
-    } else if (Bignumber(fromToken.value).multipliedBy(10 ** 9).minus(fromTokenPool.pool.pool_amounts).isGreaterThanOrEqualTo(0)) {
+    } else if (isLiquidity) {
       setBtnInfo({
         state: 3,
         text: `Insufficient ${fromToken.symbol} liquidity`
@@ -373,12 +376,12 @@ function Perpetual() {
         state: 4,
         text: `Insufficient ${toToken.symbol} liquidity`
       });
-    } else if (!showLeverage && leverage.minus(1.1).isLessThan(0)) {
+    } else if (!showLeverage && lever.minus(1.1).isLessThan(0)) {
       setBtnInfo({
         state: 5,
         text: `Min leverage: 1.1x`
       });
-    } else if (!showLeverage && leverage.minus(30).isGreaterThan(0)) {
+    } else if (!showLeverage && lever.minus(30).isGreaterThan(0)) {
       setBtnInfo({
         state: 6,
         text: `Max leverage: 30.0x`
@@ -409,14 +412,14 @@ function Perpetual() {
       let argumentsVal: (string | number | boolean | string[])[] = [
         config.VaultObjectId,
         balanceObjects,
-        amount,
+        amount.toString(),
         fromSymbolConfig.PoolObjectId,
         toSymbolConfig.PoolObjectId,
         config.PriceFeedStorageObjectId,
         config.PositionsObjectId,
         !trade ? true : false,
-        bignumberRemoveDecimal(bignumberMulDecimalString(Bignumber(toToken.value).multipliedBy(toToken.price))),
-        bignumberRemoveDecimal(bignumberMulDecimalString(Bignumber(toToken.price).multipliedBy(!trade ? 1.01 : 0.99))),
+        bignumberRemoveDecimal(bignumberMulDecimalString(Bignumber(toToken.value).multipliedBy(toToken.price))).toString(),
+        bignumberRemoveDecimal(bignumberMulDecimalString(Bignumber(toToken.price).multipliedBy(!trade ? 1.01 : 0.99))).toString(),
         config.TimeOracleObjectId
       ];
 
@@ -468,7 +471,7 @@ function Perpetual() {
 
   useEffect(() => {
     changeBtnText();
-  }, [connecting, connected, account, fromToken, toToken, pool, trade, showLeverage]);
+  }, [connecting, connected, account, fromToken, toToken, pool, trade, showLeverage, leverage]);
 
   useEffect(() => {
     if (allSymbolBalance[fromToken.symbol]) {
@@ -580,7 +583,7 @@ function Perpetual() {
   }, [toToken.symbol]);
 
   const recordTitle = ['Positions', 'Trades'];
-  const recordContent = [<Positions changeLen={changePositionDataLen} />, <Trades/>];
+  const recordContent = [<Positions changeLen={changePositionDataLen} />, <Trades />];
   const typeList = ['Market']; // ['Market', 'Limit', 'Trigger'];
 
 

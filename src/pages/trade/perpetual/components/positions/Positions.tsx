@@ -465,10 +465,10 @@ function ClosePositionTurbosDialog(props: TurbosDialogProps) {
         data.index_pool_address,
         config.PriceFeedStorageObjectId,
         config.PositionsObjectId,
-        bignumberRemoveDecimal(collateral_delta),
+        bignumberRemoveDecimal(collateral_delta).toString(),
         data.is_long ? true : false,
-        bignumberRemoveDecimal(position_size_delta),
-        bignumberRemoveDecimal(price),
+        bignumberRemoveDecimal(position_size_delta).toString(),
+        bignumberRemoveDecimal(price).toString(),
         account,
         config.TimeOracleObjectId
       ];
@@ -774,14 +774,14 @@ function AddAndRemoveMarginTurbosDialog(props: TurbosDialogProps) {
       let argumentsVal: (string | number | boolean | BigInt | string[])[] = [
         config.VaultObjectId,
         balanceObjects,
-        bignumberRemoveDecimal(Bignumber(fromToken.value).multipliedBy(10 ** 9)),
+        bignumberRemoveDecimal(Bignumber(fromToken.value).multipliedBy(10 ** 9)).toString(),
         data.collateral_pool_address,
         data.index_pool_address,
         config.PriceFeedStorageObjectId,
         config.PositionsObjectId,
         data.is_long ? true : false,
-        0,
-        bignumberRemoveDecimal(price),
+        '0',
+        bignumberRemoveDecimal(price).toString(),
         config.TimeOracleObjectId
       ];
 
@@ -849,10 +849,10 @@ function AddAndRemoveMarginTurbosDialog(props: TurbosDialogProps) {
         data.index_pool_address,
         config.PriceFeedStorageObjectId,
         config.PositionsObjectId,
-        bignumberRemoveDecimal(collateral_delta),
+        bignumberRemoveDecimal(collateral_delta).toString(),
         data.is_long ? true : false,
-        0,
-        bignumberRemoveDecimal(price),
+        '0',
+        bignumberRemoveDecimal(price).toString(),
         account,
         config.TimeOracleObjectId
       ];

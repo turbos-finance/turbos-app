@@ -4,7 +4,6 @@ import Bignumber from 'bignumber.js';
 import TlpText from "../../../components/tlpText/TlpText";
 import styles from './BuySell.module.css';
 
-import suiIcon from '../../../assets/images/ic_sui_40.svg';
 import buysellIcon from '../../../assets/images/buysellicon.png';
 import downIcon from '../../../assets/images/down.png';
 
@@ -240,9 +239,9 @@ function BuySell() {
           config.VaultObjectId,
           fromSymbolConfig.PoolObjectId,
           balanceObjects,
-          amount,
+          amount.toString(),
           config.PriceFeedStorageObjectId,
-          0,
+          '0',
           config.TimeOracleObjectId
         ]
         typeArgumentsVal = [fromType];
@@ -251,9 +250,9 @@ function BuySell() {
           config.VaultObjectId,
           toSymbolConfig.PoolObjectId,
           balanceObjects,
-          amount,
+          amount.toString(),
           config.PriceFeedStorageObjectId,
-          0,
+          '0',
           account,
           config.TimeOracleObjectId
         ]

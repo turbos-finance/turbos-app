@@ -356,7 +356,7 @@ function Swap() {
       let argumentsVal: (string | number | BigInt | string[])[] = [
         config.VaultObjectId,
         balanceObjects,
-        amount,
+        amount.toString(),
         fromSymbolConfig.PoolObjectId,
         toSymbolConfig.PoolObjectId,
         config.PriceFeedStorageObjectId,
@@ -391,11 +391,8 @@ function Swap() {
           const timestamp = getTimestampFromTransactionResponse(executeTransactionTnx);
 
           if (effects?.status.status === 'success') {
-            // const tnx = await provider.getTransactionWithEffects(digest);
-            // const timestamp = getTimestampFromTransactionResponse(tnx) || Date.now();
-            const storege = `${timestamp || Date.now()}<br/>Swap ${fromToken.value} ${fromToken.symbol} to ${toToken.symbol}`;
-            unshiftLocalStorage(`${TurbosSwapTradeRecord}_${account}`, storege);
-
+            const storege = `${timestamp || Date.now()}Swap ${fromToken.value} ${fromToken.symbol} to ${toToken.symbol}`;
+            // unshiftLocalStorage(`${TurbosSwapTradeRecord}_${account}`, storege);
             toastify(<Explorer message={storege} type="transaction" digest={digest} />);
             toggleCheck();
             changeRefreshTime(); // reload data
