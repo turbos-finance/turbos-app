@@ -125,7 +125,7 @@ function Chart(props: ChartProps) {
     low_24: 0,
     start_price: 0,
     current_price: 0
-  })
+  });
   const [pricedata, setPricedata] = useState<any[]>([]);
   const [chartTime, setChartTime] = useState(turbos_chart_time || '4h');
   const [currentChart, setCurrentChart] = useState<undefined | IChartApi>();
@@ -330,11 +330,11 @@ function Chart(props: ChartProps) {
           </div>
           <div className={styles.pricelist}>
             <div className={styles.value2}>24h High</div>
-            <div className={styles.value1}>{prices.high_24 && numberWithCommas(prices.high_24.toFixed(2)) || '-'}</div>
+            <div className={styles.value1}>{high && numberWithCommas(high.toFixed(2)) || '-'}</div>
           </div>
           <div className={styles.pricelist}>
             <div className={styles.value2}>24h Low</div>
-            <div className={styles.value1}>{prices.low_24 && numberWithCommas(prices.low_24.toFixed(2)) || '-'}</div>
+            <div className={styles.value1}>{low && numberWithCommas(low.toFixed(2)) || '-'}</div>
           </div>
         </div>
       </div>
