@@ -15,7 +15,6 @@ import SuiWalletButton from '../../../components/walletButton/WalletButton';
 import { useAllSymbolBalance, useSymbolBalance } from '../../../hooks/useSymbolBalance';
 import { useAllSymbolPrice, useSymbolPrice } from '../../../hooks/useSymbolPrice';
 import { NetworkType, SymbolType, TLPAndSymbolType } from '../../../config/config.type';
-import { useAvailableLiquidity } from '../../../hooks/useAvailableLiquidity';
 import { numberWithCommas } from '../../../utils';
 import { usePool } from '../../../hooks/usePool';
 import { useToastify } from '../../../contexts/toastify';
@@ -580,7 +579,7 @@ function Swap() {
           </div>
           <div className="line">
             <p className="ll">Fees</p>
-            <p className="lr">-</p>
+            <p className="lr">{!!fees.toNumber() ? `\$${fees.toFixed(2)}` : '-'}</p>
           </div>
 
           <div>

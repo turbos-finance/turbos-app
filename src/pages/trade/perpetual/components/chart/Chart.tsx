@@ -11,6 +11,7 @@ import { numberWithCommas } from "../../../../../utils";
 import { useRefresh } from "../../../../../contexts/refresh";
 import { useAllSymbolPrice, useSymbolPrice } from "../../../../../hooks/useSymbolPrice";
 import BigNumber from "bignumber.js";
+import { getLocalStorage, getLocalStorageSupplyTradeToken, setLocalStorage, TurbosChartTime, TurbosPerpetualTo } from "../../../../../lib";
 
 const times = [
   { label: '5m', id: '5' },
@@ -97,6 +98,9 @@ type ChartProps = {
 }
 
 function Chart(props: ChartProps) {
+  const turbos_perpetual_to = getLocalStorageSupplyTradeToken(TurbosPerpetualTo);
+  const turbos_chart_time = getLocalStorage(TurbosChartTime);
+
   const { symbol, changeChartSymbol, dropdownDisabled } = props;
 
   const { refreshTime } = useRefresh();
@@ -123,14 +127,14 @@ function Chart(props: ChartProps) {
     current_price: 0
   })
   const [pricedata, setPricedata] = useState<any[]>([]);
-  const [chartTime, setChartTime] = useState('4h');
+  const [chartTime, setChartTime] = useState(turbos_chart_time || '4h');
   const [currentChart, setCurrentChart] = useState<undefined | IChartApi>();
   const [currentSeries, setCurrentSeries] = useState<undefined | ISeriesApi<"Candlestick">>();
   const [hoveredCandlestick, setHoveredCandlestick] = useState<null | any>(null);
   const [chartInited, setChartInited] = useState(false);
   const [visible, setVisible] = useState(false);
 
-  const [chartToken, setChartToken] = useState('BTC')
+  const [chartToken, setChartToken] = useState(turbos_perpetual_to ? turbos_perpetual_to.symbol : 'BTC')
 
   const changeChartToken = (value: string) => {
     setChartToken(value);
@@ -172,6 +176,10 @@ function Chart(props: ChartProps) {
     }
   }, [currentChart, chartTime]);
 
+  const changeChartTime = (label: string) => {
+    setChartTime(label);
+    setLocalStorage(TurbosChartTime, label);
+  }
 
   useEffect(() => {
     if (!currentChart || !chartNode) {
@@ -323,7 +331,7 @@ function Chart(props: ChartProps) {
             {times.map((item: any) => <span
               key={item.label}
               className={chartTime === item.label ? 'active' : ''}
-              onClick={() => { setChartTime(item.label) }}>
+              onClick={() => { changeChartTime(item.label) }}>
               {item.label}
             </span>)}
           </div>

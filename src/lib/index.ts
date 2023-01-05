@@ -10,6 +10,9 @@ export const TurbosPerpetualFrom = 'Turbos_Perpetual_From';
 export const TurbosPerpetualTo = 'Turbos_Perpetual_To';
 export const TurbosPerpetualTrade = 'Turbos_Perpetual_Trade';
 export const TurbosPerpetualTradeRecord = 'Turbos_Perpetual_Trade_Record';
+export const TurbosPerpetualLeverage = 'Turbos_Perpetual_Leverage';
+export const TurbosPerpetualLeverageShow = 'Turbos_Perpetual_Leverage_Show';
+export const TurbosChartTime = 'Turbos_Chart_Time';
 
 export const setLocalStorage = (k: string, value: string) => {
   localStorage.setItem(k, value);

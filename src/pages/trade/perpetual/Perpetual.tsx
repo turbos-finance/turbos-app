@@ -39,6 +39,8 @@ import {
   getLocalStorageSupplyTradeToken,
   setLocalStorage,
   TurbosPerpetualFrom,
+  TurbosPerpetualLeverage,
+  TurbosPerpetualLeverageShow,
   TurbosPerpetualTo,
   TurbosPerpetualTrade,
   TurbosPerpetualTradeRecord,
@@ -84,6 +86,9 @@ function Perpetual() {
   const current_trade = getLocalStorage(TurbosPerpetualTrade);
   const init_trade = current_trade === '1' ? 1 : 0;
 
+  const current_leverage = getLocalStorage(TurbosPerpetualLeverage);
+  const current_leverage_show = getLocalStorage(TurbosPerpetualLeverageShow);
+
   const {
     connecting,
     connected,
@@ -91,6 +96,7 @@ function Perpetual() {
     network,
     adapter
   } = useSuiWallet();
+
   const { changeRefreshTime } = useRefresh();
   const { toastify } = useToastify();
 
@@ -101,8 +107,8 @@ function Perpetual() {
   const [selectTokenSource, setSelectTokenSource] = useState(0); // 0: from token; 1: to token
 
   const [percent, setPercent] = useState(0);
-  const [leverage, setLeverage] = useState(1.1);
-  const [showLeverage, setShowLeverage] = useState(true);
+  const [leverage, setLeverage] = useState(current_leverage ? Number(current_leverage) : 1.1);
+  const [showLeverage, setShowLeverage] = useState(!current_leverage_show || current_leverage_show === 'true' ? true : false);
   const [check, setCheck] = useState(false);
 
   const [fromToken, setFromToken] = useState<FromToTokenType>({
@@ -194,6 +200,10 @@ function Perpetual() {
       value: newValue,
       isInput: true
     });
+
+    if (!showLeverage) {
+      return;
+    }
 
     const newBalance = Bignumber(newValue)
       .multipliedBy(allSymbolPrice[fromToken.symbol].price)
@@ -351,13 +361,25 @@ function Perpetual() {
     });
   }
 
+  const changeLeverage = (value: number) => {
+    setLeverage(value);
+    setLocalStorage(TurbosPerpetualLeverage, value.toString());
+  }
+
+  const changeShowLeverage = () => {
+    const newValue = !showLeverage;
+    setShowLeverage(newValue);
+    setLocalStorage(TurbosPerpetualLeverageShow, newValue.toString());
+  }
+
   const changeBtnText = () => {
     let lever = Bignumber(toToken.value).multipliedBy(toToken.price).div(fromToken.price).div(fromToken.value);
     if (showLeverage) {
       lever = Bignumber(leverage);
     }
     const isLiquidity = Bignumber(fromToken.value).multipliedBy(10 ** 9).multipliedBy(lever).minus(fromTokenPool.pool.pool_amounts).isGreaterThanOrEqualTo(0);
-    if (!fromToken.value || !Number(fromToken.value)) {
+
+    if (!fromToken.value || !Number(fromToken.value) || !toToken.value || !Number(fromToken.value)) {
       setBtnInfo({
         state: 1,
         text: 'Enter a amount'
@@ -502,10 +524,6 @@ function Perpetual() {
   }, [allSymbolBalance]);
 
   useEffect(() => {
-    if (!showLeverage) {
-      return;
-    }
-
     if (allSymbolPrice[fromToken.symbol]) {
       setFromToken({
         ...fromToken,
@@ -518,6 +536,10 @@ function Perpetual() {
         ...toToken,
         price: allSymbolPrice[toToken.symbol].price,
       })
+    }
+
+    if (!showLeverage) {
+      return;
     }
 
     if (fromToken.isInput) {
@@ -722,7 +744,7 @@ function Perpetual() {
                   </div>
                   <div className="line" style={{ marginBottom: '.5rem' }}>
                     <p className="ll">leverage</p>
-                    <p className="lr pointer" onClick={() => setShowLeverage(!showLeverage)}>
+                    <p className="lr pointer" onClick={changeShowLeverage}>
                       {
                         !showLeverage ?
                           <CheckBoxOutlineBlankIcon sx={{ color: '#63CCA9', fontSize: 18 }} />
@@ -737,7 +759,7 @@ function Perpetual() {
                       max={30}
                       step={0.1}
                       marks={leverageMarks}
-                      onChange={(value) => { setLeverage(value as number) }}
+                      onChange={(value) => { changeLeverage(value as number) }}
                       value={leverage}
                       defaultValue={leverage}
                       dotStyle={{ backgroundColor: trade === 0 ? sliderGreen[0] : sliderRed[0], border: '0 none', borderRadius: '2px', width: '2px' }}
