@@ -26,6 +26,7 @@ import { TurbosPerpetualTradeRecord, unshiftLocalStorage } from '../../../../../
 import { minusSlippage, plusSlippage } from '../../../../../lib/slippage';
 import { getPositionFee } from '../../../../../lib/getFee';
 import { useVault } from '../../../../../hooks/useVault';
+import { ContactSupportOutlined } from '@mui/icons-material';
 
 type PositionsProps = {
   changeLen: (value: number) => void
@@ -364,8 +365,9 @@ function ClosePositionTurbosDialog(props: TurbosDialogProps) {
       if (!fromToken.value) {
         setBtnInfo({ state: 1, text: 'Enter a amount' })
       } else if (Bignumber(fromToken.size).minus(data.size).isGreaterThan(0)) {
-        const symbol = findContractConfigCoinSymbol(network, data.index_pool_address, 'PoolObjectId');
-        setBtnInfo({ state: 2, text: `Insufficient ${symbol} balance` });
+        setBtnInfo({ state: 2, text: `Insufficient ${fromToken.symbol} balance` });
+      } else if (Bignumber(toToken.value).multipliedBy(10 ** 9).minus(allPool[toToken.symbol].pool_amounts).isGreaterThan(0)) {
+        setBtnInfo({ state: 3, text: `Insufficient ${toToken.symbol} liquidity` });
       } else {
         setBtnInfo({ state: 0, text: 'Approve' });
       }
@@ -679,6 +681,11 @@ function AddAndRemoveMarginTurbosDialog(props: TurbosDialogProps) {
         setBtnInfo({ state: 1, text: 'Enter a amount' })
       } else if (Bignumber(fromToken.value).minus(fromToken.balance).isGreaterThan(0)) {
         setBtnInfo({ state: 2, text: `Insufficient ${fromToken.symbol} balance` });
+      } else if (tabActive && allPool[fromToken.symbol] && Bignumber(fromToken.value).multipliedBy(10 ** 9).minus(allPool[fromToken.symbol].pool_amounts).isGreaterThanOrEqualTo(0)) {
+        setBtnInfo({
+          state: 5,
+          text: `Insufficient ${fromToken.symbol} liquidity`
+        });
       } else if (Bignumber(afterData.leverage).minus(1.1).isLessThan(0)) {
         setBtnInfo({ state: 3, text: `Min leverage :  1.1x` });
       } else if (Bignumber(afterData.leverage).minus(30).isGreaterThan(0)) {
@@ -925,7 +932,7 @@ function AddAndRemoveMarginTurbosDialog(props: TurbosDialogProps) {
     :
     Bignumber(data.average_price).plus(differencePrice);
 
-  const executionFee = fromToken.value?
+  const executionFee = fromToken.value ?
     `${getPositionFee(vault, Bignumber(fromToken.value).multipliedBy(fromToken.price)).div(fromToken.price).toString()}`
     : '-'
 
