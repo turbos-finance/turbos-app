@@ -23,7 +23,7 @@ export const useFundingRate = (to_symbol: string) => {
     if (pool_amounts == 0) { return 0 };
     let is_stable_token = pool_data.is_stable_token;
     let funding_rate_ractor = is_stable_token ? vault.stable_funding_rate_factor : vault.funding_rate_factor;
-    let next_funding_rate = BigNumber(funding_rate_ractor).multipliedBy(pool_data.reserved_amounts).multipliedBy(intervals).div(pool_amounts)
+    let next_funding_rate = BigNumber(funding_rate_ractor).multipliedBy(pool_data.reserved_amounts).multipliedBy(intervals).div(pool_amounts).div(10 ** 9);
     setFundingRate(next_funding_rate);
   }
 
@@ -31,7 +31,7 @@ export const useFundingRate = (to_symbol: string) => {
     if (currentTimestamp && vault && to_symbol && allPool[to_symbol]) {
       let pool_data = allPool[to_symbol];
       getFundingRate(pool_data);
-    }else{
+    } else {
       setFundingRate(BigNumber(0));
     }
 

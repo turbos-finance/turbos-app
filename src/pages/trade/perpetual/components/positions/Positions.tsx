@@ -18,11 +18,12 @@ import { useToastify } from '../../../../../contexts/toastify';
 import { Explorer } from '../../../../../components/explorer/Explorer';
 import { useAllSymbolPrice } from '../../../../../hooks/useSymbolPrice';
 import { SupplyTokenType, supplyTradeTokens } from '../../../../../config/tokens';
-import { findContractConfigCoinSymbol, findsupplyTokenSymbol, findSupplyTradeTokeSymbol, getContractConfigCoinSymbol } from '../../../../../config';
+import { findContractConfigCoinSymbol, findsupplyTokenSymbol, findSupplyTradeTokeSymbol, getContractConfigCoinSymbol, getSuiType } from '../../../../../config';
 import { useAllPool } from '../../../../../hooks/usePool';
 import { useAllSymbolBalance } from '../../../../../hooks/useSymbolBalance';
 import { bignumberDivDecimalFixed, bignumberDivDecimalString, bignumberRemoveDecimal, bignumberWithCommas, bignumberWithPercent, decimal } from '../../../../../utils/tools';
 import { TurbosPerpetualTradeRecord, unshiftLocalStorage } from '../../../../../lib';
+import { minusSlippage, plusSlippage } from '../../../../../lib/slippage';
 
 type PositionsProps = {
   changeLen: (value: number) => void
@@ -454,7 +455,7 @@ function ClosePositionTurbosDialog(props: TurbosDialogProps) {
       const fromSymbolConfig = config.Coin[(fromToken.symbol) as SymbolType];
 
       const collateral_delta = fromToken.value === fromToken.balance ? 0 : Bignumber(fromToken.value).div(fromToken.balance).multipliedBy(data.collateral);
-      const price = Bignumber(fromToken.price).multipliedBy(!data.is_long ? 1.01 : 0.99);
+      const price = Bignumber(fromToken.price).multipliedBy(!data.is_long ? plusSlippage : minusSlippage);
       const position_size_delta = fromToken.value === fromToken.balance
         ? Bignumber(data.size)
         : Bignumber(fromToken.value).div(fromToken.balance).multipliedBy(data.size);
@@ -763,13 +764,13 @@ function AddAndRemoveMarginTurbosDialog(props: TurbosDialogProps) {
       const toSymbolConfig = getContractConfigCoinSymbol(network, symbol);
       const fromSymbolConfig = getContractConfigCoinSymbol(network, fromToken.symbol);
 
-      const fromType = fromSymbolConfig?.Type === '0x0000000000000000000000000000000000000002::sui::SUI' ? '0x2::sui::SUI' : fromSymbolConfig?.Type;
+      const fromType = getSuiType(fromSymbolConfig?.Type || '');
       const coinBalance = await provider.getCoinBalancesOwnedByAddress(account, fromType);
       const amount = Bignumber(fromToken.value).multipliedBy(10 ** 9).toNumber();
       const balanceResponse = Coin.selectCoinSetWithCombinedBalanceGreaterThanOrEqual(coinBalance, BigInt(amount));
       const balanceObjects = balanceResponse.map((item) => Coin.getID(item));
 
-      const price = Bignumber(allSymbolPrice[symbol].originalPrice).multipliedBy(data.is_long ? 1.01 : 0.99);
+      const price = Bignumber(allSymbolPrice[symbol].originalPrice).multipliedBy(data.is_long ? plusSlippage : minusSlippage);
 
       let argumentsVal: (string | number | boolean | BigInt | string[])[] = [
         config.VaultObjectId,
@@ -841,7 +842,7 @@ function AddAndRemoveMarginTurbosDialog(props: TurbosDialogProps) {
       const fromSymbolConfig = getContractConfigCoinSymbol(network, fromToken.symbol);
 
       const collateral_delta = Bignumber(fromToken.value).multipliedBy(fromToken.price);
-      const price = Bignumber(allSymbolPrice[symbol].originalPrice).multipliedBy(!data.is_long ? 1.01 : 0.99);
+      const price = Bignumber(allSymbolPrice[symbol].originalPrice).multipliedBy(!data.is_long ? plusSlippage : minusSlippage);
 
       let argumentsVal: (string | number | boolean | string[])[] = [
         config.VaultObjectId,

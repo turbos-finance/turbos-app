@@ -48,6 +48,8 @@ import { bignumberDivDecimalString, bignumberMulDecimalString, bignumberRemoveDe
 import { useVault } from '../../../hooks/useVault';
 import { getPositionFee } from '../../../lib/getFee';
 import { useFundingRate } from '../../../hooks/useFundingRate';
+import { getSuiType } from '../../../config';
+import { minusSlippage, plusSlippage, slippage, slippagePercent } from '../../../lib/slippage';
 
 const tradeType = ['Long', 'Short'];
 
@@ -401,8 +403,7 @@ function Perpetual() {
       const config = contractConfig[network as NetworkType];
       const toSymbolConfig = config.Coin[(toToken.symbol) as SymbolType];
       const fromSymbolConfig = config.Coin[(fromToken.symbol) as SymbolType];
-
-      const fromType = fromSymbolConfig.Type === '0x0000000000000000000000000000000000000002::sui::SUI' ? '0x2::sui::SUI' : fromSymbolConfig.Type;
+      const fromType = getSuiType(fromSymbolConfig.Type);
 
       const coinBalance = await provider.getCoinBalancesOwnedByAddress(account, fromType);
       const amount = bignumberRemoveDecimal(bignumberMulDecimalString(fromToken.value));
@@ -419,7 +420,7 @@ function Perpetual() {
         config.PositionsObjectId,
         !trade ? true : false,
         bignumberRemoveDecimal(bignumberMulDecimalString(Bignumber(toToken.value).multipliedBy(toToken.price))).toString(),
-        bignumberRemoveDecimal(bignumberMulDecimalString(Bignumber(toToken.price).multipliedBy(!trade ? 1.01 : 0.99))).toString(),
+        bignumberRemoveDecimal(bignumberMulDecimalString(Bignumber(toToken.price).multipliedBy(!trade ? plusSlippage : minusSlippage))).toString(),
         config.TimeOracleObjectId
       ];
 
@@ -590,6 +591,12 @@ function Perpetual() {
   const fees = fromToken.value && toToken.value ?
     `\$${numberWithCommas(getPositionFee(vault, Bignumber(toToken.value).multipliedBy(toToken.price)).toFixed(2))}`
     : '-';
+
+  const executionFee = fromToken.value && toToken.value ?
+    `${getPositionFee(vault, Bignumber(toToken.value).multipliedBy(toToken.price)).div(toToken.price).toString()}`
+    : '-'
+
+  const fundingRateValue = fundingRate.toNumber() ? `${fundingRate.toFixed(2)}% / 1h` : '-';
 
   let lever: string | Bignumber = '-';
   let liqPrice = '-';
@@ -794,7 +801,7 @@ function Perpetual() {
             </div>
             <div className="line">
               <p className="ll">Borrow Fee</p>
-              <p className="lr">{fundingRate.toNumber() ? `${fundingRate.toString()}% / 1h` : '-'}</p>
+              <p className="lr">{fundingRateValue}</p>
             </div>
             <div className="line">
               <p className="ll">Available Liquidity</p>
@@ -877,19 +884,19 @@ function Perpetual() {
           </div>
           <div className="line">
             <p className="ll">Borrow Fee</p>
-            <p className="lr">-</p>
+            <p className="lr">{fundingRateValue}</p>
           </div>
           <div className="line">
             <p className="ll">Execution Fee</p>
             <p className="lr">
               <TurbosTooltip title={'Max BTC long'}>
-                <span className='underline'>0.03{fromToken.symbol}</span>
+                <span className='underline'>{executionFee} {toToken.symbol}</span>
               </TurbosTooltip>
             </p>
           </div>
           <div className="line">
             <p className="ll">Allowed Slippage</p>
-            <p className="lr">0.1%</p>
+            <p className="lr">{slippagePercent}%</p>
           </div>
           <div className="line">
             <p className="ll">Allow up to 1% slippage</p>

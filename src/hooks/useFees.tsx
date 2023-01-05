@@ -75,8 +75,7 @@ export const useFees = (in_symbol: string, in_symbol_value: string, out_symbol: 
     const after_fees = BigNumber(out_symbol_value)
       .multipliedBy(BigNumber(BASIS_POINTS_DIVISOR).minus(fee_basis_points))
       .div(BASIS_POINTS_DIVISOR);
-    console.log(after_fees.toString());
-    setFees(after_fees);
+    setFees(BigNumber(out_symbol_value).minus(after_fees));
   }
 
   useEffect(() => {
