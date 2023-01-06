@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
+import { useRefresh } from '../../contexts/refresh';
 import { useStore } from '../../contexts/store';
 import { useSuiWallet } from '../../contexts/useSuiWallet';
 import { useAllPool } from '../../hooks/usePool';
@@ -19,6 +20,8 @@ function Layout() {
 
   const { account } = useSuiWallet();
   const { changeStore } = useStore();
+  const { changeRefreshTime } = useRefresh();
+  const location = useLocation();
   const { vault } = useVault();
   const { allPool } = useAllPool();
   const { allSymbolPrice } = useAllSymbolPrice();
@@ -45,6 +48,10 @@ function Layout() {
   useEffect(() => {
     changeStore({ allSymbolBalance });
   }, [allSymbolBalance]);
+
+  // useEffect(() => {
+  //   changeRefreshTime();
+  // }, [location.pathname]);
 
   return (
     <div className={!show ? styles['content'] : styles['contenthide']}>

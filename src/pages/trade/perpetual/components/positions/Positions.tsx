@@ -42,7 +42,6 @@ function Positions(props: PositionsProps) {
 
   const [check, setCheck] = useState(false);
   const [edit, setEdit] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [option, setOption] = useState<{ [x: string]: any } | undefined>();
 
   const toggleCheck = (value?: any) => {
@@ -56,7 +55,7 @@ function Positions(props: PositionsProps) {
   }
 
   const getPositions = async () => {
-    if (account && network) {
+    if (account && network && refreshTime) {
       const config = contractConfig[network as NetworkType];
       const objects = await provider.getObject(config.PositionsObjectId);
       const filed = getObjectFields(objects);
@@ -106,7 +105,6 @@ function Positions(props: PositionsProps) {
 
                 const symbol = findContractConfigCoinSymbol(network, item.index_pool_address, 'PoolObjectId');
                 const supplyTradeToken = findSupplyTradeTokeSymbol(symbol);
-
                 const symbolPrice = allSymbolPrice ? allSymbolPrice[symbol].originalPrice : 0;
 
                 const leverage = Bignumber(item.size).div(item.collateral);

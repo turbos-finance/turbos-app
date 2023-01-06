@@ -25,6 +25,7 @@ import { useFees } from "../../../hooks/useFees";
 import { bignumberMulDecimalString, bignumberRemoveDecimal } from "../../../utils/tools";
 import TurbosDialog from "../../../components/UI/Dialog/Dialog";
 import { useStore } from "../../../contexts/store";
+import { Token } from "graphql";
 
 type FromToTokenType = {
   balance: string,
@@ -67,8 +68,8 @@ function BuySell() {
 
   const { fees } = useFees(fromToken.symbol, fromToken.value, toToken.symbol, toToken.value);
   const { store } = useStore();
-  const pool = poolArg === 'TLP' ? undefined : store.allPool[poolArg];
-  const { allSymbolPrice, allSymbolBalance } = store;
+  const { allSymbolPrice, allSymbolBalance, allPool } = store;
+  const pool = poolArg === 'TLP' ? undefined : allPool && allPool[poolArg];
 
   const toggleCheck = () => {
     setCheck(!check);
@@ -330,57 +331,41 @@ function BuySell() {
   }, [connecting, connected, account, fromToken, toToken, pool, active]);
 
   useEffect(() => {
-    const _fromSymbolBalance: any = allSymbolBalance ? allSymbolBalance[fromToken.symbol] : {};
-    const _toSymbolBalance: any = allSymbolBalance ? allSymbolBalance[toToken.symbol] : {};
+    const _fromSymbolBalance: any = allSymbolBalance && allSymbolBalance[fromToken.symbol] ? allSymbolBalance[fromToken.symbol] : { balance: '0.00' };
+    const _toSymbolBalance: any = allSymbolBalance && allSymbolBalance[toToken.symbol] ? allSymbolBalance[toToken.symbol] : { balance: '0.00' };
+
+    const _fromSymbolPrice = allSymbolPrice && allSymbolPrice[fromToken.symbol] ? allSymbolPrice[fromToken.symbol] : { price: '0' };
+    const _toSymbolPrice = allSymbolPrice && allSymbolPrice[toToken.symbol] ? allSymbolPrice[toToken.symbol] : { price: '0' };
+
+    const fromTokenValue = toToken.isInput
+      ? Bignumber(_toSymbolPrice.price)
+        .multipliedBy(toToken.value)
+        .div(_fromSymbolPrice.price)
+        .toString()
+      : fromToken.value;
 
     setFromToken({
       ...fromToken,
-      balance: _fromSymbolBalance.balance || '0.00'
+      balance: _fromSymbolBalance.balance,
+      price: _fromSymbolPrice.price,
+      value: fromTokenValue
     });
+
+    const toTokenValue = fromToken.isInput
+      ? Bignumber(_fromSymbolPrice.price)
+        .multipliedBy(fromToken.value)
+        .div(_toSymbolPrice.price)
+        .toString()
+      : toToken.value;
 
     setToToken({
       ...toToken,
-      balance: _toSymbolBalance.balance || '0.00'
+      balance: _toSymbolBalance.balance,
+      price: _toSymbolPrice.price,
+      value: toTokenValue
     });
-  }, [allSymbolBalance]);
 
-  useEffect(() => {
-    if (allSymbolPrice) {
-      if (allSymbolPrice[fromToken.symbol]) {
-        setFromToken({
-          ...fromToken,
-          price: allSymbolPrice[fromToken.symbol].price,
-        });
-      }
-
-      if (allSymbolPrice[toToken.symbol]) {
-        setToToken({
-          ...toToken,
-          price: allSymbolPrice[toToken.symbol].price,
-        })
-      }
-
-      if (fromToken.isInput) {
-        setToToken({
-          ...toToken,
-          value: Bignumber(allSymbolPrice[fromToken.symbol].price)
-            .multipliedBy(fromToken.value)
-            .div(allSymbolPrice[toToken.symbol].price)
-            .toString(),
-        });
-      }
-
-      if (toToken.isInput) {
-        setFromToken({
-          ...fromToken,
-          value: Bignumber(allSymbolPrice[toToken.symbol].price)
-            .multipliedBy(toToken.value)
-            .div(allSymbolPrice[fromToken.symbol].price)
-            .toString(),
-        });
-      }
-    }
-  }, [allSymbolPrice]);
+  }, [allSymbolBalance, allSymbolPrice]);
 
   useEffect(() => {
     setLocalStorage(TurbosBuySellActive, active.toString());

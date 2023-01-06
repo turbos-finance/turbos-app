@@ -500,109 +500,41 @@ function Perpetual() {
   }, [connecting, connected, account, fromToken, toToken, toTokenPool, fromTokenPool, trade, showLeverage, leverage]);
 
   useEffect(() => {
-    if (allSymbolBalance && allSymbolBalance[fromToken.symbol]) {
-      setFromToken({
-        ...fromToken,
-        balance: allSymbolBalance[fromToken.symbol].balance
-      })
-    } else {
-      setFromToken({
-        ...fromToken,
-        balance: '0.00'
-      })
-    }
+    const _fromSymbolBalance: any = allSymbolBalance && allSymbolBalance[fromToken.symbol] ? allSymbolBalance[fromToken.symbol] : { balance: '0.00' };
+    const _toSymbolBalance: any = allSymbolBalance && allSymbolBalance[toToken.symbol] ? allSymbolBalance[toToken.symbol] : { balance: '0.00' };
 
-    if (allSymbolBalance && allSymbolBalance[toToken.symbol]) {
-      setToToken({
-        ...toToken,
-        balance: allSymbolBalance[toToken.symbol].balance
-      })
-    }
-    else {
-      setToToken({
-        ...toToken,
-        balance: '0.00'
-      })
-    }
-  }, [allSymbolBalance]);
+    const _fromSymbolPrice = allSymbolPrice && allSymbolPrice[fromToken.symbol] ? allSymbolPrice[fromToken.symbol] : { price: '0' };
+    const _toSymbolPrice = allSymbolPrice && allSymbolPrice[toToken.symbol] ? allSymbolPrice[toToken.symbol] : { price: '0' };
 
-  useEffect(() => {
-    if (!allSymbolPrice) {
-      return;
-    }
+    const fromTokenValue = showLeverage && toToken.isInput
+      ? Bignumber(_toSymbolPrice.price)
+        .multipliedBy(toToken.value)
+        .div(_fromSymbolPrice.price)
+        .div(leverage)
+        .toString()
+      : fromToken.value;
 
-    if (allSymbolPrice[fromToken.symbol]) {
-      setFromToken({
-        ...fromToken,
-        price: allSymbolPrice[fromToken.symbol].price,
-      });
-    }
+    setFromToken({
+      ...fromToken,
+      balance: _fromSymbolBalance.balance,
+      price: _fromSymbolPrice.price,
+      value: fromTokenValue
+    });
 
-    if (allSymbolPrice[toToken.symbol]) {
-      setToToken({
-        ...toToken,
-        price: allSymbolPrice[toToken.symbol].price,
-      })
-    }
-
-    if (!showLeverage) {
-      return;
-    }
-
-    if (fromToken.isInput) {
-      setToToken({
-        ...toToken,
-        value: Bignumber(allSymbolPrice[fromToken.symbol].price)
-          .multipliedBy(fromToken.value)
-          .div(allSymbolPrice[toToken.symbol].price)
-          .multipliedBy(leverage)
-          .toString(),
-      });
-    } else if (toToken.isInput) {
-      setFromToken({
-        ...fromToken,
-        value: Bignumber(allSymbolPrice[toToken.symbol].price)
-          .multipliedBy(toToken.value)
-          .div(allSymbolPrice[fromToken.symbol].price)
-          .div(leverage)
-          .toString(),
-      });
-    }
-
-  }, [allSymbolPrice, leverage]);
-
-  useEffect(() => {
-    if (showLeverage && fromToken.price && toToken.price && fromToken.value) {
-      if (fromToken.isInput) {
-        setToToken({
-          ...toToken,
-          value: Bignumber(fromToken.price)
-            .multipliedBy(fromToken.value)
-            .div(toToken.price)
-            .multipliedBy(leverage)
-            .toString(),
-        });
-      } else if (toToken.isInput) {
-        setFromToken({
-          ...fromToken,
-          value: Bignumber(toToken.price)
-            .multipliedBy(toToken.value)
-            .div(fromToken.price)
-            .div(leverage)
-            .toString(),
-        });
-      }
-    } else if (showLeverage && (!fromToken.value || !toToken.value)) {
-      setToToken({
-        ...toToken,
-        value: '',
-      });
-      setFromToken({
-        ...fromToken,
-        value: '',
-      });
-    }
-  }, [showLeverage]);
+    const toTokenValue = showLeverage && fromToken.isInput
+      ? Bignumber(_fromSymbolPrice.price)
+        .multipliedBy(fromToken.value)
+        .div(_toSymbolPrice.price)
+        .multipliedBy(leverage)
+        .toString()
+      : toToken.value;
+    setToToken({
+      ...toToken,
+      balance: _toSymbolBalance.balance,
+      price: _toSymbolPrice.price,
+      value: toTokenValue
+    });
+  }, [allSymbolBalance, allSymbolPrice, leverage, showLeverage]);
 
   useEffect(() => {
     setLocalStorage(TurbosPerpetualFrom, fromToken.symbol);

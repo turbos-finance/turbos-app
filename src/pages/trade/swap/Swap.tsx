@@ -267,74 +267,40 @@ function Swap() {
   }, [connecting, connected, account, fromToken, toToken, pool]);
 
   useEffect(() => {
-    if (allSymbolBalance && allSymbolBalance[fromToken.symbol]) {
-      setFromToken({
-        ...fromToken,
-        balance: allSymbolBalance[fromToken.symbol].balance
-      })
-    } else {
-      setFromToken({
-        ...fromToken,
-        balance: '0.00'
-      })
-    }
+    const _fromSymbolBalance: any = allSymbolBalance && allSymbolBalance[fromToken.symbol] ? allSymbolBalance[fromToken.symbol] : { balance: '0.00' };
+    const _toSymbolBalance: any = allSymbolBalance && allSymbolBalance[toToken.symbol] ? allSymbolBalance[toToken.symbol] : { balance: '0.00' };
 
-    if (allSymbolBalance && allSymbolBalance[toToken.symbol]) {
-      setToToken({
-        ...toToken,
-        balance: allSymbolBalance[toToken.symbol].balance
-      })
-    }
-    else {
-      setToToken({
-        ...toToken,
-        balance: '0.00'
-      })
-    }
-  }, [allSymbolBalance]);
+    const _fromSymbolPrice = allSymbolPrice && allSymbolPrice[fromToken.symbol] ? allSymbolPrice[fromToken.symbol] : { price: '0' };
+    const _toSymbolPrice = allSymbolPrice && allSymbolPrice[toToken.symbol] ? allSymbolPrice[toToken.symbol] : { price: '0' };
 
+    const fromTokenValue = toToken.isInput
+      ? Bignumber(_toSymbolPrice.price)
+        .multipliedBy(toToken.value)
+        .div(_fromSymbolPrice.price)
+        .toString()
+      : fromToken.value;
 
-  useEffect(() => {
-    if (!allSymbolPrice) {
-      return;
-    }
+    setFromToken({
+      ...fromToken,
+      balance: _fromSymbolBalance.balance,
+      price: _fromSymbolPrice.price,
+      value: fromTokenValue
+    });
 
-    if (allSymbolPrice[fromToken.symbol]) {
-      setFromToken({
-        ...fromToken,
-        price: allSymbolPrice[fromToken.symbol].price,
-      });
-    }
-
-    if (allSymbolPrice[toToken.symbol]) {
-      setToToken({
-        ...toToken,
-        price: allSymbolPrice[toToken.symbol].price,
-      })
-    }
-
-    if (fromToken.isInput) {
-      setToToken({
-        ...toToken,
-        value: Bignumber(allSymbolPrice[fromToken.symbol].price)
-          .multipliedBy(fromToken.value)
-          .div(allSymbolPrice[toToken.symbol].price)
-          .toString(),
-      });
-    }
-
-    if (toToken.isInput) {
-      setFromToken({
-        ...fromToken,
-        value: Bignumber(allSymbolPrice[toToken.symbol].price)
-          .multipliedBy(toToken.value)
-          .div(allSymbolPrice[fromToken.symbol].price)
-          .toString(),
-      });
-    }
-
-  }, [allSymbolPrice]);
-
+    const toTokenValue = fromToken.isInput
+      ? Bignumber(_fromSymbolPrice.price)
+        .multipliedBy(fromToken.value)
+        .div(_toSymbolPrice.price)
+        .toString()
+      : toToken.value;
+    setToToken({
+      ...toToken,
+      balance: _toSymbolBalance.balance,
+      price: _toSymbolPrice.price,
+      value: toTokenValue
+    });
+  }, [allSymbolBalance, allSymbolPrice]);
+  
   useEffect(() => {
     setLocalStorage(TurbosSwapFrom, fromToken.symbol);
   }, [fromToken.symbol]);
