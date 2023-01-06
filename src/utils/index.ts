@@ -26,9 +26,9 @@ export function withThrottle(
   };
 }
 
-export function numberWithCommas(x: string | undefined) {
+export function numberWithCommas(x: string | undefined, defaultValue = '-') {
   if (!x) {
-    return "-";
+    return defaultValue;
   }
 
   var parts = x.toString().split(".");

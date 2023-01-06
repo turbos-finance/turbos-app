@@ -6,25 +6,26 @@ import { contractConfig } from '../config/contract.config';
 import { NetworkType } from '../config/config.type';
 import { numberWithCommas } from '../utils';
 import { useRefresh } from '../contexts/refresh';
+import { bignumberDivDecimalFixed } from '../utils/tools';
 
 
 export type VaultType = {
   tlp_supply: { fields: { value: string } },
-  mint_burn_fee_basis_points?: string
+  mint_burn_fee_basis_points: string
   [x: string]: any
-}
+};
 
 export const useVault = (network: NetworkType = 'DEVNET') => {
   const { refreshTime } = useRefresh();
 
-  const [vault, setVault] = useState<VaultType>({
-    tlp_supply: { fields: { value: '0' } }
-  });
+  const [vault, setVault] = useState<VaultType | undefined>();
 
   const getVault = async () => {
+    if (!refreshTime) {
+      return;
+    }
     // const provider = getProvider(network);
     const vaultObjectId = contractConfig[network].VaultObjectId;
-
     const vaultResponce = await provider.getObject(vaultObjectId);
     const vaultField = getObjectFields(vaultResponce);
 
@@ -34,10 +35,10 @@ export const useVault = (network: NetworkType = 'DEVNET') => {
 
     setVault({
       ...vaultField,
-      mint_burn_fee_basis_points: Bignumber(vaultField.mint_burn_fee_basis_points).multipliedBy(100).div(10 ** 9).toFixed(2),
+      mint_burn_fee_basis_points: bignumberDivDecimalFixed(Bignumber(vaultField.mint_burn_fee_basis_points).multipliedBy(100)),
       tlp_supply: {
         fields: {
-          value: Bignumber(vaultField.tlp_supply.fields.value).div(10 ** 9).toFixed(2)
+          value: bignumberDivDecimalFixed(vaultField.tlp_supply.fields.value)
         }
       }
     })

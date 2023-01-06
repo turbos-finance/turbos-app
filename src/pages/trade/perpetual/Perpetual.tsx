@@ -21,9 +21,6 @@ import SuiWalletButton from '../../../components/walletButton/WalletButton';
 import Loading from '../../../components/loading/Loading';
 import { numberWithCommas } from '../../../utils';
 import { NetworkType, SymbolType } from '../../../config/config.type';
-import { usePool } from '../../../hooks/usePool';
-import { useAllSymbolPrice } from '../../../hooks/useSymbolPrice';
-import { useAllSymbolBalance } from '../../../hooks/useSymbolBalance';
 import { contractConfig } from '../../../config/contract.config';
 import { provider } from '../../../lib/provider';
 import { Coin, getObjectId, getTimestampFromTransactionResponse, getTransactionDigest, getTransactionEffects } from '@mysten/sui.js';
@@ -47,11 +44,11 @@ import {
   unshiftLocalStorage
 } from '../../../lib';
 import { bignumberDivDecimalString, bignumberMulDecimalString, bignumberRemoveDecimal, bignumberWithCommas } from '../../../utils/tools';
-import { useVault } from '../../../hooks/useVault';
 import { getPositionFee } from '../../../lib/getFee';
 import { useFundingRate } from '../../../hooks/useFundingRate';
 import { getSuiType } from '../../../config';
 import { minusSlippage, plusSlippage, slippage, slippagePercent } from '../../../lib/slippage';
+import { useStore } from '../../../contexts/store';
 
 const tradeType = ['Long', 'Short'];
 
@@ -130,13 +127,12 @@ function Perpetual() {
   const [loading, setLoading] = useState(false);
   const [positionDataLen, setPositionDataLen] = useState(0)
 
-  const { vault } = useVault();
-  const { allSymbolPrice } = useAllSymbolPrice();
-  const { allSymbolBalance } = useAllSymbolBalance(account);
+  const { store } = useStore();
+  const { vault, allSymbolBalance, allSymbolPrice, allPool } = store;
   const { fundingRate } = useFundingRate(toToken.symbol);
 
-  const { pool } = usePool(toToken.symbol as SymbolType);
-  const fromTokenPool = usePool(fromToken.symbol as SymbolType);
+  const fromTokenPool = allPool ? allPool[fromToken.symbol] : undefined;
+  const toTokenPool = allPool ? allPool[toToken.symbol] : undefined;
 
   const changePositionDataLen = (value: number) => {
     setPositionDataLen(value);
@@ -158,11 +154,14 @@ function Perpetual() {
       });
     } else {
       const symbol = supplyTradeTokens[0].symbol;
+      const _symbolBalance: any = allSymbolBalance ? allSymbolBalance[symbol] : {};
+      const _symbolPrice: any = allSymbolPrice ? allSymbolPrice[symbol] : {};
+
       setToToken({
         ...fromToken,
         symbol,
-        balance: allSymbolBalance[symbol] ? allSymbolBalance[symbol].balance : '0',
-        price: allSymbolPrice[symbol] ? allSymbolPrice[symbol].price : '0',
+        balance: _symbolBalance.balance || '0',
+        price: _symbolPrice.price || '0',
         icon: supplyTradeTokens[0].icon
       });
     }
@@ -206,8 +205,8 @@ function Perpetual() {
     }
 
     const newBalance = Bignumber(newValue)
-      .multipliedBy(allSymbolPrice[fromToken.symbol].price)
-      .div(allSymbolPrice[toToken.symbol].price)
+      .multipliedBy(fromToken.price)
+      .div(toToken.price)
       .multipliedBy(leverage)
       .toString();
 
@@ -219,6 +218,9 @@ function Perpetual() {
   }
 
   const changeSelectToken = (result: SelectTokenOption) => {
+    const _symbolPrice: any = allSymbolPrice ? allSymbolPrice[result.symbol] : {};
+    const _symbolBalance: any = allSymbolBalance ? allSymbolBalance[result.symbol] : {};
+
     let newFromToken = {
       ...fromToken
     };
@@ -231,19 +233,19 @@ function Perpetual() {
         ...newToToken,
         symbol: result.symbol,
         address: result.address,
-        price: allSymbolPrice[result.symbol] ? allSymbolPrice[result.symbol].price : '0',
-        balance: allSymbolBalance[result.symbol] ? allSymbolBalance[result.symbol].balance : '0.00'
+        price: _symbolPrice.price || '0',
+        balance: _symbolBalance.balance || '0.00'
       };
 
       if (fromToken.isInput && fromToken.value && showLeverage) {
         newToToken = {
           ...newToToken,
-          value: Bignumber(fromToken.value).multipliedBy(fromToken.price).div(allSymbolPrice[result.symbol].price).multipliedBy(leverage).toString()
+          value: Bignumber(fromToken.value).multipliedBy(fromToken.price).div(_symbolPrice.price).multipliedBy(leverage).toString()
         }
       } else if (toToken.isInput && toToken.value && showLeverage) {
         newFromToken = {
           ...newFromToken,
-          value: Bignumber(allSymbolPrice[result.symbol].price).multipliedBy(toToken.value).div(fromToken.price).div(leverage).toString()
+          value: Bignumber(_symbolPrice.price).multipliedBy(toToken.value).div(fromToken.price).div(leverage).toString()
         }
       }
 
@@ -253,19 +255,19 @@ function Perpetual() {
         icon: result.icon,
         symbol: result.symbol,
         address: result.address,
-        price: allSymbolPrice[result.symbol] ? allSymbolPrice[result.symbol].price : '0',
-        balance: allSymbolBalance[result.symbol] ? allSymbolBalance[result.symbol].balance : '0.00'
+        price: _symbolPrice.price || '0',
+        balance: _symbolBalance.balance || '0.00'
       };
 
       if (fromToken.isInput && fromToken.value && showLeverage) {
         newToToken = {
           ...newToToken,
-          value: Bignumber(fromToken.value).multipliedBy(allSymbolPrice[result.symbol].price).div(toToken.price).multipliedBy(leverage).toString()
+          value: Bignumber(fromToken.value).multipliedBy(_symbolPrice.price).div(toToken.price).multipliedBy(leverage).toString()
         }
       } else if (toToken.isInput && toToken.value && showLeverage) {
         newFromToken = {
           ...newFromToken,
-          value: Bignumber(toToken.price).multipliedBy(toToken.value).div(allSymbolPrice[result.symbol].price).div(leverage).toString()
+          value: Bignumber(toToken.price).multipliedBy(toToken.value).div(_symbolPrice.price).div(leverage).toString()
         }
       }
     }
@@ -283,19 +285,20 @@ function Perpetual() {
         icon: tradeToken.icon
       });
 
+      const _symbolPrice = allSymbolPrice ? allSymbolPrice[tradeToken.symbol] : { price: '0' };
 
       if (fromToken.isInput && fromToken.value) {
         setToToken({
           ...toToken,
           symbol: tradeToken.symbol,
           icon: tradeToken.icon,
-          price: allSymbolPrice[tradeToken.symbol].price,
-          value: Bignumber(fromToken.value).multipliedBy(fromToken.price).div(allSymbolPrice[tradeToken.symbol].price).multipliedBy(leverage).toString()
+          price: _symbolPrice.price,
+          value: Bignumber(fromToken.value).multipliedBy(fromToken.price).div(_symbolPrice.price).multipliedBy(leverage).toString()
         })
       } else if (toToken.isInput && toToken.value) {
         setFromToken({
           ...fromToken,
-          value: Bignumber(allSymbolPrice[tradeToken.symbol].price).multipliedBy(toToken.value).div(fromToken.price).div(leverage).toString()
+          value: Bignumber(_symbolPrice.price).multipliedBy(toToken.value).div(fromToken.price).div(leverage).toString()
         })
       }
     }
@@ -377,7 +380,7 @@ function Perpetual() {
     if (showLeverage) {
       lever = Bignumber(leverage);
     }
-    const isLiquidity = Bignumber(fromToken.value).multipliedBy(10 ** 9).multipliedBy(lever).minus(fromTokenPool.pool.pool_amounts).isGreaterThanOrEqualTo(0);
+    const isLiquidity = Bignumber(fromToken.value).multipliedBy(10 ** 9).multipliedBy(lever).minus(fromTokenPool && fromTokenPool.pool_amounts).isGreaterThanOrEqualTo(0);
 
     if (!fromToken.value || !Number(fromToken.value) || !toToken.value || !Number(fromToken.value)) {
       setBtnInfo({
@@ -395,7 +398,7 @@ function Perpetual() {
         text: `Insufficient ${fromToken.symbol} liquidity`
       });
     }
-    else if (Bignumber(toToken.value).multipliedBy(10 ** 9).minus(pool.pool_amounts).isGreaterThanOrEqualTo(0)) {
+    else if (toTokenPool && Bignumber(toToken.value).multipliedBy(10 ** 9).minus(toTokenPool.pool_amounts).isGreaterThanOrEqualTo(0)) {
       setBtnInfo({
         state: 4,
         text: `Insufficient ${toToken.symbol} liquidity`
@@ -494,10 +497,10 @@ function Perpetual() {
 
   useEffect(() => {
     changeBtnText();
-  }, [connecting, connected, account, fromToken, toToken, pool, trade, showLeverage, leverage]);
+  }, [connecting, connected, account, fromToken, toToken, toTokenPool, fromTokenPool, trade, showLeverage, leverage]);
 
   useEffect(() => {
-    if (allSymbolBalance[fromToken.symbol]) {
+    if (allSymbolBalance && allSymbolBalance[fromToken.symbol]) {
       setFromToken({
         ...fromToken,
         balance: allSymbolBalance[fromToken.symbol].balance
@@ -509,7 +512,7 @@ function Perpetual() {
       })
     }
 
-    if (allSymbolBalance[toToken.symbol]) {
+    if (allSymbolBalance && allSymbolBalance[toToken.symbol]) {
       setToToken({
         ...toToken,
         balance: allSymbolBalance[toToken.symbol].balance
@@ -524,6 +527,10 @@ function Perpetual() {
   }, [allSymbolBalance]);
 
   useEffect(() => {
+    if (!allSymbolPrice) {
+      return;
+    }
+
     if (allSymbolPrice[fromToken.symbol]) {
       setFromToken({
         ...fromToken,
@@ -780,7 +787,7 @@ function Perpetual() {
                   </div>
                   <div className="line">
                     <p className="ll">Entry Price</p>
-                    <p className="lr">{bignumberWithCommas(allSymbolPrice[toToken.symbol as SymbolType]?.originalPrice)}</p>
+                    <p className="lr">{numberWithCommas(toToken.price)}</p>
                   </div>
                   <div className="line">
                     <p className="ll">Liq. Price</p>
@@ -815,11 +822,11 @@ function Perpetual() {
           <div className="line-con1">
             <div className="line">
               <p className="ll">Entry Price</p>
-              <p className="lr">{bignumberWithCommas(allSymbolPrice[toToken.symbol as SymbolType]?.originalPrice)}</p>
+              <p className="lr">{numberWithCommas(toToken.price)}</p>
             </div>
             <div className="line">
               <p className="ll">Exit Price</p>
-              <p className="lr">{bignumberWithCommas(allSymbolPrice[toToken.symbol as SymbolType]?.originalPrice)}</p>
+              <p className="lr">{numberWithCommas(toToken.price)}</p>
             </div>
             <div className="line">
               <p className="ll">Borrow Fee</p>
@@ -827,7 +834,7 @@ function Perpetual() {
             </div>
             <div className="line">
               <p className="ll">Available Liquidity</p>
-              <p className="lr">{pool.turbos_tusd_amounts ? `\$${pool.turbos_tusd_amounts} ` : '-'}</p>
+              <p className="lr">{toTokenPool && toTokenPool.turbos_tusd_amounts ? `\$${toTokenPool.turbos_tusd_amounts} ` : '-'}</p>
             </div>
           </div>
         </div>

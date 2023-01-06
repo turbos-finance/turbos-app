@@ -56,14 +56,16 @@ export const usePool = (symbol: SymbolType | undefined, network: NetworkType = '
 
 type AllPoolValueType = { [x: string]: PoolValueType }
 
-
 export const useAllPool = (network: NetworkType = 'DEVNET') => {
   const { refreshTime } = useRefresh();
 
-  const [allPool, setAllPool] = useState<AllPoolValueType>({});
+  const [allPool, setAllPool] = useState<AllPoolValueType | undefined>();
 
   const getPool = async () => {
-    // const provider = getProvider(network);
+    if (!contractConfig || !refreshTime) {
+      return;
+    }
+
     const coin = contractConfig[network].Coin;
     const symbolList = Object.keys(coin);
 
@@ -86,13 +88,10 @@ export const useAllPool = (network: NetworkType = 'DEVNET') => {
       pools[k] = field;
     }
     setAllPool(pools);
-
   }
 
   useEffect(() => {
-    if (contractConfig) {
-      getPool();
-    }
+    getPool();
   }, [contractConfig, refreshTime]);
 
   return {

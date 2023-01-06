@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import React, { useState } from "react";
 import TlpText from "../../../components/tlpText/TlpText";
 import styles from './Liquidity.module.css';
 
@@ -11,13 +11,10 @@ import TurbosTooltip from "../../../components/UI/Tooltip/Tooltip";
 import Dropdown from "rc-dropdown";
 import Menu, { Item as MenuItem } from 'rc-menu';
 import { supplyTokens } from '../../../config/tokens';
-import { usePool } from "../../../hooks/usePool";
-import { useSymbolPrice } from "../../../hooks/useSymbolPrice";
-import { useSuiWallet } from "../../../contexts/useSuiWallet";
-import { useSymbolBalance } from "../../../hooks/useSymbolBalance";
 import Bignumber from 'bignumber.js';
 import { numberWithCommas } from "../../../utils";
 import { setLocalStorage, TurbosBuySell, TurbosBuySellActive } from "../../../lib";
+import { useStore } from "../../../contexts/store";
 
 function Liquidity() {
   return (
@@ -40,7 +37,12 @@ function Liquidity() {
 
         <tbody>
           {
-            supplyTokens.map((item: any, index: number) => <TrLiquidity key={index} item={item} />)
+            supplyTokens.map((item: any, index: number) =>
+              <TrLiquidity
+                key={index}
+                item={item}
+              />
+            )
           }
         </tbody>
       </table>
@@ -61,11 +63,10 @@ function TrLiquidity(props: TrLiquidityProps) {
   const { item } = props;
   const [visible, setVisible] = useState(false);
 
-  const { account } = useSuiWallet();
-
-  const { pool } = usePool(item.symbol);
-  const { symbolPrice } = useSymbolPrice(item.symbol);
-  const { coinBalance } = useSymbolBalance(account, item.symbol);
+  const { store } = useStore();
+  const pool = store.allPool ? store.allPool[item.symbol] : {};
+  const symbolPrice = store.allSymbolPrice ? store.allSymbolPrice[item.symbol] : {};
+  const coinBalance = store.allSymbolBalance ? store.allSymbolBalance[item.symbol] : {};
 
   const linkTo = (symbol: string) => {
     setLocalStorage(TurbosBuySellActive, '0');
@@ -105,7 +106,10 @@ function TrLiquidity(props: TrLiquidityProps) {
           <div className={styles['liquidity-info']}>
             <div className={styles['liquidity-name']}>
               <span>{item.name}</span>
-              <Dropdown overlay={menu} trigger={['click']} overlayClassName={'overlay-dropdown menus-dropdown'} onVisibleChange={(visible: boolean) => (setVisible(visible))}>
+              <Dropdown overlay={menu} trigger={['click']}
+                overlayClassName={'overlay-dropdown menus-dropdown'}
+                onVisibleChange={(visible: boolean) => (setVisible(visible))}
+              >
                 <img src={visible ? upIcon : downIcon} alt='' />
               </Dropdown>
             </div>
@@ -119,7 +123,9 @@ function TrLiquidity(props: TrLiquidityProps) {
           <span className="underline">${pool?.turbos_available || '0'}</span>
         </TurbosTooltip>
       </td>
-      <td align="right">{numberWithCommas(coinBalance) || 0} {item.symbol} (${numberWithCommas(Bignumber(coinBalance).multipliedBy(Bignumber(symbolPrice.price || 0).toNumber()).toFixed(2)) || 0})</td>
+      <td align="right">{coinBalance.balance ? numberWithCommas(coinBalance.balance) : 0} {item.symbol}
+        (${numberWithCommas(Bignumber(coinBalance.balance || 0).multipliedBy(Bignumber(symbolPrice.price || 0).toNumber()).toFixed(2))})
+      </td>
       <td align="right">${pool.turbos_fee_reserves || '0.00'}</td>
       <td align="right">
         <div className={styles['liquidity-btn']}>
@@ -135,11 +141,10 @@ function MobileTrLiquidity(props: TrLiquidityProps) {
   const { item } = props;
   const [visible, setVisible] = useState(false);
 
-  const { account } = useSuiWallet();
-
-  const { pool } = usePool(item.symbol);
-  const { symbolPrice } = useSymbolPrice(item.symbol);
-  const { coinBalance } = useSymbolBalance(account, item.symbol);
+  const { store } = useStore();
+  const pool = store.allPool ? store.allPool[item.symbol] : {};
+  const symbolPrice = store.allSymbolPrice ? store.allSymbolPrice[item.symbol] : {};
+  const coinBalance = store.allSymbolBalance ? store.allSymbolBalance[item.symbol] : {};
 
   const linkTo = (symbol: string) => {
     setLocalStorage(TurbosBuySellActive, '0');
@@ -178,7 +183,10 @@ function MobileTrLiquidity(props: TrLiquidityProps) {
           <div className={styles['liquidity-info']}>
             <div className={styles['liquidity-name']}>
               <span>{item.name}</span>
-              <Dropdown overlay={menu} trigger={['click']} overlayClassName={'overlay-dropdown menus-dropdown'} onVisibleChange={(visible: boolean) => (setVisible(visible))}>
+              <Dropdown overlay={menu} trigger={['click']}
+                overlayClassName={'overlay-dropdown menus-dropdown'}
+                onVisibleChange={(visible: boolean) => (setVisible(visible))}
+              >
                 <img src={visible ? upIcon : downIcon} alt='' />
               </Dropdown>
             </div>
@@ -203,7 +211,9 @@ function MobileTrLiquidity(props: TrLiquidityProps) {
         </div>
         <div className="line">
           <div className="ll">WALLET</div>
-          <div className="lr">{numberWithCommas(coinBalance) || 0} {item.symbol} (${numberWithCommas(Bignumber(coinBalance).multipliedBy(Bignumber(symbolPrice.price || 0).toNumber()).toFixed(2)) || 0})</div>
+          <div className="lr">{coinBalance.balance ? numberWithCommas(coinBalance.balance) : 0} {item.symbol}
+            (${numberWithCommas(Bignumber(coinBalance.balance || 0).multipliedBy(Bignumber(symbolPrice.price || 0).toNumber()).toFixed(2))})
+          </div>
         </div>
         <div className="line">
           <div className="ll">FEES</div>

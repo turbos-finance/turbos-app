@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useContext } from 'react';
 
-
 type RefreshProvider = {
   children: React.ReactNode,
 }
@@ -17,25 +16,26 @@ const RefreshContext = React.createContext<RefreshContextValues>({
 });
 
 let interval: NodeJS.Timer | undefined;
-const time = 30000;
+const time = 20000;
 
 export const UseRefreshProvider: React.FC<RefreshProvider> = ({ children }) => {
   const [refreshTime, setRefreshTime] = useState<string | number | null>(null);
 
   const changeTime = useCallback(() => {
     interval = setTimeout(() => {
-      setRefreshTime(new Date().getTime());
+      setRefreshTime(Date.now());
       changeTime();
     }, time);
   }, []);
 
   const changeRefreshTime = useCallback(() => {
-    setRefreshTime(new Date().getTime());
+    setRefreshTime(Date.now());
     clearTimeout(interval);
     changeTime();
   }, []);
 
   useEffect(() => {
+    setRefreshTime(Date.now());
     changeTime();
     return () => clearTimeout(interval);
   }, []);

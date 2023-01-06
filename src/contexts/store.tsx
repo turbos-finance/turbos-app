@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { useContext } from 'react';
 
 type StoreProvider = {
@@ -7,19 +7,26 @@ type StoreProvider = {
 
 type StoreContextValues = {
   store: { [x: string]: any },
-  setStore: (storeValue: { [x: string]: any }) => void
+  changeStore: (storeValue: { [x: string]: any }) => void
 }
 
 const StoreContext = React.createContext<StoreContextValues>({
   store: {},
-  setStore: (storeValue: { [x: string]: any }) => { }
+  changeStore: (storeValue: { [x: string]: any }) => { }
 });
 
 export const UseStoreProvider: React.FC<StoreProvider> = ({ children }) => {
   const [store, setStore] = useState({});
 
+  const changeStore = useCallback((storeValue: { [x: string]: any }) => {
+    setStore({
+      ...store,
+      ...storeValue
+    })
+  }, [store]);
+
   return (
-    <StoreContext.Provider value={{ store, setStore }}>
+    <StoreContext.Provider value={{ store, changeStore }}>
       {children}
     </StoreContext.Provider>
   );

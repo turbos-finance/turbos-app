@@ -11,13 +11,8 @@ import { supplyTLPToken, supplyTokens } from '../../../config/tokens';
 import SelectToken, { SelectTokenOption } from "../../../components/selectToken/SelectToken";
 import { useSuiWallet } from "../../../contexts/useSuiWallet";
 import SuiWalletButton from "../../../components/walletButton/WalletButton";
-import { useVault } from "../../../hooks/useVault";
-
 import { numberWithCommas } from "../../../utils";
-import { useAllSymbolBalance, useSymbolBalance } from "../../../hooks/useSymbolBalance";
-import { useAllSymbolPrice, useSymbolPrice } from "../../../hooks/useSymbolPrice";
 import { NetworkType, SymbolType, TLPAndSymbolType } from "../../../config/config.type";
-import { usePool } from "../../../hooks/usePool";
 import { provider } from "../../../lib/provider";
 import { contractConfig } from "../../../config/contract.config";
 import { useToastify } from '../../../contexts/toastify';
@@ -29,6 +24,7 @@ import { getLocalStorage, getLocalStorageSupplyToken, setLocalStorage, TurbosBuy
 import { useFees } from "../../../hooks/useFees";
 import { bignumberMulDecimalString, bignumberRemoveDecimal } from "../../../utils/tools";
 import TurbosDialog from "../../../components/UI/Dialog/Dialog";
+import { useStore } from "../../../contexts/store";
 
 type FromToTokenType = {
   balance: string,
@@ -70,15 +66,18 @@ function BuySell() {
   const poolArg = active ? toToken.symbol as TLPAndSymbolType : fromToken.symbol as TLPAndSymbolType;
 
   const { fees } = useFees(fromToken.symbol, fromToken.value, toToken.symbol, toToken.value);
-  const { pool } = usePool(poolArg === 'TLP' ? undefined : poolArg);
-  const { allSymbolPrice } = useAllSymbolPrice();
-  const { allSymbolBalance } = useAllSymbolBalance(account);
+  const { store } = useStore();
+  const pool = poolArg === 'TLP' ? undefined : store.allPool[poolArg];
+  const { allSymbolPrice, allSymbolBalance } = store;
 
   const toggleCheck = () => {
     setCheck(!check);
   }
 
   const changeToken = (result: SelectTokenOption) => {
+    const _symbolPrice: any = allSymbolPrice ? allSymbolPrice[result.symbol] : {};
+    const _symbolBalance: any = allSymbolBalance ? allSymbolBalance[result.symbol] : {};
+
     let newFromToken = {
       ...fromToken
     };
@@ -92,21 +91,21 @@ function BuySell() {
         symbol: result.symbol,
         icon: result.icon,
         address: result.address || '',
-        price: allSymbolPrice[result.symbol] ? allSymbolPrice[result.symbol].price : '0',
-        balance: allSymbolBalance[result.symbol] ? allSymbolBalance[result.symbol].balance : '0.00',
+        price: _symbolPrice.price || '0',
+        balance: _symbolBalance.balance || '0.00',
       };
 
       if (fromToken.isInput && fromToken.value) {
         newToToken = {
           ...newToToken,
-          value: Bignumber(fromToken.value).multipliedBy(fromToken.price).div(allSymbolPrice[result.symbol].price).toString()
+          value: Bignumber(fromToken.value).multipliedBy(fromToken.price).div(_symbolPrice.price).toString()
         }
       }
 
       if (toToken.isInput && toToken.value) {
         newFromToken = {
           ...newFromToken,
-          value: Bignumber(allSymbolPrice[result.symbol].price).multipliedBy(toToken.value).div(fromToken.price).toString()
+          value: Bignumber(_symbolPrice.price).multipliedBy(toToken.value).div(fromToken.price).toString()
         }
       }
 
@@ -116,21 +115,21 @@ function BuySell() {
         symbol: result.symbol,
         icon: result.icon,
         address: result.address || '',
-        price: allSymbolPrice[result.symbol] ? allSymbolPrice[result.symbol].price : '0',
-        balance: allSymbolBalance[result.symbol] ? allSymbolBalance[result.symbol].balance : '0.00',
+        price: _symbolPrice.price || '0',
+        balance: _symbolBalance.balance || '0.00',
       };
 
       if (fromToken.isInput && fromToken.value) {
         newToToken = {
           ...newToToken,
-          value: Bignumber(fromToken.value).multipliedBy(allSymbolPrice[result.symbol].price).div(toToken.price).toString()
+          value: Bignumber(fromToken.value).multipliedBy(_symbolPrice.price).div(toToken.price).toString()
         }
       }
 
       if (toToken.isInput && toToken.value) {
         newFromToken = {
           ...newFromToken,
-          value: Bignumber(toToken.price).multipliedBy(toToken.value).div(allSymbolPrice[result.symbol].price).toString()
+          value: Bignumber(toToken.price).multipliedBy(toToken.value).div(_symbolPrice.price).toString()
         }
       }
 
@@ -149,8 +148,8 @@ function BuySell() {
     });
 
     const newBalance = Bignumber(fromToken.balance)
-      .multipliedBy(allSymbolPrice[fromToken.symbol].price)
-      .div(allSymbolPrice[toToken.symbol].price);
+      .multipliedBy(fromToken.price)
+      .div(toToken.price);
     setToToken({
       ...toToken,
       value: newBalance.toString(),
@@ -188,8 +187,8 @@ function BuySell() {
 
     const newBalance = e.target.value ?
       Bignumber(e.target.value)
-        .multipliedBy(allSymbolPrice[fromToken.symbol].price)
-        .div(allSymbolPrice[toToken.symbol].price)
+        .multipliedBy(fromToken.price)
+        .div(toToken.price)
         .toString() : '';
     setToToken({
       ...toToken,
@@ -207,8 +206,8 @@ function BuySell() {
 
     const newBalance = e.target.value ?
       Bignumber(e.target.value)
-        .multipliedBy(allSymbolPrice[toToken.symbol].price)
-        .div(allSymbolPrice[fromToken.symbol].price) : '';
+        .multipliedBy(toToken.price)
+        .div(fromToken.price) : '';
     setFromToken({
       ...fromToken,
       value: newBalance.toString(),
@@ -331,52 +330,56 @@ function BuySell() {
   }, [connecting, connected, account, fromToken, toToken, pool, active]);
 
   useEffect(() => {
+    const _fromSymbolBalance: any = allSymbolBalance ? allSymbolBalance[fromToken.symbol] : {};
+    const _toSymbolBalance: any = allSymbolBalance ? allSymbolBalance[toToken.symbol] : {};
+
     setFromToken({
       ...fromToken,
-      balance: allSymbolBalance[fromToken.symbol] ? allSymbolBalance[fromToken.symbol].balance : '0.00'
+      balance: _fromSymbolBalance.balance || '0.00'
     });
 
     setToToken({
       ...toToken,
-      balance: allSymbolBalance[toToken.symbol] ? allSymbolBalance[toToken.symbol].balance : '0.00'
+      balance: _toSymbolBalance.balance || '0.00'
     });
   }, [allSymbolBalance]);
 
   useEffect(() => {
-    if (allSymbolPrice[fromToken.symbol]) {
-      setFromToken({
-        ...fromToken,
-        price: allSymbolPrice[fromToken.symbol].price,
-      });
-    }
+    if (allSymbolPrice) {
+      if (allSymbolPrice[fromToken.symbol]) {
+        setFromToken({
+          ...fromToken,
+          price: allSymbolPrice[fromToken.symbol].price,
+        });
+      }
 
-    if (allSymbolPrice[toToken.symbol]) {
-      setToToken({
-        ...toToken,
-        price: allSymbolPrice[toToken.symbol].price,
-      })
-    }
+      if (allSymbolPrice[toToken.symbol]) {
+        setToToken({
+          ...toToken,
+          price: allSymbolPrice[toToken.symbol].price,
+        })
+      }
 
-    if (fromToken.isInput) {
-      setToToken({
-        ...toToken,
-        value: Bignumber(allSymbolPrice[fromToken.symbol].price)
-          .multipliedBy(fromToken.value)
-          .div(allSymbolPrice[toToken.symbol].price)
-          .toString(),
-      });
-    }
+      if (fromToken.isInput) {
+        setToToken({
+          ...toToken,
+          value: Bignumber(allSymbolPrice[fromToken.symbol].price)
+            .multipliedBy(fromToken.value)
+            .div(allSymbolPrice[toToken.symbol].price)
+            .toString(),
+        });
+      }
 
-    if (toToken.isInput) {
-      setFromToken({
-        ...fromToken,
-        value: Bignumber(allSymbolPrice[toToken.symbol].price)
-          .multipliedBy(toToken.value)
-          .div(allSymbolPrice[fromToken.symbol].price)
-          .toString(),
-      });
+      if (toToken.isInput) {
+        setFromToken({
+          ...fromToken,
+          value: Bignumber(allSymbolPrice[toToken.symbol].price)
+            .multipliedBy(toToken.value)
+            .div(allSymbolPrice[fromToken.symbol].price)
+            .toString(),
+        });
+      }
     }
-
   }, [allSymbolPrice]);
 
   useEffect(() => {
@@ -534,10 +537,10 @@ function SectionTokens(props: SectionTokensProps) {
 
 
 function BuySellRight() {
-  const { account } = useSuiWallet();
-  const { vault } = useVault();
-  const { coinBalance } = useSymbolBalance(account, supplyTLPToken.symbol as TLPAndSymbolType);
-  const { symbolPrice } = useSymbolPrice(supplyTLPToken.symbol as TLPAndSymbolType);
+  const { store } = useStore();
+  const vault: any = store.vault || undefined;
+  const symbolPrice = store.allSymbolPrice ? store.allSymbolPrice[supplyTLPToken.symbol] : { price: '0' };
+  const coinBalance = store.allSymbolBalance ? store.allSymbolBalance[supplyTLPToken.symbol] : { balance: '0' };
 
   return (
     <div className="main-right">
@@ -559,7 +562,9 @@ function BuySellRight() {
           </div>
           <div className="line">
             <p className="ll">Wallet</p>
-            <p className="lr">{numberWithCommas(coinBalance)} {supplyTLPToken.symbol} (${numberWithCommas(Bignumber(coinBalance).multipliedBy(symbolPrice.price).toFixed(2))})</p>
+            <p className="lr">{numberWithCommas(coinBalance.balance)} {supplyTLPToken.symbol}
+              (${numberWithCommas(Bignumber(coinBalance.balance).multipliedBy(symbolPrice.price).toFixed(2))})
+            </p>
           </div>
           {/* <div className="line">
           <p className="ll">Staked</p>
@@ -574,8 +579,8 @@ function BuySellRight() {
           <div className="line">
             <p className="ll">Totol Supply</p>
             <p className="lr">
-              {numberWithCommas(vault.tlp_supply.fields.value)} {supplyTLPToken.symbol}
-              (${numberWithCommas(Bignumber(vault.tlp_supply.fields.value).multipliedBy(symbolPrice.price).toFixed(2))})
+              {numberWithCommas(vault && vault.tlp_supply.fields.value, '0')} {supplyTLPToken.symbol}
+              (${numberWithCommas(Bignumber(vault ? vault.tlp_supply.fields.value : 0).multipliedBy(symbolPrice.price).toFixed(2))})
             </p>
           </div>
         </div>

@@ -16,17 +16,12 @@ import Loading from '../../../../../components/loading/Loading';
 import { useRefresh } from '../../../../../contexts/refresh';
 import { useToastify } from '../../../../../contexts/toastify';
 import { Explorer } from '../../../../../components/explorer/Explorer';
-import { useAllSymbolPrice } from '../../../../../hooks/useSymbolPrice';
-import { SupplyTokenType, supplyTradeTokens } from '../../../../../config/tokens';
 import { findContractConfigCoinSymbol, findsupplyTokenSymbol, findSupplyTradeTokeSymbol, getContractConfigCoinSymbol, getSuiType } from '../../../../../config';
-import { useAllPool } from '../../../../../hooks/usePool';
-import { useAllSymbolBalance } from '../../../../../hooks/useSymbolBalance';
 import { bignumberDivDecimalFixed, bignumberDivDecimalString, bignumberRemoveDecimal, bignumberWithCommas, bignumberWithPercent, decimal } from '../../../../../utils/tools';
 import { TurbosPerpetualTradeRecord, unshiftLocalStorage } from '../../../../../lib';
 import { minusSlippage, plusSlippage } from '../../../../../lib/slippage';
 import { getPositionFee } from '../../../../../lib/getFee';
-import { useVault } from '../../../../../hooks/useVault';
-import { ContactSupportOutlined } from '@mui/icons-material';
+import { useStore } from '../../../../../contexts/store';
 
 type PositionsProps = {
   changeLen: (value: number) => void
@@ -40,7 +35,8 @@ function Positions(props: PositionsProps) {
   } = useSuiWallet();
 
   const { refreshTime } = useRefresh();
-  const { allSymbolPrice } = useAllSymbolPrice();
+  const { store } = useStore();
+  const { allSymbolPrice } = store;
 
   const [data, setData] = useState<any[]>([]);
 
@@ -111,7 +107,7 @@ function Positions(props: PositionsProps) {
                 const symbol = findContractConfigCoinSymbol(network, item.index_pool_address, 'PoolObjectId');
                 const supplyTradeToken = findSupplyTradeTokeSymbol(symbol);
 
-                const symbolPrice = allSymbolPrice[symbol].originalPrice;
+                const symbolPrice = allSymbolPrice ? allSymbolPrice[symbol].originalPrice : 0;
 
                 const leverage = Bignumber(item.size).div(item.collateral);
 
@@ -203,7 +199,7 @@ function Positions(props: PositionsProps) {
               const symbol = findContractConfigCoinSymbol(network, item.index_pool_address, 'PoolObjectId');
               const supplyTradeToken = findSupplyTradeTokeSymbol(symbol);
 
-              const symbolPrice = allSymbolPrice[symbol].originalPrice;
+              const symbolPrice = allSymbolPrice ? allSymbolPrice[symbol].originalPrice : 0;
 
               const leverage = Bignumber(item.size).div(item.collateral);
 
@@ -355,10 +351,8 @@ function ClosePositionTurbosDialog(props: TurbosDialogProps) {
   const [fromToken, setFromToken] = useState({ symbol: '', value: '', price: '0', size: '', balance: '0' });
   const [toToken, setToToken] = useState({ symbol: '', value: '', price: '0', size: '', balance: '0' });
 
-  const { allSymbolPrice } = useAllSymbolPrice();
-  const { allPool } = useAllPool();
-  const { vault } = useVault();
-
+  const { store } = useStore();
+  const { allSymbolPrice, allPool, vault } = store;
   // button active info
   useEffect(() => {
     if (network && data && open) {
@@ -366,7 +360,7 @@ function ClosePositionTurbosDialog(props: TurbosDialogProps) {
         setBtnInfo({ state: 1, text: 'Enter a amount' })
       } else if (Bignumber(fromToken.size).minus(data.size).isGreaterThan(0)) {
         setBtnInfo({ state: 2, text: `Insufficient ${fromToken.symbol} balance` });
-      } else if (Bignumber(toToken.value).multipliedBy(10 ** 9).minus(allPool[toToken.symbol].pool_amounts).isGreaterThan(0)) {
+      } else if (allPool && Bignumber(toToken.value).multipliedBy(10 ** 9).minus(allPool[toToken.symbol].pool_amounts).isGreaterThan(0)) {
         setBtnInfo({ state: 3, text: `Insufficient ${toToken.symbol} liquidity` });
       } else {
         setBtnInfo({ state: 0, text: 'Approve' });
@@ -376,7 +370,7 @@ function ClosePositionTurbosDialog(props: TurbosDialogProps) {
 
   // init fromtoken data
   useEffect(() => {
-    if (data && network && open && data.index_pool_address) {
+    if (data && network && open && data.index_pool_address && allSymbolPrice) {
       const symbol = findContractConfigCoinSymbol(network, data.index_pool_address, 'PoolObjectId');
       setFromToken({
         ...fromToken,
@@ -389,7 +383,7 @@ function ClosePositionTurbosDialog(props: TurbosDialogProps) {
 
   // update totoken data
   useEffect(() => {
-    if (data && network && open && data.collateral_pool_address && fromToken.symbol) {
+    if (data && network && open && data.collateral_pool_address && fromToken.symbol && allSymbolPrice) {
       const symbol = findContractConfigCoinSymbol(network, data.collateral_pool_address, 'PoolObjectId');
       setToToken({
         ...toToken,
@@ -425,12 +419,14 @@ function ClosePositionTurbosDialog(props: TurbosDialogProps) {
       size: data.size
     });
 
-    setToToken({
-      ...toToken,
-      value: Bignumber(fromToken.balance)
-        .multipliedBy(allSymbolPrice[fromToken.symbol as SymbolType].originalPrice)
-        .div(allSymbolPrice[toToken.symbol as SymbolType].originalPrice).toFixed(2),
-    })
+    if (allSymbolPrice) {
+      setToToken({
+        ...toToken,
+        value: Bignumber(fromToken.balance)
+          .multipliedBy(allSymbolPrice[fromToken.symbol as SymbolType].originalPrice)
+          .div(allSymbolPrice[toToken.symbol as SymbolType].originalPrice).toFixed(2),
+      })
+    }
   }
 
   const changeValue = (e: any) => {
@@ -440,15 +436,17 @@ function ClosePositionTurbosDialog(props: TurbosDialogProps) {
       size: e.target.value ? Bignumber(e.target.value).multipliedBy(data.average_price).toString() : ''
     });
 
-    setToToken({
-      ...toToken,
-      value: e.target.value ?
-        Bignumber(e.target.value)
-          .multipliedBy(allSymbolPrice[fromToken.symbol as SymbolType].originalPrice)
-          .div(allSymbolPrice[toToken.symbol as SymbolType].originalPrice)
-          .toFixed(2)
-        : '0.00',
-    })
+    if (allSymbolPrice) {
+      setToToken({
+        ...toToken,
+        value: e.target.value ?
+          Bignumber(e.target.value)
+            .multipliedBy(allSymbolPrice[fromToken.symbol as SymbolType].originalPrice)
+            .div(allSymbolPrice[toToken.symbol as SymbolType].originalPrice)
+            .toFixed(2)
+          : '0.00',
+      })
+    }
   }
 
   const decrease_position = async () => {
@@ -537,7 +535,7 @@ function ClosePositionTurbosDialog(props: TurbosDialogProps) {
     Bignumber(data.average_price).plus(differencePrice);
 
 
-  const symbolPrice = allSymbolPrice[symbol].originalPrice;
+  const symbolPrice = allSymbolPrice ? allSymbolPrice[symbol].originalPrice : 0;
 
   let isGreen: boolean = true;
   let pnlPrice: Bignumber | string = '-';
@@ -660,10 +658,8 @@ function AddAndRemoveMarginTurbosDialog(props: TurbosDialogProps) {
   const { changeRefreshTime, refreshTime } = useRefresh();
   const { toastify } = useToastify();
 
-  const { allSymbolPrice } = useAllSymbolPrice();
-  const { allPool } = useAllPool();
-  const { allSymbolBalance } = useAllSymbolBalance(account);
-  const { vault } = useVault();
+  const { store } = useStore();
+  const { allSymbolPrice, allPool, allSymbolBalance, vault } = store;
 
   const [loading, setLoading] = useState(false);
   const [tabActive, setTabActive] = useState(0);
@@ -681,7 +677,7 @@ function AddAndRemoveMarginTurbosDialog(props: TurbosDialogProps) {
         setBtnInfo({ state: 1, text: 'Enter a amount' })
       } else if (Bignumber(fromToken.value).minus(fromToken.balance).isGreaterThan(0)) {
         setBtnInfo({ state: 2, text: `Insufficient ${fromToken.symbol} balance` });
-      } else if (tabActive && allPool[fromToken.symbol] && Bignumber(fromToken.value).multipliedBy(10 ** 9).minus(allPool[fromToken.symbol].pool_amounts).isGreaterThanOrEqualTo(0)) {
+      } else if (tabActive && allPool && allPool[fromToken.symbol] && Bignumber(fromToken.value).multipliedBy(10 ** 9).minus(allPool[fromToken.symbol].pool_amounts).isGreaterThanOrEqualTo(0)) {
         setBtnInfo({
           state: 5,
           text: `Insufficient ${fromToken.symbol} liquidity`
@@ -700,8 +696,8 @@ function AddAndRemoveMarginTurbosDialog(props: TurbosDialogProps) {
   useEffect(() => {
     if (data && network && open && data.collateral_pool_address) {
       const symbol = findContractConfigCoinSymbol(network, data.collateral_pool_address, 'PoolObjectId');
-      const _allSymbolBalance = allSymbolBalance[symbol];
-      const _allSymbolPrice = allSymbolPrice[symbol];
+      const _allSymbolBalance: any = allSymbolBalance ? allSymbolBalance[symbol] : {};
+      const _allSymbolPrice: any = allSymbolPrice ? allSymbolPrice[symbol] : {};
 
       const price = _allSymbolPrice.originalPrice || '0';
       const balance = _allSymbolBalance.balance || '0.00';
@@ -785,7 +781,7 @@ function AddAndRemoveMarginTurbosDialog(props: TurbosDialogProps) {
       const balanceResponse = Coin.selectCoinSetWithCombinedBalanceGreaterThanOrEqual(coinBalance, BigInt(amount));
       const balanceObjects = balanceResponse.map((item) => Coin.getID(item));
 
-      const price = Bignumber(allSymbolPrice[symbol].originalPrice).multipliedBy(data.is_long ? plusSlippage : minusSlippage);
+      const price = Bignumber(allSymbolPrice ? allSymbolPrice[symbol].originalPrice : 0).multipliedBy(data.is_long ? plusSlippage : minusSlippage);
 
       let argumentsVal: (string | number | boolean | BigInt | string[])[] = [
         config.VaultObjectId,
@@ -857,7 +853,7 @@ function AddAndRemoveMarginTurbosDialog(props: TurbosDialogProps) {
       const fromSymbolConfig = getContractConfigCoinSymbol(network, fromToken.symbol);
 
       const collateral_delta = Bignumber(fromToken.value).multipliedBy(fromToken.price);
-      const price = Bignumber(allSymbolPrice[symbol].originalPrice).multipliedBy(!data.is_long ? plusSlippage : minusSlippage);
+      const price = Bignumber(allSymbolPrice ? allSymbolPrice[symbol].originalPrice : 0).multipliedBy(!data.is_long ? plusSlippage : minusSlippage);
 
       let argumentsVal: (string | number | boolean | string[])[] = [
         config.VaultObjectId,

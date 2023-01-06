@@ -9,9 +9,9 @@ import downIcon from '../../../../../assets/images/down.png';
 import upIcon from '../../../../../assets/images/up.png';
 import { numberWithCommas } from "../../../../../utils";
 import { useRefresh } from "../../../../../contexts/refresh";
-import { useAllSymbolPrice, useSymbolPrice } from "../../../../../hooks/useSymbolPrice";
 import BigNumber from "bignumber.js";
 import { getLocalStorage, getLocalStorageSupplyTradeToken, setLocalStorage, TurbosChartTime, TurbosPerpetualTo } from "../../../../../lib";
+import { useStore } from "../../../../../contexts/store";
 
 const times = [
   { label: '5m', id: '5' },
@@ -104,7 +104,8 @@ function Chart(props: ChartProps) {
   const { symbol, changeChartSymbol, dropdownDisabled } = props;
 
   const { refreshTime } = useRefresh();
-  const { allSymbolPrice } = useAllSymbolPrice()
+  const { store } = useStore();
+  const { allSymbolPrice } = store;
 
   const [node, setNode] = useState<HTMLDivElement | null>(null);
   const [chartNode, setChartNode] = useState<HTMLDivElement | null>(null);
@@ -208,7 +209,7 @@ function Chart(props: ChartProps) {
 
   // loading data
   useEffect(() => {
-    if (chartToken && allSymbolPrice[chartToken]) {
+    if (chartToken && allSymbolPrice && allSymbolPrice[chartToken] && refreshTime) {
       (async () => {
         const {
           prices,
@@ -288,7 +289,7 @@ function Chart(props: ChartProps) {
   let high = prices.high_24;
   let percent = prices.start_price && prices.current_price && BigNumber(prices.current_price).minus(prices.start_price).div(prices.start_price).multipliedBy(100).toNumber();
   // sui token price
-  if (allSymbolPrice[chartToken]) {
+  if (allSymbolPrice && allSymbolPrice[chartToken]) {
     const symbolPrice = Number(allSymbolPrice[chartToken].price);
     const ema_symbolPrice = Number(allSymbolPrice[chartToken].emaPrice);
 

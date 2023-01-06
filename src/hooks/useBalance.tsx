@@ -9,7 +9,7 @@ export const useBalance = (account: string | undefined) => {
   const [balance, setBalance] = useState('0.00');
 
   const getBalance = async () => {
-    if (account) {
+    if (account && refreshTime) {
       const responce = await provider.getCoinBalancesOwnedByAddress(account, '0x2::sui::SUI');
       const balance = Coin.totalBalance(responce);
 

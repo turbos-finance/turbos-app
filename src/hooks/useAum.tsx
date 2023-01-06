@@ -19,6 +19,9 @@ export const useAum = (network: NetworkType = 'DEVNET') => {
   });
 
   const getAum = async () => {
+    if (!refreshTime) {
+      return;
+    }
     // const provider = getProvider(network);
     const coinConfig = contractConfig[network].Coin;
 
@@ -31,8 +34,7 @@ export const useAum = (network: NetworkType = 'DEVNET') => {
     const priceFeeds = symbols.map((item: string) => (coinConfig[item as SymbolType]).PriceFeedObjectId);
     const pools = symbols.map((item: string) => (coinConfig[item as SymbolType]).PoolDataObjectId)
 
-    const priceFeedsObjectIds = await provider.getObjectBatch(priceFeeds);
-    const poolsObjectIds = await provider.getObjectBatch(pools);
+    const [priceFeedsObjectIds, poolsObjectIds] = await Promise.all([provider.getObjectBatch(priceFeeds), provider.getObjectBatch(pools)])
 
     const amount = priceFeedsObjectIds.reduce((sum: BigNumber, item: any, index: number) => {
       let aum = BigNumber(vault?.aum_addition);

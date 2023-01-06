@@ -4,10 +4,8 @@ import searchIcon from '../../assets/images/search.png';
 import { debounce, numberWithCommas } from '../../utils';
 import { useEffect, useState } from 'react';
 import Bignumber from 'bignumber.js';
-import { useSymbolPrice } from '../../hooks/useSymbolPrice';
-import { useSymbolBalance } from '../../hooks/useSymbolBalance';
-import { useSuiWallet } from '../../contexts/useSuiWallet';
 import { SymbolType } from '../../config/config.type';
+import { useStore } from '../../contexts/store';
 
 export type SelectTokenOption = {
   icon: string,
@@ -75,10 +73,10 @@ type SelectTokenListProps = {
 
 function SelectTokenList(props: SelectTokenListProps) {
   const { item, handleSelect } = props;
-  const { account } = useSuiWallet();
-
-  const { symbolPrice } = useSymbolPrice(item.symbol as SymbolType);
-  const { coinBalance } = useSymbolBalance(account, item.symbol as SymbolType);
+  const { store } = useStore();
+  const { allSymbolPrice, allSymbolBalance } = store;
+  const symbolPrice = allSymbolPrice ? allSymbolPrice[item.symbol] : { price: '0' };
+  const coinBalance = allSymbolBalance ? allSymbolBalance[item.symbol] : { balance: '0' };
 
   return (
     <li onClick={() => { handleSelect(item) }}>
@@ -88,8 +86,8 @@ function SelectTokenList(props: SelectTokenListProps) {
         <p className={styles['token-value2']}>{item.symbol}</p>
       </div>
       <div className={styles['token-name-right']}>
-        <p className={styles['token-value1']}>{numberWithCommas(coinBalance)}</p>
-        <p className={styles['token-value2']}>${numberWithCommas(Bignumber(coinBalance).multipliedBy(Bignumber(symbolPrice.price || 0).toNumber()).toFixed(2)) || 0}</p>
+        <p className={styles['token-value1']}>{numberWithCommas(coinBalance.balance, '0')}</p>
+        <p className={styles['token-value2']}>${numberWithCommas(Bignumber(coinBalance.balance).multipliedBy(symbolPrice.price).toFixed(2))}</p>
       </div>
     </li>
   )

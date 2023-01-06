@@ -52,11 +52,10 @@ type AllSymbolPriceType = {
 
 export const useAllSymbolBalance = (account: string | undefined, network: NetworkType = 'DEVNET') => {
   const { refreshTime } = useRefresh();
-
-  const [allSymbolBalance, setAllSymbolBalance] = useState<AllSymbolPriceType>({});
+  const [allSymbolBalance, setAllSymbolBalance] = useState<AllSymbolPriceType | undefined>();
 
   const getBalance = async () => {
-    if (account) {
+    if (account && refreshTime) {
       // const provider = getProvider(network);
       const coin = contractConfig[network].Coin;
       const symbolList = Object.keys(coin).concat(['TLP']);
@@ -68,7 +67,7 @@ export const useAllSymbolBalance = (account: string | undefined, network: Networ
         } else {
           type = coin[item as SymbolType].Type;
         }
-        return provider.getCoinBalancesOwnedByAddress(account, type === '0x0000000000000000000000000000000000000002::sui::SUI' ? '0x2::sui::SUI' : type)
+        return provider.getCoinBalancesOwnedByAddress(account, getSuiType(type))
       })
 
       const responce = await Promise.all(getCoinBalances);
@@ -86,7 +85,7 @@ export const useAllSymbolBalance = (account: string | undefined, network: Networ
       });
       setAllSymbolBalance(balanceList);
     } else {
-      setAllSymbolBalance({});
+      setAllSymbolBalance(undefined);
     }
   }
 

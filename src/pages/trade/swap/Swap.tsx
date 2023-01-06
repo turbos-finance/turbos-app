@@ -12,11 +12,8 @@ import TurbosTooltip from '../../../components/UI/Tooltip/Tooltip';
 import Chart from '../perpetual/components/chart/Chart';
 import { useSuiWallet } from '../../../contexts/useSuiWallet';
 import SuiWalletButton from '../../../components/walletButton/WalletButton';
-import { useAllSymbolBalance, useSymbolBalance } from '../../../hooks/useSymbolBalance';
-import { useAllSymbolPrice, useSymbolPrice } from '../../../hooks/useSymbolPrice';
 import { NetworkType, SymbolType, TLPAndSymbolType } from '../../../config/config.type';
 import { numberWithCommas } from '../../../utils';
-import { usePool } from '../../../hooks/usePool';
 import { useToastify } from '../../../contexts/toastify';
 import { contractConfig } from '../../../config/contract.config';
 import { provider } from '../../../lib/provider';
@@ -28,6 +25,7 @@ import { getLocalStorage, getLocalStorageSupplyToken, setLocalStorage, TurbosSwa
 import { getSuiType } from '../../../config';
 import { bignumberMulDecimalString, bignumberRemoveDecimal } from '../../../utils/tools';
 import { useFees } from '../../../hooks/useFees';
+import { useStore } from '../../../contexts/store';
 
 type FromToTokenType = {
   balance: string,
@@ -78,9 +76,9 @@ function Swap() {
   const [loading, setLoading] = useState(false);
 
   const { fees } = useFees(fromToken.symbol, fromToken.value, toToken.symbol, toToken.value);
-  const { pool } = usePool(toToken.symbol as SymbolType);
-  const { allSymbolPrice } = useAllSymbolPrice();
-  const { allSymbolBalance } = useAllSymbolBalance(account);
+  const { store } = useStore();
+  const pool = store.allPool ? store.allPool[toToken.symbol] : undefined;
+  const { allSymbolPrice, allSymbolBalance } = store;
 
   const toggleCheck = () => {
     setCheck(!check);
@@ -128,7 +126,7 @@ function Swap() {
       isInput: true
     });
 
-    const newBalance = Bignumber(fromToken.balance).multipliedBy(allSymbolPrice[fromToken.symbol].price).div(allSymbolPrice[toToken.symbol].price);
+    const newBalance = Bignumber(fromToken.balance).multipliedBy(fromToken.price).div(toToken.price);
 
     setToToken({
       ...toToken,
@@ -146,8 +144,8 @@ function Swap() {
 
     const newBalance = e.target.value ?
       Bignumber(e.target.value)
-        .multipliedBy(allSymbolPrice[fromToken.symbol].price)
-        .div(allSymbolPrice[toToken.symbol].price)
+        .multipliedBy(fromToken.price)
+        .div(toToken.price)
         .toString()
       : '';
     setToToken({
@@ -166,8 +164,8 @@ function Swap() {
     });
     const newBalance = e.target.value ?
       Bignumber(e.target.value)
-        .multipliedBy(allSymbolPrice[toToken.symbol].price)
-        .div(allSymbolPrice[fromToken.symbol].price)
+        .multipliedBy(toToken.price)
+        .div(fromToken.price)
       : '';
     setFromToken({
       ...fromToken,
@@ -177,6 +175,9 @@ function Swap() {
   }
 
   const changeSelectToken = (result: SelectTokenOption) => {
+    const _symbolPrice: any = allSymbolPrice ? allSymbolPrice[result.symbol] : {};
+    const _symbolBalance: any = allSymbolBalance ? allSymbolBalance[result.symbol] : {};
+
     let newFromToken = {
       ...fromToken
     };
@@ -190,21 +191,21 @@ function Swap() {
         icon: result.icon,
         symbol: result.symbol,
         address: result.address,
-        price: allSymbolPrice[result.symbol] ? allSymbolPrice[result.symbol].price : '0',
-        balance: allSymbolBalance[result.symbol] ? allSymbolBalance[result.symbol].balance : '0.00'
+        price: _symbolPrice.price || '0',
+        balance: _symbolBalance || '0.00'
       };
 
       if (fromToken.isInput && fromToken.value) {
         newToToken = {
           ...newToToken,
-          value: Bignumber(fromToken.value).multipliedBy(fromToken.price).div(allSymbolPrice[result.symbol].price).toString()
+          value: Bignumber(fromToken.value).multipliedBy(fromToken.price).div(_symbolPrice.price).toString()
         }
       }
 
       if (toToken.isInput && toToken.value) {
         newFromToken = {
           ...newFromToken,
-          value: Bignumber(allSymbolPrice[result.symbol].price).multipliedBy(toToken.value).div(fromToken.price).toString()
+          value: Bignumber(_symbolPrice.price).multipliedBy(toToken.value).div(fromToken.price).toString()
         }
       }
 
@@ -214,21 +215,21 @@ function Swap() {
         icon: result.icon,
         symbol: result.symbol,
         address: result.address,
-        price: allSymbolPrice[result.symbol] ? allSymbolPrice[result.symbol].price : '0',
-        balance: allSymbolBalance[result.symbol] ? allSymbolBalance[result.symbol].balance : '0.00'
+        price: _symbolPrice.price || '0',
+        balance: _symbolBalance.balance || '0.00'
       };
 
       if (fromToken.isInput && fromToken.value) {
         newToToken = {
           ...newToToken,
-          value: Bignumber(fromToken.value).multipliedBy(allSymbolPrice[result.symbol].price).div(toToken.price).toString()
+          value: Bignumber(fromToken.value).multipliedBy(_symbolPrice.price).div(toToken.price).toString()
         }
       }
 
       if (toToken.isInput && toToken.value) {
         newFromToken = {
           ...newFromToken,
-          value: Bignumber(toToken.price).multipliedBy(toToken.value).div(allSymbolPrice[result.symbol].price).toString()
+          value: Bignumber(toToken.price).multipliedBy(toToken.value).div(_symbolPrice.price).toString()
         }
       }
     }
@@ -266,7 +267,7 @@ function Swap() {
   }, [connecting, connected, account, fromToken, toToken, pool]);
 
   useEffect(() => {
-    if (allSymbolBalance[fromToken.symbol]) {
+    if (allSymbolBalance && allSymbolBalance[fromToken.symbol]) {
       setFromToken({
         ...fromToken,
         balance: allSymbolBalance[fromToken.symbol].balance
@@ -278,7 +279,7 @@ function Swap() {
       })
     }
 
-    if (allSymbolBalance[toToken.symbol]) {
+    if (allSymbolBalance && allSymbolBalance[toToken.symbol]) {
       setToToken({
         ...toToken,
         balance: allSymbolBalance[toToken.symbol].balance
@@ -294,6 +295,10 @@ function Swap() {
 
 
   useEffect(() => {
+    if (!allSymbolPrice) {
+      return;
+    }
+
     if (allSymbolPrice[fromToken.symbol]) {
       setFromToken({
         ...fromToken,
@@ -520,15 +525,15 @@ function Swap() {
           <div className="line-con1">
             <div className="line">
               <p className="ll">{fromToken.symbol} Price</p>
-              <p className="lr">{allSymbolPrice[fromToken.symbol] ? `\$${numberWithCommas(allSymbolPrice[fromToken.symbol]?.price)}` : '-'}</p>
+              <p className="lr">{allSymbolPrice && allSymbolPrice[fromToken.symbol] ? `\$${numberWithCommas(allSymbolPrice[fromToken.symbol]?.price)}` : '-'}</p>
             </div>
             <div className="line">
               <p className="ll">{toToken.symbol} Price</p>
-              <p className="lr">{allSymbolPrice[toToken.symbol] ? `\$${numberWithCommas(allSymbolPrice[toToken.symbol].price)}` : '-'}</p>
+              <p className="lr">{allSymbolPrice && allSymbolPrice[toToken.symbol] ? `\$${numberWithCommas(allSymbolPrice[toToken.symbol].price)}` : '-'}</p>
             </div>
             <div className="line">
               <p className="ll">Available Liquidity</p>
-              <p className="lr">{pool.turbos_tusd_amounts ? `\$${pool.turbos_tusd_amounts}` : '-'}</p>
+              <p className="lr">{pool && pool.turbos_tusd_amounts ? `\$${pool.turbos_tusd_amounts}` : '-'}</p>
             </div>
           </div>
         </div>
