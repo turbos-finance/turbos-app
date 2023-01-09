@@ -22,17 +22,16 @@ function Trades(props: TradesProps) {
   const getTrades = async () => {
     if (account && refreshTime && reload) {
       const data = await client.query({
-        query: GET_TRADES, variables: {
+        query: GET_TRADES,
+        variables: {
           "sender": account,
           "skip": 0,
           "take": 20,
           "types": ["IncreasePositionEvent", "DecreasePositionEvent"]
-        }
+        },
+        fetchPolicy: "network-only"
       });
-      console.log(data);
       setOptions(data.data.events.list);
-    } else {
-      setOptions([]);
     }
   }
 

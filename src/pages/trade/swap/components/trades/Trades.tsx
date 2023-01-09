@@ -17,18 +17,18 @@ function Trades() {
   const [options, setOptions] = useState<any[]>([]);
 
   const getTrades = async () => {
-    if (account) {
+    if (account && refreshTime) {
       const data = await client.query({
-        query: GET_TRADES, variables: {
+        query: GET_TRADES,
+        variables: {
           "sender": account,
           "skip": 0,
           "take": 20,
           "types": ["SwapEvent"]
-        }
+        },
+        fetchPolicy: "network-only"
       });
       setOptions(data.data.events.list);
-    } else {
-      setOptions([]);
     }
   }
 
