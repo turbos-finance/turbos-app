@@ -29,6 +29,7 @@ import { useRefresh } from '../../../contexts/refresh';
 import { useToastify } from '../../../contexts/toastify';
 import Positions from './components/positions/Positions';
 import Orders from './components/orders/Orders';
+import { handleRender } from './components/tooltipSlider/TooltipSlider';
 
 import {
   getLocalStorage,
@@ -697,6 +698,7 @@ function Perpetual() {
                       max={30}
                       step={0.1}
                       marks={leverageMarks}
+                      handleRender={handleRender}
                       onChange={(value) => { changeLeverage(value as number) }}
                       value={leverage}
                       defaultValue={leverage}
