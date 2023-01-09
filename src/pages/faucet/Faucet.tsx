@@ -10,6 +10,7 @@ import { useToastify } from '../../contexts/toastify';
 import { getCertifiedTransaction, getTimestampFromTransactionResponse, getTransactionSender } from '@mysten/sui.js';
 import { symbols as faucetSymbols, SymbolsType } from '../../config/faucet';
 import Bignumber from 'bignumber.js';
+import { useRefresh } from '../../contexts/refresh';
 import http from '../../http';
 
 const paySuiAddress = '0xc4173a804406a365e69dfb297d4eaaf002546ebd';
@@ -21,6 +22,7 @@ function Faucet() {
     connected,
     account
   } = useSuiWallet();
+  const { changeRefreshTime } = useRefresh();
 
   const { toastify } = useToastify();
 
@@ -81,6 +83,7 @@ function Faucet() {
         const transactions = await provider.getTransactionsForAddress(account);
         localStorage.setItem('lastFaucetTransaction', transactions[0]);
         toastify(<div>Successfully received 0.05 SUI, please check in your wallet.<a className='view' target={'_blank'} href={`https://explorer.sui.io/transaction/${encodeURIComponent(transactions[0])}?network=devnet`}>View In Explorer</a></div>);
+        changeRefreshTime();
       }
     } catch (err: any) {
       // toastify(`Request limit reached, please try again after 120 minute.`, 'error');
@@ -109,6 +112,7 @@ function Faucet() {
       console.log(res.data);
       if (res.data.code === 200) {
         toastify(<div>{res.data.message}, please check in your wallet. <a className='view' target={'_blank'} href={`https://explorer.sui.io/address/${account}?network=devnet`}>View In Explorer</a></div>)
+        changeRefreshTime();
       } else {
         toastify(res.data.message, 'error');
       }

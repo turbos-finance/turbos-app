@@ -76,8 +76,8 @@ function BuySell() {
   }
 
   const changeToken = (result: SelectTokenOption) => {
-    const _symbolPrice: any = allSymbolPrice ? allSymbolPrice[result.symbol] : {};
-    const _symbolBalance: any = allSymbolBalance ? allSymbolBalance[result.symbol] : {};
+    const _symbolPrice: any = allSymbolPrice && allSymbolPrice[result.symbol] ? allSymbolPrice[result.symbol] : { price: '0' };
+    const _symbolBalance: any = allSymbolBalance && allSymbolBalance[result.symbol] ? allSymbolBalance[result.symbol] : { balance: '0' };
 
     let newFromToken = {
       ...fromToken
@@ -524,8 +524,8 @@ function SectionTokens(props: SectionTokensProps) {
 function BuySellRight() {
   const { store } = useStore();
   const vault: any = store.vault || undefined;
-  const symbolPrice = store.allSymbolPrice ? store.allSymbolPrice[supplyTLPToken.symbol] : { price: '0' };
-  const coinBalance = store.allSymbolBalance ? store.allSymbolBalance[supplyTLPToken.symbol] : { balance: '0' };
+  const symbolPrice = store.allSymbolPrice && store.allSymbolPrice[supplyTLPToken.symbol] ? store.allSymbolPrice[supplyTLPToken.symbol] : { price: '0' };
+  const coinBalance = store.allSymbolBalance && store.allSymbolBalance[supplyTLPToken.symbol] ? store.allSymbolBalance[supplyTLPToken.symbol] : { balance: '0' };
 
   return (
     <div className="main-right">

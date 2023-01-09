@@ -327,7 +327,9 @@ function Chart(props: ChartProps) {
           </div>
           <div className={styles.pricelist}>
             <div className={styles.value2}>24h Change</div>
-            <div className={styles.value1} style={{ color: percent >= 0 ? '#0ecc83' : '#F04438' }}>{`${percent >= 0 ? '+' : ''}${percent.toFixed(2)}%`}</div>
+            <div className={styles.value1} style={{ color: percent >= 0 ? '#0ecc83' : '#F04438' }}>
+              {`${percent >= 0 ? '+' : ''}${percent && percent.toFixed(2)}%`}
+            </div>
           </div>
           <div className={styles.pricelist}>
             <div className={styles.value2}>24h High</div>

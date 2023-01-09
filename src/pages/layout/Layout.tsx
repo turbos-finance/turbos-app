@@ -20,8 +20,8 @@ function Layout() {
 
   const { account } = useSuiWallet();
   const { changeStore } = useStore();
-  const { changeRefreshTime } = useRefresh();
-  const location = useLocation();
+  // const { changeRefreshTime } = useRefresh();
+  // const location = useLocation();
   const { vault } = useVault();
   const { allPool } = useAllPool();
   const { allSymbolPrice } = useAllSymbolPrice();

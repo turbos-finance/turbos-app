@@ -75,8 +75,8 @@ function SelectTokenList(props: SelectTokenListProps) {
   const { item, handleSelect } = props;
   const { store } = useStore();
   const { allSymbolPrice, allSymbolBalance } = store;
-  const symbolPrice = allSymbolPrice ? allSymbolPrice[item.symbol] : { price: '0' };
-  const coinBalance = allSymbolBalance ? allSymbolBalance[item.symbol] : { balance: '0' };
+  const symbolPrice = allSymbolPrice && allSymbolPrice[item.symbol] ? allSymbolPrice[item.symbol] : { price: '0' };
+  const coinBalance = allSymbolBalance && allSymbolBalance[item.symbol] ? allSymbolBalance[item.symbol] : { balance: '0' };
 
   return (
     <li onClick={() => { handleSelect(item) }}>

@@ -8,16 +8,19 @@ import styles from './Trades.module.css';
 import moment from 'moment';
 import { client, GET_TRADES } from '../../../../../http/apolloClient';
 
-function Trades() {
+type TradesProps = {
+  reload: boolean
+}
+
+function Trades(props: TradesProps) {
+  const { reload } = props;
   const {
     account,
   } = useSuiWallet();
   const { refreshTime } = useRefresh();
-
   const [options, setOptions] = useState<any[]>([]);
-
   const getTrades = async () => {
-    if (account) {
+    if (account && refreshTime && reload) {
       const data = await client.query({
         query: GET_TRADES, variables: {
           "sender": account,
@@ -26,6 +29,7 @@ function Trades() {
           "types": ["IncreasePositionEvent", "DecreasePositionEvent"]
         }
       });
+      console.log(data);
       setOptions(data.data.events.list);
     } else {
       setOptions([]);
@@ -34,7 +38,7 @@ function Trades() {
 
   useEffect(() => {
     getTrades()
-  }, [account, refreshTime]);
+  }, [account, refreshTime, reload]);
 
 
   return (

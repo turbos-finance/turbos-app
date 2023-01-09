@@ -545,7 +545,6 @@ function Perpetual() {
   }, [toToken.symbol]);
 
   const recordTitle = ['Positions', 'Trades'];
-  const recordContent = [<Positions changeLen={changePositionDataLen} />, <Trades />];
   const typeList = ['Market']; // ['Market', 'Limit', 'Trigger'];
 
 
@@ -785,12 +784,12 @@ function Perpetual() {
             )
           }
         </div>
-
-        {
-          recordContent.map((item: React.ReactNode, index: number) =>
-            <div key={index} style={{ display: index === record ? 'block' : 'none' }}>{item}</div>
-          )
-        }
+        <div style={{ display: record === 0 ? 'block' : 'none' }}>
+          <Positions changeLen={changePositionDataLen} />
+        </div>
+        <div style={{ display: record === 1 ? 'block' : 'none' }}>
+          <Trades reload={record === 1} />
+        </div>
       </div>
 
 

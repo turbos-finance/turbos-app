@@ -65,8 +65,8 @@ function TrLiquidity(props: TrLiquidityProps) {
 
   const { store } = useStore();
   const pool = store.allPool ? store.allPool[item.symbol] : {};
-  const symbolPrice = store.allSymbolPrice ? store.allSymbolPrice[item.symbol] : {};
-  const coinBalance = store.allSymbolBalance ? store.allSymbolBalance[item.symbol] : {};
+  const symbolPrice = store.allSymbolPrice && store.allSymbolPrice[item.symbol] ? store.allSymbolPrice[item.symbol] : { price: '0' };
+  const coinBalance = store.allSymbolBalance && store.allSymbolBalance[item.symbol] ? store.allSymbolBalance[item.symbol] : { balance: '0' };
 
   const linkTo = (symbol: string) => {
     setLocalStorage(TurbosBuySellActive, '0');
@@ -143,8 +143,8 @@ function MobileTrLiquidity(props: TrLiquidityProps) {
 
   const { store } = useStore();
   const pool = store.allPool ? store.allPool[item.symbol] : {};
-  const symbolPrice = store.allSymbolPrice ? store.allSymbolPrice[item.symbol] : {};
-  const coinBalance = store.allSymbolBalance ? store.allSymbolBalance[item.symbol] : {};
+  const symbolPrice = store.allSymbolPrice && store.allSymbolPrice[item.symbol] ? store.allSymbolPrice[item.symbol] : { price: '0' };
+  const coinBalance = store.allSymbolBalance && store.allSymbolBalance[item.symbol] ? store.allSymbolBalance[item.symbol] : { balance: '0' };
 
   const linkTo = (symbol: string) => {
     setLocalStorage(TurbosBuySellActive, '0');
