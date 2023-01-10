@@ -40,7 +40,9 @@ function Trades() {
     <>
       {
         options.length <= 0 ?
-          <div className='container'><Empty></Empty></div> :
+          <div className='container'>
+            <Empty text={'No Trades'}></Empty>
+          </div> :
           options.map((item: any, index: number) => (
             <div className={styles.trades} key={index}>
               <div className={styles['trades-time']}>{moment(item.timestamp).format('DD MMM YYYY HH:mm:ss A')}</div>

@@ -146,9 +146,9 @@ function Faucet() {
           {
             !connecting && !connected && !account ?
               <SuiWalletButton isButton={true} btnClassName={'btn-outline'} /> :
-              <div className='btn btn-outline' onClick={airdrop}>
+              <button className='btn btn-outline' onClick={airdrop} disabled={loading}>
                 {loading ? <Loading /> : 'Airdrop'}
-              </div>
+              </button>
           }
           <div className={styles['faucet-li-network']}>Devnet</div>
         </li>
@@ -168,9 +168,9 @@ function Faucet() {
               {
                 !connecting && !connected && !account ?
                   <SuiWalletButton isButton={true} btnClassName={'btn-outline'} /> :
-                  <div className='btn btn-outline' onClick={() => { airdropToken(item.symbol, index) }}>
+                  <button className='btn btn-outline' onClick={() => { airdropToken(item.symbol, index) }} disabled={loads[index]}>
                     {loads[index] ? <Loading /> : 'Airdrop'}
-                  </div>
+                  </button>
               }
               <div className={styles['faucet-li-network']}>Devnet</div>
             </li>
