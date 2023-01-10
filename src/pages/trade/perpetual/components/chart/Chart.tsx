@@ -319,7 +319,7 @@ function Chart(props: ChartProps) {
         <div className={styles.pricelistcon}>
           <div className={styles.pricelist}>
             <div className={styles.value1}>
-              {price && `\$${numberWithCommas(price.toFixed(2))}` || '-'}
+              {price && `${numberWithCommas(price.toFixed(2))}` || '-'}
             </div>
             <div className={styles.value2}>
               {ema_price && `\$${numberWithCommas(ema_price.toFixed(2))}` || '-'}

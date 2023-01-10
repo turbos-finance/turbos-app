@@ -48,7 +48,7 @@ import { bignumberDivDecimalString, bignumberMulDecimalString, bignumberRemoveDe
 import { getPositionFee } from '../../../lib/getFee';
 import { useFundingRate } from '../../../hooks/useFundingRate';
 import { getSuiType } from '../../../config';
-import { minusSlippage, plusSlippage, slippage, slippagePercent } from '../../../lib/slippage';
+import { allowSlippagePercent, getAllowMinusSlippage, getAllowPlusSlippage, minusSlippage, plusSlippage, slippage, slippagePercent } from '../../../lib/slippage';
 import { useStore } from '../../../contexts/store';
 
 const tradeType = ['Long', 'Short'];
@@ -107,6 +107,7 @@ function Perpetual() {
   const [percent, setPercent] = useState(0);
   const [leverage, setLeverage] = useState(current_leverage ? Number(current_leverage) : 1.1);
   const [showLeverage, setShowLeverage] = useState(!current_leverage_show || current_leverage_show === 'true' ? true : false);
+  const [allowSlippage, setAllowSlippage] = useState(false);
   const [check, setCheck] = useState(false);
 
   const [fromToken, setFromToken] = useState<FromToTokenType>({
@@ -126,7 +127,7 @@ function Perpetual() {
 
   const [btnInfo, setBtnInfo] = useState({ state: 0, text: 'Connect Wallet' });
   const [loading, setLoading] = useState(false);
-  const [positionDataLen, setPositionDataLen] = useState(0)
+  const [positionDataLen, setPositionDataLen] = useState(0);
 
   const { store } = useStore();
   const { vault, allSymbolBalance, allSymbolPrice, allPool } = store;
@@ -436,6 +437,9 @@ function Perpetual() {
       const balanceResponse = Coin.selectCoinSetWithCombinedBalanceGreaterThanOrEqual(coinBalance, BigInt(amount));
       const balanceObjects = balanceResponse.map((item) => Coin.getID(item));
 
+      const plusS = allowSlippage ? getAllowPlusSlippage() : plusSlippage;
+      const minusS = allowSlippage ? getAllowMinusSlippage() : minusSlippage;
+
       let argumentsVal: (string | number | boolean | string[])[] = [
         config.VaultObjectId,
         balanceObjects,
@@ -446,7 +450,7 @@ function Perpetual() {
         config.PositionsObjectId,
         !trade ? true : false,
         bignumberRemoveDecimal(bignumberMulDecimalString(Bignumber(toToken.value).multipliedBy(toToken.price))).toString(),
-        bignumberRemoveDecimal(bignumberMulDecimalString(Bignumber(toToken.price).multipliedBy(!trade ? plusSlippage : minusSlippage))).toString(),
+        bignumberRemoveDecimal(bignumberMulDecimalString(Bignumber(toToken.price).multipliedBy(!trade ? plusS : minusS))).toString(),
         config.TimeOracleObjectId
       ];
 
@@ -720,7 +724,7 @@ function Perpetual() {
                   </div>
                   <div className="line">
                     <p className="ll">Entry Price</p>
-                    <p className="lr">{numberWithCommas(toToken.price)}</p>
+                    <p className="lr">{`\$${numberWithCommas(toToken.price)}`}</p>
                   </div>
                   <div className="line">
                     <p className="ll">Liq. Price</p>
@@ -755,11 +759,11 @@ function Perpetual() {
           <div className="line-con1">
             <div className="line">
               <p className="ll">Entry Price</p>
-              <p className="lr">{numberWithCommas(toToken.price)}</p>
+              <p className="lr">{`\$${numberWithCommas(toToken.price)}`}</p>
             </div>
             <div className="line">
               <p className="ll">Exit Price</p>
-              <p className="lr">{numberWithCommas(toToken.price)}</p>
+              <p className="lr">{`\$${numberWithCommas(toToken.price)}`}</p>
             </div>
             <div className="line">
               <p className="ll">Borrow Fee</p>
@@ -833,7 +837,7 @@ function Perpetual() {
           </div>
           <div className="line">
             <p className="ll">Collaterlal</p>
-            <p className="lr">${numberWithCommas(Bignumber(toToken.value).multipliedBy(toToken.price).toFixed(2))}</p>
+            <p className="lr">${numberWithCommas(Bignumber(fromToken.value).multipliedBy(fromToken.price).toFixed(2))}</p>
           </div>
           <div className="line-hr"></div>
           <div className="line">
@@ -858,12 +862,16 @@ function Perpetual() {
           </div>
           <div className="line">
             <p className="ll">Allowed Slippage</p>
-            <p className="lr">{slippagePercent}%</p>
+            <p className="lr">{allowSlippage ? allowSlippagePercent : slippagePercent}%</p>
           </div>
           <div className="line">
             <p className="ll">Allow up to 1% slippage</p>
-            <p className="lr">
-
+            <p className="lr" style={{ cursor: 'pointer' }} onClick={() => { setAllowSlippage(!allowSlippage) }}>
+              {
+                !allowSlippage ?
+                  <CheckBoxOutlineBlankIcon sx={{ color: '#63CCA9', fontSize: 18 }} />
+                  : <CheckBoxIcon sx={{ color: '#63CCA9', fontSize: 18 }} />
+              }
             </p>
           </div>
 

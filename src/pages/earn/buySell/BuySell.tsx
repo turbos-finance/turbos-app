@@ -434,7 +434,7 @@ function BuySell() {
             <div className="line">
               <p className="ll">Fees</p>
               <p className="lr">
-                {!!fees.toNumber() ? `\$${fees.toFixed(2)}` : '-'}
+                {!!fees.toNumber() ? `${fees.toFixed(2)}%` : '-'}
               </p>
             </div>
 
@@ -477,7 +477,7 @@ function BuySell() {
 
           <div className="line line-top-16">
             <p className="ll">Min. Ratio</p>
-            <p className="lr">1 {fromToken.symbol} ≈ {Bignumber(fromToken.price).div(toToken.price).toString()}{toToken.symbol} </p>
+            <p className="lr">1 {fromToken.symbol} ≈ {Bignumber(fromToken.price).div(toToken.price).toFixed(9)} {toToken.symbol} </p>
           </div>
           <div className="line">
             <p className="ll">Spread</p>
@@ -485,7 +485,7 @@ function BuySell() {
           </div>
           <div className="line">
             <p className="ll">Fees</p>
-            <p className="lr">{!!fees.toNumber() ? `\$${fees.toFixed(2)}` : '-'}</p>
+            <p className="lr">{!!fees.toNumber() ? `${fees.toFixed(2)}%` : '-'}</p>
           </div>
 
           <div>

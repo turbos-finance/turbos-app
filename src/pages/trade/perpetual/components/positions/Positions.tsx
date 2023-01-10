@@ -927,7 +927,7 @@ function AddAndRemoveMarginTurbosDialog(props: TurbosDialogProps) {
     Bignumber(data.average_price).plus(differencePrice);
 
   const executionFee = fromToken.value ?
-    `${getPositionFee(vault, Bignumber(fromToken.value).multipliedBy(fromToken.price)).div(fromToken.price).toString()}`
+    `${getPositionFee(vault, Bignumber(fromToken.value).multipliedBy(fromToken.price)).div(fromToken.price).toString()} ${fromToken.symbol}`
     : '-'
 
   return (
@@ -993,7 +993,7 @@ function AddAndRemoveMarginTurbosDialog(props: TurbosDialogProps) {
       </div>
       <div className="line">
         <p className="ll">Execution Fees</p>
-        <p className="lr">{executionFee} {fromToken.symbol}</p>
+        <p className="lr">{executionFee}</p>
       </div>
       <div>
         <button className='btn' onClick={approve} disabled={btnInfo.state > 0 || loading}>
